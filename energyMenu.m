@@ -51,7 +51,7 @@ function energyMenu
         set(huitext3,'String','Currently off');
     end
     
-    function callbackfn(hObject,eventdata)
+    function callbackfn(hObject,~)
         % callbackfn is called by the 'Callback' property
         % in either the second edit box or the pushbutton
         switch hObject

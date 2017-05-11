@@ -1,5 +1,8 @@
 function materialMenu
-    global Tm specific_heat density thermal_Conductivity constant dt dd self_set emissivity;
+    global Tm specific_heat density thermal_Conductivity constant dt dd self_set emissivity materials;
+    if isempty(materials)
+        materials = 1;
+    end
     if isempty(emissivity)
         emissivity = 0.1;
     end
@@ -66,7 +69,11 @@ function materialMenu
     'Position',[0,100,120,80],'String','Set Constant by Self (must be ~ < 0.05)');
     huitext6 = uicontrol('Style','pushbutton','Position',[20,110,80,40],...
     'String','Turn Off','Callback',@calltwo);
-    
+    if materials ~= 1
+        self_set = false;
+        set(hsttext6,'Visible', 'off');
+        set(huitext6,'Visible', 'off');
+    end
     hsttext7 = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[210,100,100,80],'String','Radiation Emissivity Constant');
     huitext7 = uicontrol('Style','edit','Position',[240,110,40,40],...

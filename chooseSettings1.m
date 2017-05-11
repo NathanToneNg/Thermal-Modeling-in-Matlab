@@ -51,7 +51,6 @@ set(f,'Visible','on')
 function whattodo(hObject, ~)
     % whattodo is called by the 'SelectionChangeFcn' property
     % in the button group
-    which = get(grouph,'SelectedObject');
     switch hObject
         case sizeSettings
             sizeMenu;

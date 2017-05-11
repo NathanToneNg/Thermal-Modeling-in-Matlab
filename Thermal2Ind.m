@@ -27,7 +27,7 @@ switch elevLocation
         yfreq = floor(elevFrequency/xfreq);
         Tempgrid(1:xfreq:end,1:yfreq:end) = elevatedTemp;
 end
-dQ = energyRate * dt / (specific_heat * density);
+dQ = energyRate * dt / (specific_heat * density * dd * dd * dd);
 
 
 iter = total_time/dt;
@@ -89,15 +89,15 @@ for j= 2:iter + 1
         old(3:end,2:end-1) - 4.*old(2:end-1, 2:end-1));
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - rConst .* ...
-            ((old(boundaries) + 273.15).^4) + rAir;
+            ((old(boundaries)./g(boundaries) + 273.15).^4) + rAir;
         wholeMatrix(corners) = wholeMatrix(corners) - rConst .* ...
-            ((old(corners) + 273.15).^4) + rAir;
+            ((old(corners)./g(corners) + 273.15).^4) + rAir;
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            ((wholeMatrix(boundaries) - roomTemp) .* convRatio);
+            ((old(boundaries)./g(boundaries) - roomTemp) .* convRatio);
         wholeMatrix(corners) = wholeMatrix(corners) - ... %twice as much at corners
-            ((wholeMatrix(corners) - roomTemp) .* convRatio);
+            ((old(corners)./g(corners) - roomTemp) .* convRatio);
     end
     if j >= iterOn && j <= iterOff
        switch absorption

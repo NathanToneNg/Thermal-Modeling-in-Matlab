@@ -42,7 +42,7 @@ switch elevLocation
         
         Tempgrid(1:xfreq:end,1:yfreq:end,1:zfreq:end) = elevatedTemp;
 end
-dQ = energyRate * dt / (specific_heat * density);
+dQ = energyRate * dt / (specific_heat * density * dd * dd * dd);
 
 
 iter = total_time/dt;
@@ -113,19 +113,19 @@ for j= 2:iter + 1
     
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - rConst .* ...
-            ((old(boundaries) + 273.15).^4) + rAir;
+            ((old(boundaries)./g(boundaries) + 273.15).^4) + rAir;
         wholeMatrix(edges) = wholeMatrix(edges) - rConst .* ...
-            ((old(edges) + 273.15).^4) + rAir;
+            ((old(edges)./g(edges) + 273.15).^4) + rAir;
         wholeMatrix(corners) = wholeMatrix(corners) - rConst .* ...
-            ((old(corners) + 273.15).^4) + rAir;
+            ((old(corners)./g(corners) + 273.15).^4) + rAir;
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (wholeMatrix(boundaries) - roomTemp) .* convRatio;
+            (old(boundaries)./g(boundaries) - roomTemp) .* convRatio;
         wholeMatrix(edges) = wholeMatrix(edges) - ... %twice as much at edges
-            (wholeMatrix(edges) - roomTemp) .* convRatio;
+            (old(edges)./g(edges) - roomTemp) .* convRatio;
         wholeMatrix(corners) = wholeMatrix(corners) - ... %and three times as much at corners
-            (wholeMatrix(corners) - roomTemp) .* convRatio;
+            (old(corners)./g(corners) - roomTemp) .* convRatio;
     end
     if j >= iterOn && j <= iterOff
         switch absorption

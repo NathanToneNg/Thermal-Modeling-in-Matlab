@@ -1,6 +1,9 @@
 function temperatureMenu
     global roomTemp elevatedTemp elevLocation elevFrequency absorption energyRate ...
-    distributionFrequency timeOn timeOff total_time;
+    distributionFrequency timeOn timeOff total_time materials;
+    if isempty(materials)
+        materials = 3;
+    end
     if isempty(roomTemp)
         roomTemp = 0;
     end
@@ -69,6 +72,10 @@ function temperatureMenu
     huitext5 = uicontrol('Style','edit','Position',[260,200,40,40],...
     'String',num2str(distributionFrequency),...
     'Callback',@callbackfn);
+    if materials == 3
+        set(huitext5,'Visible','off');
+        set(hsttext5,'String','Location matches material 2');
+    end
 
     hsttext20 = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[150,100,80,80], 'String','Time Absorption On');
@@ -149,8 +156,10 @@ function temperatureMenu
                 set(hsttext21,'Visible','on');
             case 3
                 set(button2, 'String','Spread');
-                set(huitext5,'Visible','on');
                 set(hsttext5,'Visible','on');
+                if materials ~= 3
+                    set(huitext5,'Visible','on');
+                end
                 set(huitext4,'Visible','on');
                 set(hsttext4,'Visible','on');
                 set(huitext20,'Visible','on');
@@ -169,7 +178,7 @@ function temperatureMenu
                 set(hsttext21,'Visible','off');
     end
     
-    function callbackfn(hObject,eventdata)
+    function callbackfn(~,~)
         % callbackfn is called by the 'Callback' property
         % in either the second edit box or the pushbutton
         roomTemp=str2double(get(huitext,'String'));
@@ -181,20 +190,8 @@ function temperatureMenu
         timeOff = str2double(get(huitext21,'String'));
     end
     
-%     function button1call(hObject, eventdata)
-%         elevatedTemp = ~elevatedTemp;
-%         if(elevatedTemp)
-%             set(hsttext3, 'Visible', 'off');
-%             set(huitext3, 'Visible', 'off');
-%             set(button1, 'String', 'Currently Off');
-%         else
-%             set(hsttext3, 'Visible', 'on');
-%             set(huitext3, 'Visible', 'on');
-%             set(button1, 'String', 'Currently On');
-%         end
-%     end
 
-    function button2call(hObject, eventdata)
+    function button2call(~, ~)
         absorption = absorption + 1;
         if absorption > 4
             absorption = 1;
@@ -212,7 +209,9 @@ function temperatureMenu
                 set(button2, 'String','Middle Block');
             case 3
                 set(button2, 'String','Spread');
-                set(huitext5,'Visible','on');
+                if materials ~= 3
+                    set(huitext5,'Visible','on');
+                end
                 set(hsttext5,'Visible','on');
             case 4
                 set(button2, 'String','Off');
@@ -227,7 +226,7 @@ function temperatureMenu
         end
     end
 
-    function highTempOpts(hObject, eventdata)
+    function highTempOpts(~, ~)
         elevLocation = elevLocation + 1;
         if elevLocation > 4
             elevLocation = 1;
