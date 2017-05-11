@@ -1,7 +1,7 @@
 function overallGUI
     global dimensions precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm constant roomTemp elevatedTemp elevLocation thermal_Conductivity...
-    elevFrequency absorption energyRate distributionFrequency emissivity;
+    elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff;
 
     
     %%%%Defaults
@@ -19,7 +19,7 @@ function overallGUI
     thermal_Conductivity = 0.33;
     constant = thermal_Conductivity * dt / (density * specific_heat * dd * dd);
     borders = true;
-    emissivity = 0.1;
+    emissivity = 0.97;
     roomTemp = 0;
     elevatedTemp = 250;
     elevLocation = 1;
@@ -27,6 +27,8 @@ function overallGUI
     absorption = 4;
     energyRate = 0;
     distributionFrequency = 12;
+    timeOn = 0;
+    timeOff = 500;
     convection = false;
     radiation = false;
     %%%%%%%%%%%%

@@ -22,7 +22,7 @@ function timeMenu
     'String',num2str(total_time));
 
     hsttext2 = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[80,200,80,80],'String','Time increment');
+    'Position',[80,200,80,80],'String','Calculation time increment');
     huitext2 = uicontrol('Style','edit','Position',[100,200,40,40],...
     'String',num2str(dt),...
     'Callback',@callbackfn);
@@ -33,14 +33,16 @@ function timeMenu
     'String',num2str(framerate),...
     'Callback',@callbackfn);
 
-    
+    text = strcat('Total time steps: ', num2str(total_time/dt));
+    hsttext4 = uicontrol('Style','text','BackgroundColor','white',...
+    'Position',[80,100,80,80],'String',text);
     
     
     set(f,'Name','Time Settings')
     movegui(f,'center')
     hbutton = uicontrol('Style','pushbutton',...
         'String','Set values',...
-        'Position',[100,50,100,50], 'Callback',@callbackfn);
+        'Position',[70,50,100,50], 'Callback',@callbackfn);
     set(f,'Visible','on')
     
     function callbackfn(hObject,eventdata)
@@ -49,6 +51,7 @@ function timeMenu
         total_time=str2double(get(huitext,'String'));
         dt=str2double(get(huitext2,'String'));
         framerate = str2double(get(huitext3,'String'));
-        
+        text = strcat('Total time steps: ', num2str(total_time/dt));
+        set(hsttext4, 'String', text);
     end
 end

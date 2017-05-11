@@ -3,7 +3,7 @@ function Thermal1Ind
 global precision xdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm constant roomTemp elevatedTemp elevLocation ...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff;
-%global list
+global list
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,27 +98,27 @@ for j= 2:iter + 1
     
     if mod(j - 1, framerate) == 0
         list(index) = mean(wholeMatrix(2:end-1));
-        figure;
-        plot(0:dd:xdist, wholeMatrix(2:end-1));
+%         figure;
+%         plot(0:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);
         %alpha(0.7);
-        drawnow
-        F(index) = getframe(gcf);
+%         drawnow
+%         F(index) = getframe(gcf);
         index = index + 1;
     end
 end
-
+list(index) = mean(wholeMatrix(2:end-1));
 %After creating all the slides, will pause and let you analyze
 %variables. Then press a key and it will play the movie twice and end on
 %the last frame.
 
-pause
-close all;
-fig = figure;
-movie(fig,F,2)
-close all;
+% pause
+% close all;
+% fig = figure;
+% movie(fig,F,2)
+% close all;
 
-plot(0:dd:xdist, wholeMatrix(2:end-1));
+% plot(0:dd:xdist, wholeMatrix(2:end-1));
 %ylim([0 50]);
 
 melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);

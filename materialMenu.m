@@ -68,7 +68,7 @@ function materialMenu
     'String','Turn Off','Callback',@calltwo);
     
     hsttext7 = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[210,100,100,80],'String','Emissivity Constant within material');
+    'Position',[210,100,100,80],'String','Radiation Emissivity Constant');
     huitext7 = uicontrol('Style','edit','Position',[240,110,40,40],...
     'String',num2str(emissivity));
 

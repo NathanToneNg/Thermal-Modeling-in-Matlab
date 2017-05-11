@@ -20,12 +20,12 @@ function energyMenu
     'String','Currently on','Callback',@callbackfn);
 
     hsttext2 = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[20,110,80,80],'String','Not implemented');
+    'Position',[20,110,80,80],'String','Convection');
     huitext2 = uicontrol('Style','pushbutton','Position',[20,130,150,40],...
     'String','Currently off','Callback',@callbackfn);
     
     hsttext3 = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[20,30,80,80],'String','Not implemented');
+    'Position',[20,30,80,80],'String','Radiation');
     huitext3 = uicontrol('Style','pushbutton','Position',[20,50,150,40],...
     'String','Currently off','Callback',@callbackfn);
 

@@ -27,7 +27,7 @@ function sizeMenu
     huitext2 = uicontrol('Style','edit','Position',[90,200,40,40],...
     'String',num2str(xdist),...
     'Callback',@callbackfn);
-    
+    text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)));
     if dimensions > 1
         global ydist;
         if isempty(ydist)
@@ -38,7 +38,7 @@ function sizeMenu
         huitext3 = uicontrol('Style','edit','Position',[170,200,40,40],...
         'String',num2str(ydist),...
         'Callback',@callbackfn);
-        pixels = ((xdist / dd) + 1) * ((ydist / dd) + 1);
+        text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', num2str(floor((ydist/dd) + 1)));
     end
     if dimensions > 2
         global zdist;
@@ -50,10 +50,10 @@ function sizeMenu
         huitext4 = uicontrol('Style','edit','Position',[250,200,40,40],...
         'String',num2str(zdist),...
         'Callback',@callbackfn);
-        pixels = ((xdist / dd) + 1) * ((ydist / dd) + 1) * ((zdist / dd) + 1);
+        text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', ...
+            num2str(floor((ydist/dd) + 1)), ' by', num2str(floor(zdist/dd + 1)));
     end
     
-    text = strcat('Number of pixels: ', num2str(pixels));
     hsttext5 = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[110,10,80,150],'String',text);
     
@@ -69,16 +69,16 @@ function sizeMenu
         % in either the second edit box or the pushbutton
         dd=str2double(get(huitext,'String'));
         xdist=str2double(get(huitext2,'String'));
-        pixels = ((xdist / dd) + 1);
+        text = strcat('Number of pixels: ', num2str((xdist / dd) + 1));
         if dimensions > 1
             ydist = str2double(get(huitext3, 'String'));
-            pixels = ((xdist / dd) + 1) * ((ydist / dd) + 1);
+            text = strcat('Number of pixels: ', num2str((xdist / dd) + 1), 'by', num2str((ydist / dd) + 1));
         end
         if dimensions > 2
             zdist = str2double(get(huitext4, 'String'));
-            pixels = ((xdist / dd) + 1) * ((ydist / dd) + 1) * ((zdist / dd) + 1);
+            text = strcat('Number of pixels: ', num2str((xdist / dd) + 1), ...
+                'by', num2str((ydist / dd) + 1), 'by', num2str((zdist / dd) + 1));
         end
-        text = strcat('Number of pixels: ', num2str(pixels));
         set(hsttext5, 'String', text);
     end
 end

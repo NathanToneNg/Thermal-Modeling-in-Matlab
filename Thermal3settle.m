@@ -148,7 +148,7 @@ for j= 2:iter + 1
         list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
         figure;
         slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-        caxis([0 (Tm + 20)])
+        caxis([0 10])
         colorbar('horiz')
         %alpha(0.7);
         drawnow
@@ -168,7 +168,7 @@ movie(fig,F,2)
 close all;
 
 slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-caxis([0 (Tm + 20)])
+caxis([0 10])
 colorbar('horiz')
 
 melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);

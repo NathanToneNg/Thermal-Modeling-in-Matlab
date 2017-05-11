@@ -1,5 +1,6 @@
 function temperatureMenu
-    global roomTemp elevatedTemp elevLocation elevFrequency absorption energyRate distributionFrequency;
+    global roomTemp elevatedTemp elevLocation elevFrequency absorption energyRate ...
+    distributionFrequency timeOn timeOff total_time;
     if isempty(roomTemp)
         roomTemp = 0;
     end
@@ -20,6 +21,12 @@ function temperatureMenu
     end
     if isempty(distributionFrequency)
         distributionFrequency = 12;
+    end
+    if isempty(timeOn)
+        timeOn = 0;
+    end
+    if isempty(timeOff)
+        timeOff = total_time;
     end
     % guiMultiplierIf has 2 edit boxes for numbers and
     % multiplies them
@@ -61,6 +68,18 @@ function temperatureMenu
     'Position',[240,200,80,80],'String','Density of Energy Receptors');
     huitext5 = uicontrol('Style','edit','Position',[260,200,40,40],...
     'String',num2str(distributionFrequency),...
+    'Callback',@callbackfn);
+
+    hsttext20 = uicontrol('Style','text','BackgroundColor','white',...
+    'Position',[150,100,80,80], 'String','Time Absorption On');
+    huitext20 = uicontrol('Style','edit','Position',[160,100,40,40],...
+    'String',num2str(timeOn),...
+    'Callback',@callbackfn);
+
+    hsttext21 = uicontrol('Style','text','BackgroundColor','white',...
+    'Position',[240,100,80,80], 'String','Time Absorption Off');
+    huitext21 = uicontrol('Style','edit','Position',[260,100,40,40],...
+    'String',num2str(timeOff),...
     'Callback',@callbackfn);
     
 %     buttontext1 = uicontrol('Style','text','BackgroundColor','white',...
@@ -114,24 +133,40 @@ function temperatureMenu
                 set(hsttext4,'Visible','on');
                 set(huitext5,'Visible','off');
                 set(hsttext5,'Visible','off');
+                set(huitext20,'Visible','on');
+                set(hsttext20,'Visible','on');
+                set(huitext21,'Visible','on');
+                set(hsttext21,'Visible','on');
             case 2
                 set(button2, 'String','Middle Block');
                 set(huitext4,'Visible','on');
                 set(hsttext4,'Visible','on');
                 set(huitext5,'Visible','off');
                 set(hsttext5,'Visible','off');
+                set(huitext20,'Visible','on');
+                set(hsttext20,'Visible','on');
+                set(huitext21,'Visible','on');
+                set(hsttext21,'Visible','on');
             case 3
                 set(button2, 'String','Spread');
                 set(huitext5,'Visible','on');
                 set(hsttext5,'Visible','on');
                 set(huitext4,'Visible','on');
                 set(hsttext4,'Visible','on');
+                set(huitext20,'Visible','on');
+                set(hsttext20,'Visible','on');
+                set(huitext21,'Visible','on');
+                set(hsttext21,'Visible','on');
             case 4
                 set(button2, 'String','Off');
                 set(huitext4,'Visible','off');
                 set(hsttext4,'Visible','off');
                 set(huitext5,'Visible','off');
                 set(hsttext5,'Visible','off');
+                set(huitext20,'Visible','off');
+                set(hsttext20,'Visible','off');
+                set(huitext21,'Visible','off');
+                set(hsttext21,'Visible','off');
     end
     
     function callbackfn(hObject,eventdata)
@@ -142,6 +177,8 @@ function temperatureMenu
         elevFrequency = str2double(get(huitext10,'String'));
         energyRate = str2double(get(huitext4,'String'));
         distributionFrequency = str2double(get(huitext5,'String'));
+        timeOn = str2double(get(huitext20,'String'));
+        timeOff = str2double(get(huitext21,'String'));
     end
     
 %     function button1call(hObject, eventdata)
@@ -167,6 +204,10 @@ function temperatureMenu
                 set(button2, 'String','Middle: Single Point');
                 set(huitext4,'Visible','on');
                 set(hsttext4,'Visible','on');
+                set(huitext20,'Visible','on');
+                set(hsttext20,'Visible','on');
+                set(huitext21,'Visible','on');
+                set(hsttext21,'Visible','on');
             case 2
                 set(button2, 'String','Middle Block');
             case 3
@@ -179,6 +220,10 @@ function temperatureMenu
                 set(hsttext4,'Visible','off');
                 set(huitext5,'Visible','off');
                 set(hsttext5,'Visible','off');
+                set(huitext20,'Visible','off');
+                set(hsttext20,'Visible','off');
+                set(huitext21,'Visible','off');
+                set(hsttext21,'Visible','off');
         end
     end
 
