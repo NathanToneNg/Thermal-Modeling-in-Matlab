@@ -1,9 +1,10 @@
-function Thermal1TwoMat
+%function Thermal1TwoMat
 
 global precision xdist dd total_time dt framerate borders convection radiation ...
-    specific_heat density Tm thermal_Conductivity constant roomTemp elevatedTemp elevLocation ...
+    specific_heat density Tm thermal_Conductivity roomTemp elevatedTemp elevLocation ...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
-    thermal_Conductivity2 interfaceK;
+    density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
+    frequency2;
 global list
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,28 +33,67 @@ if(absorption)
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
 end
-
-g = ones(xintervals + 2, 1);
-for i = 1:xintervals + 2
-    g(i) = struct('const',dt./specific_heat .* dd .* dd .* density, 'material', 1, 'k', thermal_Conductivity);
+constants = ones(xintervals, 1) .* dt ./ (specific_heat .* dd .* dd .* density);
+materialMatrix = ones(xintervals, 1);
+k = ones(xintervals, 1) .* thermal_Conductivity;
+leftK = ones(xintervals, 1);
+rightK = ones(xintervals, 1);
+% %g = repmat(struct('const',dt./specific_heat .* dd .* dd .* density, 'material', 1, 'k', thermal_Conductivity), xintervals + 2, 1);
+% %g = ones(xintervals + 2, 1);
+% for i = 1:xintervals + 2
+%     g(i) = struct('const',dt./specific_heat .* dd .* dd .* density, 'material', 1, 'k', thermal_Conductivity);
+% end
+%g(mid) = struct('const',dt./specific_heat2 .* dd .* dd .* density2, 'material', 2, 'k', thermal_Conductivity2);
+second = zeros(xintervals,1);
+switch distribution
+    case 1
+        second(mid) = 1;
+    case 3
+        second(1:ceil(frequency2):end) = 1;
+    case 4
+        if frequency2 <= 1.1
+            second(:) = 1;
+        else
+            i = 1;
+            while i <= ceil(xintervals/frequency2)
+                potentialRand = randi(xintervals);
+                if(~second(potentialRand))
+                    second(potentialRand) = true;
+                    i = i + 1;
+                end
+            end
+        end
 end
-g(mid) = struct('const',dt./specific_heat2 .* dd .* dd .* density2, 'material', 2, 'k', thermal_Conductivity2);
-
-
-for i = 2:xintervals + 1
-    if(g(i).material == 1 && g(i - 1).material == 1)    
-        g(i).('leftK') = thermal_Conductivity;
-    elseif g(i).material == 2 && g(i - 1).material == 2
-        g(i).('leftK') = thermal_Conductivity2;
+second = logical(second);
+bigSecond = zeros(xintervals + 2, 1);
+bigSecond = logical(bigSecond);
+bigSecond(2:end-1) = second;
+constants(second) = dt / (specific_heat2 * dd * dd * density2);
+materialMatrix(second) = 2;
+k(second) = thermal_Conductivity2;
+        
+for i = 1:xintervals
+    if i == 1
+        leftK(i) = 0.33;
     else
-        g(i).('leftK') = interfaceK;
+        if(materialMatrix(i) == 1 && materialMatrix(i-1) == 1)    
+            leftK(i) = thermal_Conductivity;
+        elseif materialMatrix(i) == 2 && materialMatrix(i-1) == 2
+            leftK(i) = thermal_Conductivity2;
+        else
+            leftK(i) = interfaceK;
+        end
     end
-    if(g(i).material == 1 && g(i + 1).material == 1)    
-        g(i).('rightK') = thermal_Conductivity;
-    elseif g(i).material == 2 && g(i + 1).material == 2
-        g(i).('rightK') = thermal_Conductivity2;
+    if i == xintervals
+        rightK(i) = 0.33;
     else
-        g(i).('rightK') = interfaceK;
+        if(materialMatrix(i) == 1 && materialMatrix(i+1) == 1)    
+            rightK(i) = thermal_Conductivity;
+        elseif materialMatrix(i) == 2 && materialMatrix(i+1) == 2
+            rightK(i) = thermal_Conductivity2;
+        else
+            rightK(i) = interfaceK;
+        end
     end
 end
 
@@ -69,15 +109,16 @@ if(radiation || convection)
     boundaries = zeros(xintervals + 2,1);
     boundaries([2,end-1]) = 1;
     boundaries = logical(boundaries);
+    parameterBounds = boundaries(2:end-1,2:end-1);
 end
 
 if(radiation)
     sigma = 5.67 * 10^-8;
-    rConst = sigma .* emissivity .* g(boundaries).const;
+    rConst = sigma .* emissivity .* constants(parameterBounds);
     rAir = rConst .* (roomTemp + 273.15)^4;
 end
 if(convection)
-    convRatio = 20 .* g(boundaries).const;
+    convRatio = 20 .* constants(parameterBounds);
     convAir = convRatio .* roomTemp;
 end
 
@@ -87,7 +128,7 @@ end
 
 for j= 2:iter + 1
     if any(isnan(wholeMatrix))
-        text = strcat('Error at iteration ', j);
+        text = strcat('Error at iteration ', num2str(j));
         disp(text);
         return
     end
@@ -98,8 +139,8 @@ for j= 2:iter + 1
         old(end) = old(end-1);
     end
     wholeMatrix(2:end-1) = wholeMatrix(2:end-1) + ...
-        (old(1:end-2) - old(2:end-1)).*g(2:end-1).const .* g(2:end-1).leftK - ...
-        (old(3:end) - old(2:end-10)).*g(2:end-1).const .* g(2:end-1).rightK;
+        (old(1:end-2) - old(2:end-1)).*constants .* leftK + ...
+        (old(3:end) - old(2:end-1)).*constants .* rightK;
     if(radiation)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* (old(boundaries) + 273.15).^4) + rAir;
@@ -109,21 +150,25 @@ for j= 2:iter + 1
             (convRatio - convAir);
     end
     if j >= iterOn && j <= iterOff
-        switch absorption
-            case 1
-                wholeMatrix(mid) = wholeMatrix(mid) + energyRate .*g(mid).const ./ dd;
-            case 2
-                wholeMatrix(mid - ceil(mid/10): mid + ceil(mid/10)) = ...
-                    wholeMatrix(mid - ceil(mid/10): mid + ceil(mid/10)) + ...
-                    energyRate .* g(mid - ceil(mid/10): mid + ceil(mid/10)).const ./ dd;
-            case 3
-                wholeMatrix(2:distributionFrequency:end-1) = wholeMatrix(2:distributionFrequency:end-1) ...
-                    + energyRate .* g(2:distributionFrequency:end-1).const ./ dd;
+        if materials == 3
+            wholeMatrix(bigSecond) = wholeMatrix(bigSecond) + energyRate .* constants(second);
+        else
+            switch absorption
+                case 1
+                    wholeMatrix(mid) = wholeMatrix(mid) + energyRate .*constants(mid);
+                case 2
+                    wholeMatrix(mid - ceil(mid/10): mid + ceil(mid/10)) = ...
+                        wholeMatrix(mid - ceil(mid/10): mid + ceil(mid/10)) + ...
+                        energyRate .* constants(mid - ceil(mid/10): mid + ceil(mid/10));
+                case 3
+                    wholeMatrix(2:distributionFrequency:end-1) = wholeMatrix(2:distributionFrequency:end-1) ...
+                        + energyRate .* constants(1:distributionFrequency:end);
+            end
         end
     end
     
     if mod(j - 1, framerate) == 0
-        list(index) = mean(wholeMatrix(2:end-1).*g(2:end-1).const ./ dt ./ dd);
+        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt .* dd); %Energy
         figure;
         plot(0:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);
@@ -153,4 +198,4 @@ ratio = melted/num;
 
 fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
 
-end
+%end

@@ -2,7 +2,7 @@ function overallGUI
     global dimensions precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm constant roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
-    materials thermal_Conductivity2 interfaceK;
+    materials thermal_Conductivity2 interfaceK density2 specific_heat2;
 
     
     %%%%Defaults
@@ -34,6 +34,8 @@ function overallGUI
     radiation = false;
     thermal_Conductivity2 = 0.33;
     interfaceK = 0.2;
+    density2 = 1600;
+    specific_heat2 = 4130;
     %%%%%%%%%%%%
     
     
@@ -70,7 +72,11 @@ function overallGUI
         % in either the second edit box or the pushbutton
         dimensions=str2double(get(huitext,'String'));
         close(gcf);
-        chooseSettings1;
+        if materials == 1
+            chooseSettings1;
+        else
+            chooseSettings2;
+        end
         
     end
 
