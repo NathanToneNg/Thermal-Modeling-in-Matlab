@@ -1,10 +1,12 @@
 # A Thermal Modeling program written in Matlab.
 	This program was created for the purpose of modeling microwave heating by receptive materials within a polymer matrix for use in the [Banaszak Holl Group](http://bhgroup.lsa.umich.edu//). 
 
-## How to Use
+## Usage
 * The GUI is initially accessed with overallGUI. This function will reset all variables to defaults, so if you want to change only a few variables, use chooseSettings1 in the case of one material, or chooseSettings2 in the case of two materials of differing properties.  
 
 * The parameters can be viewed using printParameters, and individual programs with variables set can be run in the Thermal*Ind functions. 
+
+* It is recommended that the user run "clear global" between different instances to ensure that there are no artifacts from previous runs.
 
 Other programs with _check and exp are various checks that the program works as predicted in basic cases, checking that total energy/temperature remains constant when no energy should be lost, and that there is exponential decay. 
 
@@ -15,8 +17,9 @@ Other programs with _check and exp are various checks that the program works as 
 
 ### Physics
 The following equations were used to determine the numerical calculations.
-	* $Q = mc\Delta T$
-	* 
+	* Q = mc (dT)
+	* dQ/dt = kA(dT/dx) (_conduction_)
+	* dQ/dt = 
 
 ### Implementation versions
 * Each version states how many dimensions it applies over within the name of the file.
@@ -46,10 +49,12 @@ The following equations were used to determine the numerical calculations.
 
 * Each main Matrix is two larger in each dimension, with the bound properties depending on whether conduction is turned on on the borders. This makes the program work with one conduction statement instead of multiple and saves repeating statements with various conditionals. 
 
+* Density is always used in replacement of mass since distance is a greater determining factor.
+
 
 ---
 
-If you have additional questions, emails may be sent to Nathantoneng@gmail.com
+If you have additional questions, emails may be sent to nathantoneng@gmail.com
 
 -Nathan Ng
 

@@ -1,4 +1,4 @@
-%function Thermal1TwoMat
+function Thermal1TwoMat
 
 global precision xdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm thermal_Conductivity roomTemp elevatedTemp elevLocation ...
@@ -35,7 +35,7 @@ if(absorption)
 end
 constants = ones(xintervals, 1) .* dt ./ (specific_heat .* dd .* dd .* density);
 materialMatrix = ones(xintervals, 1);
-k = ones(xintervals, 1) .* thermal_Conductivity;
+k = ones(xintervals, 1) * thermal_Conductivity;
 leftK = ones(xintervals, 1);
 rightK = ones(xintervals, 1);
 % %g = repmat(struct('const',dt./specific_heat .* dd .* dd .* density, 'material', 1, 'k', thermal_Conductivity), xintervals + 2, 1);
@@ -109,7 +109,7 @@ if(radiation || convection)
     boundaries = zeros(xintervals + 2,1);
     boundaries([2,end-1]) = 1;
     boundaries = logical(boundaries);
-    parameterBounds = boundaries(2:end-1,2:end-1);
+    parameterBounds = boundaries(2:end-1);
 end
 
 if(radiation)
@@ -151,24 +151,24 @@ for j= 2:iter + 1
     end
     if j >= iterOn && j <= iterOff
         if materials == 3
-            wholeMatrix(bigSecond) = wholeMatrix(bigSecond) + energyRate .* constants(second);
+            wholeMatrix(bigSecond) = wholeMatrix(bigSecond) + energyRate .* constants(second) .* dd;
         else
             switch absorption
                 case 1
-                    wholeMatrix(mid) = wholeMatrix(mid) + energyRate .*constants(mid);
+                    wholeMatrix(mid) = wholeMatrix(mid) + energyRate .*constants(mid) .* dd;
                 case 2
                     wholeMatrix(mid - ceil(mid/10): mid + ceil(mid/10)) = ...
                         wholeMatrix(mid - ceil(mid/10): mid + ceil(mid/10)) + ...
-                        energyRate .* constants(mid - ceil(mid/10): mid + ceil(mid/10));
+                        energyRate .* constants(mid - ceil(mid/10): mid + ceil(mid/10)) .* dd;
                 case 3
                     wholeMatrix(2:distributionFrequency:end-1) = wholeMatrix(2:distributionFrequency:end-1) ...
-                        + energyRate .* constants(1:distributionFrequency:end);
+                        + energyRate .* constants(1:distributionFrequency:end) .* dd;
             end
         end
     end
     
     if mod(j - 1, framerate) == 0
-        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt .* dd); %Energy
+        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt .* dd); %Energy per meter squared in infinite dimensions
         figure;
         plot(0:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);
@@ -198,4 +198,4 @@ ratio = melted/num;
 
 fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
 
-%end
+end
