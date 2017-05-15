@@ -10,6 +10,14 @@
 
 Other programs with _check and exp are various checks that the program works as predicted in basic cases, checking that total energy/temperature remains constant when no energy should be lost, and that there is exponential decay. 
 
+#### Time-distance scale
+* In everything except the amount of energy used, time and distance are proportional by time \alpha distance^2. Thus, if we are doing simple cases of heat dissipation, converting distance up by a degree of magnitude means increasing time by two degrees of magnitude. Note that all dimensions must decrease evenly- you may not decrease just one dimension by a degree of magnitude and decrease time with it.
+
+	* For example, if we run the program in 0.2 by 0.2 by 0.2 meters and 500 seconds, the same process will occur over 2 by 2 by 2 meters in 50,000 seconds, or over 2 by 2 by 2 millimeters in 50 milliseconds, or over 2 by 2 by 2 microns in 50 nanoseconds.
+	
+* If energy insertion is to be projected this way as well, the amount of energy must increase by an order of magnitude for each degree of magnitude distance is incremented. 
+
+	* For example, if we run the program taking in 5 W in a 0.2 by 0.2 by 0.2 area and 500 seconds, the same process will occur if 0.05 W are inserted in a 2 by 2 by 2 millimeter volume in 50 milliseconds.
 
 
 

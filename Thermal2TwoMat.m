@@ -49,6 +49,9 @@ switch distribution
     case 1
         second(midx, midy) = 1;
     case 3
+        second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
+                        midy + ceil(midy/10)) = 1;
+    case 3
         freq2x = ceil(sqrt(frequency2));
         freq2y = floor(frequency2/freq2x);
         second(1:freq2x:end,1:freq2y:end) = 1;
@@ -204,7 +207,7 @@ for j= 2:iter + 1
         (old(3:end,2:end-1) - old(2:end-1,2:end-1)).*constants .* rightK;
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (rConst .* (old(boundaries) + 273.15).^4) + rAir;
+            (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...

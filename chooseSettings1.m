@@ -1,5 +1,7 @@
 function chooseSettings1
 global dimensions;
+global dt dd thermal_Conductivity specific_heat density ;
+
 % guiWithButtongroup has a button group with 2 radio buttons
 % Format: guiWithButtongroup
 % Create the GUI but make it invisible for now while
@@ -40,6 +42,19 @@ calculateBar = uicontrol(grouph, 'Style', 'pushbutton', ...
     'String', 'Calculate', 'Units', 'Normalized',...
     'Position', [.05 .3 .3 .1],'Callback',@whattodo);
 
+warningText1 = uicontrol('Style','text', ...
+    'Position',[250,170,120,200],'String', ...
+    'Warning: The program may not run under these parameters. Decrease the time-step or increase one of the following: Material 1''s density, specific_heat, or conductivity, or the distance increment.');
+checkButton = uicontrol('Style','pushbutton',...
+    'Position',[250, 0, 120, 40], 'String', ...
+    'Re-check parameters', 'Callback',@recheck);
+
+if (1/7) <= dt * thermal_Conductivity / (dd * dd * specific_heat * density)
+            set(warningText1,'Visible','on');
+else
+            set(warningText1,'Visible','off');
+end
+        
 
 set(grouph,'SelectedObject',[]) % No button selected yet
 set(f,'Name','Settings Menu')
@@ -83,4 +98,13 @@ function whattodo(hObject, ~)
     end
 
 end
+
+function recheck(~,~)
+        if (1/7) <= dt * thermal_Conductivity / (dd * dd * specific_heat * density)
+            set(warningText1,'Visible','on');
+        else
+            set(warningText1,'Visible','off');
+        end
+end
+
 end

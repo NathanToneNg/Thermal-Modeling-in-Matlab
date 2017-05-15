@@ -69,15 +69,16 @@ function sizeMenu
         % in either the second edit box or the pushbutton
         dd=str2double(get(huitext,'String'));
         xdist=str2double(get(huitext2,'String'));
-        text = strcat('Number of pixels: ', num2str((xdist / dd) + 1));
+        text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)));
         if dimensions > 1
             ydist = str2double(get(huitext3, 'String'));
-            text = strcat('Number of pixels: ', num2str((xdist / dd) + 1), 'by', num2str((ydist / dd) + 1));
+            text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', num2str(floor((ydist/dd) + 1)));
+
         end
         if dimensions > 2
             zdist = str2double(get(huitext4, 'String'));
-            text = strcat('Number of pixels: ', num2str((xdist / dd) + 1), ...
-                'by', num2str((ydist / dd) + 1), 'by', num2str((zdist / dd) + 1));
+            text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', ...
+            num2str(floor((ydist/dd) + 1)), ' by', num2str(floor(zdist/dd + 1)));
         end
         set(hsttext5, 'String', text);
     end

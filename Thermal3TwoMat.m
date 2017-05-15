@@ -1,4 +1,4 @@
-function Thermal3TwoMat
+%function Thermal3TwoMat
 
 global precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
@@ -46,7 +46,7 @@ switch elevLocation
 end
 constants = ones(xintervals, yintervals,zintervals) .* dt ./ (specific_heat .* dd .* dd .* density);
 materialMatrix = ones(xintervals, yintervals,zintervals);
-k = ones(xintervals, yintervals,zintervals,zintervals) * thermal_Conductivity;
+k = ones(xintervals, yintervals,zintervals) * thermal_Conductivity;
 leftK = ones(xintervals, yintervals,zintervals);
 rightK = ones(xintervals, yintervals,zintervals);
 upK = ones(xintervals, yintervals,zintervals);
@@ -65,6 +65,9 @@ end
 switch distribution
     case 1
         second(midx, midy, midz) = 1;
+    case 2
+        second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
+                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = 1;
     case 3
         freq2x = ceil(frequency2^(1/3));
         freq2y = floor(sqrt(frequency2/freq2x));
@@ -276,7 +279,7 @@ for j= 2:iter + 1
     
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (rConst .* (old(boundaries) + 273.15).^4) + rAir;
+            (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
@@ -292,18 +295,18 @@ for j= 2:iter + 1
                         energyRate .* constants(midx,midy,midz) ./ dd;
                 case 2
                     wholeMatrix(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(mid/10)) = ...
+                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = ...
                         wholeMatrix(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(mid/10)) + ...
+                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) + ...
                         energyRate .* constants(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(mid/10)) ./ dd;
+                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) ./ dd;
                 case 3
                     xfrequ = ceil(nthroot(distributionFrequency,3));
                     yfrequ = floor(sqrt(distributionFrequency/xfrequ));
                     zfrequ = ceil(distributionFrequency/(xfrequ * yfrequ));
                     wholeMatrix(2:xfrequ:end-1,2:yfrequ:end-1,2:zfrequ:end-1) = ...
                         wholeMatrix(2:xfrequ:end-1,2:yfrequ:end-1,2:zfrequ:end-1) + ...
-                        energyRate .* constants(2:xfrequ:end-1,2:yfrequ:end-1,2:zfrequ:end-1) ...
+                        energyRate .* constants(1:xfrequ:end,1:yfrequ:end,1:zfrequ:end) ...
                          ./ dd;
             end
         end
@@ -345,4 +348,4 @@ fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
 
 
 
-end
+%end

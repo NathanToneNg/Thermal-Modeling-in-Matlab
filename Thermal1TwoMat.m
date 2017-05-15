@@ -48,6 +48,8 @@ second = zeros(xintervals,1);
 switch distribution
     case 1
         second(mid) = 1;
+    case 2
+    second(mid - ceil(mid/10): mid + ceil(mid/10)) = 1;
     case 3
         second(1:ceil(frequency2):end) = 1;
     case 4
@@ -143,7 +145,7 @@ for j= 2:iter + 1
         (old(3:end) - old(2:end-1)).*constants .* rightK;
     if(radiation)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (rConst .* (old(boundaries) + 273.15).^4) + rAir;
+            (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
