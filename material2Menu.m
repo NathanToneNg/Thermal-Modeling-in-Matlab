@@ -5,7 +5,7 @@ function material2Menu
         materials = 3;
     end
     if isempty(distribution)
-        distribution = 1; %Center, uniform, random. May have a second that gives option for radii
+        distribution = 1; %Center, center block, uniform, random. May have a second that gives option for radii
     end
     if isempty(dt)
         dt = 0.05;
@@ -80,7 +80,7 @@ function material2Menu
                 set(frequencytext,'Visible','off');
                 set(frequencyEdit,'Visible','off');
             case 2
-                set(DB,'String','Center Sphere');
+                set(DB,'String','Center Block');
                 set(frequencytext,'Visible','off');
                 set(frequencyEdit,'Visible','off');
             case 3
@@ -89,6 +89,10 @@ function material2Menu
                 set(frequencyEdit,'Visible','on');
             case 4
                 set(DB,'String','Random Distribution');
+                set(frequencytext,'Visible','on');
+                set(frequencyEdit,'Visible','on');
+            case 5
+                set(DB,'String','Random Spheres');
                 set(frequencytext,'Visible','on');
                 set(frequencyEdit,'Visible','on');
     end
@@ -115,7 +119,7 @@ function material2Menu
 
     function DBF(~,~)
         distribution = distribution + 1;
-        if distribution > 4
+        if distribution > 5
             distribution = 1;
         end
         switch distribution
@@ -124,7 +128,7 @@ function material2Menu
                 set(frequencytext,'Visible','off');
                 set(frequencyEdit,'Visible','off');
             case 2
-                set(DB,'String','Center Sphere');
+                set(DB,'String','Center Block');
                 set(frequencytext,'Visible','off');
                 set(frequencyEdit,'Visible','off');
             case 3
@@ -133,6 +137,10 @@ function material2Menu
                 set(frequencyEdit,'Visible','on');
             case 4
                 set(DB,'String','Random Distribution');
+                set(frequencytext,'Visible','on');
+                set(frequencyEdit,'Visible','on');
+            case 5
+                set(DB,'String','Random Spheres');
                 set(frequencytext,'Visible','on');
                 set(frequencyEdit,'Visible','on');
         end        

@@ -1,4 +1,4 @@
-%function Thermal3TwoMat
+function Thermal3TwoMat
 
 global precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
@@ -85,6 +85,45 @@ switch distribution
                 if(~second(potentialRand,potentialRand2,potentialRand3))
                     second(potentialRand,potentialRand2,potentialRand3) = true;
                     i = i + 1;
+                end
+            end
+        end
+     case 5
+        if frequency2 <= 1.1
+            second(:) = 1;
+        else
+            i = 0;
+            num = ceil(xintervals * yintervals * zintervals/frequency2);
+            while i <= num
+                potentialRand = randi(xintervals);
+                potentialRand2 = randi(yintervals);
+                potentialRand3 = randi(zintervals);
+                randRadius = randi(floor(nthroot(num,3)/(4*3.14/3)));
+                if(potentialRand - randRadius < 1)
+                    startx = 1;
+                else
+                    startx = potentialRand - randRadius;
+                end
+                if(potentialRand + randRadius > xintervals)
+                    endingx = xintervals;
+                else
+                    endingx = potentialRand + randRadius;
+                end
+                for j = startx:endingx
+                    for k = potentialRand2 - floor(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
+                            potentialRand2 + floor(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
+                        if k > 0 && k < yintervals
+                            for l = potentialRand3 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2)))) : ...
+                            potentialRand3 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2))))
+                                if l > 0 && l < zintervals
+                                    if(~second(j,k,l))
+                                        second(j,k,l) = true;
+                                        i = i + 1;
+                                    end
+                                end
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -283,7 +322,7 @@ for j= 2:iter + 1
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (convRatio - convAir);
+            ((old .* convRatio) - convAir);
     end
     if j >= iterOn && j <= iterOff
         if materials == 3
@@ -348,4 +387,4 @@ fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
 
 
 
-%end
+end

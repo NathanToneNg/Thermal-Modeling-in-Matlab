@@ -4,7 +4,7 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     specific_heat density Tm thermal_Conductivity roomTemp elevatedTemp elevLocation ...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2;
+    frequency2 extraConduction extraConvection extraRadiation;
 global list
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -65,6 +65,33 @@ switch distribution
                 end
             end
         end
+    case 5
+        if frequency2 <= 1.1
+            second(:) = 1;
+        else
+            i = 0;
+            num = ceil(xintervals/frequency2);
+            while i <= num
+                potentialRand = randi(xintervals);
+                randRadius = randi((num)/2);
+                if(potentialRand - randRadius < 1)
+                    start = 1;
+                else
+                    start = potentialRand - randRadius;
+                end
+                if(potentialRand + randRadius > xintervals)
+                    ending = xintervals;
+                else
+                    ending = potentialRand + randRadius;
+                end
+                for j = start:ending
+                    if(~second(j))
+                        second(j) = true;
+                        i = i + 1;
+                    end
+                end
+            end
+        end
 end
 second = logical(second);
 bigSecond = zeros(xintervals + 2, 1);
@@ -104,7 +131,6 @@ wholeMatrix(2:end-1) = Tempgrid;
 
 %%% movie stuff
 
-
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 
 if(radiation || convection)
@@ -113,14 +139,23 @@ if(radiation || convection)
     boundaries = logical(boundaries);
     parameterBounds = boundaries(2:end-1);
 end
-
+if extraRadiation
+    area = 5;
+else
+    area = 1;
+end
 if(radiation)
     sigma = 5.67 * 10^-8;
-    rConst = sigma .* emissivity .* constants(parameterBounds);
+    rConst = sigma .* emissivity .* constants(parameterBounds) * area;
     rAir = rConst .* (roomTemp + 273.15)^4;
 end
+if extraConvection
+    area = 5;
+else
+    area = 1;
+end
 if(convection)
-    convRatio = 20 .* constants(parameterBounds);
+    convRatio = 20 .* constants(parameterBounds) * area;
     convAir = convRatio .* roomTemp;
 end
 
@@ -143,13 +178,16 @@ for j= 2:iter + 1
     wholeMatrix(2:end-1) = wholeMatrix(2:end-1) + ...
         (old(1:end-2) - old(2:end-1)).*constants .* leftK + ...
         (old(3:end) - old(2:end-1)).*constants .* rightK;
+    if extraConduction
+        wholeMatrix(2:end-1) = wholeMatrix(2:end-1) + old(2:end-1) .* constants .* k;
+    end
     if(radiation)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (convRatio - convAir);
+            ((old(boundaries) .* convRatio) - convAir);
     end
     if j >= iterOn && j <= iterOff
         if materials == 3

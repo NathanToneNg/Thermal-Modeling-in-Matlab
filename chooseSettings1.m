@@ -82,11 +82,11 @@ function whattodo(hObject, ~)
         case calculateBar
             printParameters;
             if dimensions == 1
-                Thermal1Ind;
+                Thermal1TwoMat;
             elseif dimensions == 2
-                Thermal2Ind;
+                Thermal2TwoMat;
             elseif dimensions == 3
-                Thermal3Ind;
+                Thermal3TwoMat;
             else
                 disp('Number of dimensions must be declared');
                 close(gcf);

@@ -1,5 +1,5 @@
 function chooseSettings2
-global dimensions materials;
+global dimensions;
 global dt dd thermal_Conductivity thermal_Conductivity2 interfaceK specific_heat specific_heat2 density density2;
 % guiWithButtongroup has a button group with 2 radio buttons
 % Format: guiWithButtongroup
@@ -97,23 +97,11 @@ function whattodo(hObject, ~)
         case calculateBar
             printParameters;
             if dimensions == 1
-                if materials == 1
-                    Thermal1Ind;
-                else
-                    Thermal1TwoMat;
-                end
+                Thermal1TwoMat;
             elseif dimensions == 2
-                if materials == 1
-                    Thermal2Ind;
-                else
-                    Thermal2TwoMat;
-                end
+                Thermal2TwoMat;
             elseif dimensions == 3
-                if materials == 1
-                    Thermal3Ind;
-                else
-                    Thermal3TwoMat;
-                end
+                Thermal3TwoMat;
             else
                 disp('Number of dimensions must be declared');
                 close(gcf);

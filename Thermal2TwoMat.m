@@ -4,7 +4,7 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2;
+    frequency2 extraConduction extraConvection extraRadiation;
 global list
 
 
@@ -48,7 +48,7 @@ second = zeros(xintervals,yintervals);
 switch distribution
     case 1
         second(midx, midy) = 1;
-    case 3
+    case 2
         second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
                         midy + ceil(midy/10)) = 1;
     case 3
@@ -66,6 +66,39 @@ switch distribution
                 if(~second(potentialRand,potentialRand2))
                     second(potentialRand,potentialRand2) = true;
                     i = i + 1;
+                end
+            end
+        end
+    case 5
+        if frequency2 <= 1.1
+            second(:) = 1;
+        else
+            i = 0;
+            num = ceil(xintervals * yintervals/frequency2);
+            while i <= num
+                potentialRand = randi(xintervals);
+                potentialRand2 = randi(yintervals);
+                randRadius = randi(floor(sqrt(num)/3.14));
+                if(potentialRand - randRadius < 1)
+                    startx = 1;
+                else
+                    startx = potentialRand - randRadius;
+                end
+                if(potentialRand + randRadius > xintervals)
+                    endingx = xintervals;
+                else
+                    endingx = potentialRand + randRadius;
+                end
+                for j = startx:endingx
+                    for k = potentialRand2 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
+                            potentialRand2 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
+                        if k > 0 && k < yintervals
+                            if(~second(j,k))
+                                second(j,k) = true;
+                                i = i + 1;
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -169,11 +202,19 @@ if(radiation || convection)
     area(pCorners) = 2;
 end
 
-
+if extraRadiation
+    area = area + 2;
+end
 if(radiation)
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries);
     rAir = rConst .* (roomTemp + 273.15)^4;
+end
+if extraRadiation
+    area = area - 2;
+end
+if extraConvection
+    area = area + 2;
 end
 if(convection)
     convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries);
@@ -205,13 +246,17 @@ for j= 2:iter + 1
         (old(2:end-1,3:end)-old(2:end-1,2:end-1)).*constants .* downK + ...
         (old(1:end-2,2:end-1)-old(2:end-1,2:end-1)).*constants .* leftK + ...
         (old(3:end,2:end-1) - old(2:end-1,2:end-1)).*constants .* rightK;
+    if extraConduction
+        wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) + ...
+            old(2:end-1,2:end-1) .* constants .* k;
+    end
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
     end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (convRatio - convAir);
+            ((old(boundaries) .* convRatio) - convAir);
     end
     if j >= iterOn && j <= iterOff
         if materials == 3

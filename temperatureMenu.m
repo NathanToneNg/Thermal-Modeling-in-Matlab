@@ -4,6 +4,9 @@ function temperatureMenu
     if isempty(materials)
         materials = 3;
     end
+    if materials == 3
+        absorption = 5;
+    end
     if isempty(roomTemp)
         roomTemp = 0;
     end
@@ -74,7 +77,7 @@ function temperatureMenu
     'Callback',@callbackfn);
     if materials == 3
         set(huitext5,'Visible','off');
-        set(hsttext5,'String','Location matches material 2');
+        set(hsttext5,'Visible','off');
     end
 
     hsttext20 = uicontrol('Style','text','BackgroundColor','white',...
@@ -138,8 +141,10 @@ function temperatureMenu
                 set(button2, 'String','Middle: Single Point');
                 set(huitext4,'Visible','on');
                 set(hsttext4,'Visible','on');
-                set(huitext5,'Visible','off');
-                set(hsttext5,'Visible','off');
+                if materials ~= 3
+                    set(huitext5,'Visible','off');
+                    set(hsttext5,'Visible','off');
+                end
                 set(huitext20,'Visible','on');
                 set(hsttext20,'Visible','on');
                 set(huitext21,'Visible','on');
@@ -148,17 +153,19 @@ function temperatureMenu
                 set(button2, 'String','Middle Block');
                 set(huitext4,'Visible','on');
                 set(hsttext4,'Visible','on');
-                set(huitext5,'Visible','off');
-                set(hsttext5,'Visible','off');
+                if materials ~= 3
+                    set(huitext5,'Visible','off');
+                    set(hsttext5,'Visible','off');
+                end
                 set(huitext20,'Visible','on');
                 set(hsttext20,'Visible','on');
                 set(huitext21,'Visible','on');
                 set(hsttext21,'Visible','on');
             case 3
                 set(button2, 'String','Spread');
-                set(hsttext5,'Visible','on');
                 if materials ~= 3
                     set(huitext5,'Visible','on');
+                    set(hsttext5,'Visible','on');
                 end
                 set(huitext4,'Visible','on');
                 set(hsttext4,'Visible','on');
@@ -170,12 +177,27 @@ function temperatureMenu
                 set(button2, 'String','Off');
                 set(huitext4,'Visible','off');
                 set(hsttext4,'Visible','off');
-                set(huitext5,'Visible','off');
-                set(hsttext5,'Visible','off');
+                if materials ~= 3
+                    set(huitext5,'Visible','off');
+                    set(hsttext5,'Visible','off');
+                end
                 set(huitext20,'Visible','off');
                 set(hsttext20,'Visible','off');
                 set(huitext21,'Visible','off');
                 set(hsttext21,'Visible','off');
+        case 5
+                if materials == 3
+                    set(button2, 'String', 'Located at 2nd Material');
+                else
+                    set(hsttext5,'Visible','on');
+                end
+                set(huitext4,'Visible','on');
+                set(hsttext4,'Visible','on');
+                set(huitext20,'Visible','on');
+                set(hsttext20,'Visible','on');
+                set(huitext21,'Visible','on');
+                set(hsttext21,'Visible','on');
+            
     end
     
     function callbackfn(~,~)
@@ -192,37 +214,41 @@ function temperatureMenu
     
 
     function button2call(~, ~)
-        absorption = absorption + 1;
-        if absorption > 4
-            absorption = 1;
-        end
-        switch absorption
-            case 1
-                set(button2, 'String','Middle: Single Point');
-                set(huitext4,'Visible','on');
-                set(hsttext4,'Visible','on');
-                set(huitext20,'Visible','on');
-                set(hsttext20,'Visible','on');
-                set(huitext21,'Visible','on');
-                set(hsttext21,'Visible','on');
-            case 2
-                set(button2, 'String','Middle Block');
-            case 3
-                set(button2, 'String','Spread');
-                if materials ~= 3
-                    set(huitext5,'Visible','on');
-                end
-                set(hsttext5,'Visible','on');
-            case 4
-                set(button2, 'String','Off');
-                set(huitext4,'Visible','off');
-                set(hsttext4,'Visible','off');
-                set(huitext5,'Visible','off');
-                set(hsttext5,'Visible','off');
-                set(huitext20,'Visible','off');
-                set(hsttext20,'Visible','off');
-                set(huitext21,'Visible','off');
-                set(hsttext21,'Visible','off');
+        if materials ~= 3
+            absorption = absorption + 1;
+            if absorption > 4
+                absorption = 1;
+            end
+            switch absorption
+                case 1
+                    set(button2, 'String','Middle: Single Point');
+                    set(huitext4,'Visible','on');
+                    set(hsttext4,'Visible','on');
+                    set(huitext20,'Visible','on');
+                    set(hsttext20,'Visible','on');
+                    set(huitext21,'Visible','on');
+                    set(hsttext21,'Visible','on');
+                case 2
+                    set(button2, 'String','Middle Block');
+                case 3
+                    set(button2, 'String','Spread');
+                    if materials ~= 3
+                        set(huitext5,'Visible','on');
+                        set(hsttext5,'Visible','on');
+                    end
+                case 4
+                    set(button2, 'String','Off');
+                    set(huitext4,'Visible','off');
+                    set(hsttext4,'Visible','off');
+                    if materials ~= 3
+                        set(huitext5,'Visible','off');
+                        set(hsttext5,'Visible','off');
+                    end
+                    set(huitext20,'Visible','off');
+                    set(hsttext20,'Visible','off');
+                    set(huitext21,'Visible','off');
+                    set(hsttext21,'Visible','off');
+            end
         end
     end
 
