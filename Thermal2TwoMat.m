@@ -5,9 +5,8 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction extraConvection extraRadiation;
-clear list;
-global list
-
+clear global list;
+global list;
 
 
 digits(precision);
@@ -53,9 +52,8 @@ switch distribution
         second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
                         midy + ceil(midy/10)) = 1;
     case 3
-        freq2x = ceil(sqrt(frequency2));
-        freq2y = floor(frequency2/freq2x);
-        second(1:freq2x:end,1:freq2y:end) = 1;
+        freq = sqrt(frequency2);
+        second(ceil(1:freq:end),ceil(1:freq:end)) = 1;
     case 4
         if frequency2 <= 1.1
             second(:,:) = 1;
@@ -273,10 +271,10 @@ for j= 2:iter + 1
                         energyRate .* constants(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
                         midy + ceil(midy/10));
                 case 3
-                    xfrequ = ceil(sqrt(distributionFrequency));
-                    yfrequ = floor(distributionFrequency/xfrequ);
-                    wholeMatrix(2:xfrequ:end-1,2:yfrequ:end-1) = wholeMatrix(2:xfrequ:end-1,2:yfrequ:end-1) ...
-                        + energyRate .* constants(2:xfrequ:end-1,2:yfrequ:end-1);
+                    frequ = sqrt(distributionFrequency);
+                    wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1)) = wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1)) ...
+                        + energyRate .* constants(ceil(2:frequ:end-1),ceil(2:frequ:end-1));
+                    
            end
         end
     end

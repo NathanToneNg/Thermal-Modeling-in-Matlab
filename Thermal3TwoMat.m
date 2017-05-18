@@ -5,7 +5,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2;
-clear list;
+clear global list;
 global list;
 
 
@@ -70,10 +70,8 @@ switch distribution
         second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
                         midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = 1;
     case 3
-        freq2x = ceil(frequency2^(1/3));
-        freq2y = floor(sqrt(frequency2/freq2x));
-        freq2z = ceil(frequency2/(freq2x*freq2y));
-        second(1:freq2x:end,1:freq2y:end,1:freq2z:end) = 1;
+        freq = nthroot(frequency2, 3);
+        second(ceil(1:freq:end),ceil(1:freq:end),ceil(1:freq:end)) = 1;
     case 4
         if frequency2 <= 1.1
             second(:,:,:) = 1;
@@ -341,12 +339,10 @@ for j= 2:iter + 1
                         energyRate .* constants(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
                         midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) ./ dd;
                 case 3
-                    xfrequ = ceil(nthroot(distributionFrequency,3));
-                    yfrequ = floor(sqrt(distributionFrequency/xfrequ));
-                    zfrequ = ceil(distributionFrequency/(xfrequ * yfrequ));
-                    wholeMatrix(2:xfrequ:end-1,2:yfrequ:end-1,2:zfrequ:end-1) = ...
-                        wholeMatrix(2:xfrequ:end-1,2:yfrequ:end-1,2:zfrequ:end-1) + ...
-                        energyRate .* constants(1:xfrequ:end,1:yfrequ:end,1:zfrequ:end) ...
+                    frequ = nthroot(distributionFrequency,3);
+                    wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1),ceil(2:frequ:end-1)) = ...
+                        wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1),ceil(2:frequ:end-1)) + ...
+                        energyRate .* constants(ceil(1:frequ:end),ceil(1:frequ:end),ceil(1:frequ:end)) ...
                          ./ dd;
             end
         end
