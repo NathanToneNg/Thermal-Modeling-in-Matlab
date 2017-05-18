@@ -5,6 +5,7 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction extraConvection extraRadiation;
+clear list;
 global list
 
 
@@ -181,7 +182,7 @@ wholeMatrix(2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
 
-
+clear F;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 [X,Y] = meshgrid(0:dd:ydist, 0:dd:xdist);
 
@@ -207,7 +208,7 @@ if extraRadiation
 end
 if(radiation)
     sigma = 5.67 * 10^-8;
-    rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries);
+    rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
 end
 if extraRadiation
@@ -217,7 +218,7 @@ if extraConvection
     area = area + 2;
 end
 if(convection)
-    convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries);
+    convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
 end
 
@@ -281,8 +282,8 @@ for j= 2:iter + 1
     end
     
     if mod(j - 1, framerate) == 0
-        list(index) = mean(mean(wholeMatrix(2:end-1,2:end-1) ...
-            ./ constants .* dt .* dd));
+        list(index) = mean(mean(wholeMatrix(2:end-1,2:end-1) ... %Energy per meter
+            ./ constants .* dt));
         figure;
         surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
         caxis([0 (Tm + 20)])
@@ -291,7 +292,7 @@ for j= 2:iter + 1
         drawnow
         F(index) = getframe(gcf);
         index = index + 1;
-        mean(mean(wholeMatrix(2:end-1,2:end-1)))
+        %mean(mean(wholeMatrix(2:end-1,2:end-1)))
     end
 end
 
@@ -299,11 +300,11 @@ end
 %variables. Then press a key and it will play the movie twice and end on
 %the last frame.
 mean(mean(wholeMatrix(2:end-1,2:end-1) ...
-            ./ constants .* dt .* dd)); %Energy per meter 
+            ./ constants .* dt)); %Energy per meter 
 pause
 close all;
 fig = figure;
-movie(fig,F,2)
+movie(fig,F,1)
 close all;
 
 surf(X,Y,wholeMatrix(2:end-1,2:end-1));
@@ -315,5 +316,5 @@ num = numel(Tempgrid);
 ratio = melted/num;
 
 fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
-
+list
 end

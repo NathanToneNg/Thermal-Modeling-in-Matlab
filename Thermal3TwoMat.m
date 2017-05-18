@@ -5,6 +5,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2;
+clear list;
 global list;
 
 
@@ -240,7 +241,7 @@ wholeMatrix(2:end-1, 2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
 
-
+clear F;
 F(floor((iter)/80)) = struct('cdata',[],'colormap',[]);
 [X,Y,Z] = meshgrid(0:dd:ydist, 0:dd:xdist, 0:dd:zdist);
 
@@ -273,11 +274,11 @@ end
 
 if(radiation)
     sigma = 5.67 * 10^-8;
-    rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries);
+    rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
 end
 if(convection)
-    convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries);
+    convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
 end
 
@@ -351,7 +352,7 @@ for j= 2:iter + 1
         end
     end
     if mod(j - 1, framerate) == 0
-        list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ...
+        list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Energy
             ./ constants .* dt .* dd)));
         figure;
         slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
@@ -368,11 +369,11 @@ end
 %variables. Then press a key and it will play the movie twice and end on
 %the last frame.
 mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ...
-            ./ constants .* dt .* dd)));
+            ./ constants .* dt ./ dd)));
 pause
 close all;
 fig = figure;
-movie(fig,F,2)
+movie(fig,F,1)
 close all;
 
 slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);

@@ -1,51 +1,10 @@
-function overallGUI
-    global dimensions precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
-    specific_heat density Tm constant roomTemp elevatedTemp elevLocation thermal_Conductivity...
-    elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
-    materials thermal_Conductivity2 interfaceK density2 specific_heat2 distribution frequency2 ...
-    extraConduction extraConvection extraRadiation;
+function repickDimensions
+    global dimensions materials
 
-    
-    %%%%Defaults
-    precision = 10;
-    xdist = 0.2;
-    ydist = 0.2;
-    zdist = 0.2;
-    dd = 0.005;
-    total_time = 500;
-    dt = 0.05;
-    framerate = 500;
-    Tm = 110; %Melting point
-    specific_heat = 1900;
-    density = 910; %kg/m^3
-    thermal_Conductivity = 0.33;
-    constant = thermal_Conductivity * dt / (density * specific_heat * dd * dd);
-    borders = true;
-    emissivity = 0.97;
-    roomTemp = 0;
-    elevatedTemp = 250;
-    elevLocation = 1;
-    elevFrequency = 12;
-    absorption = 4;
-    energyRate = 20;
-    distributionFrequency = 12;
-    timeOn = 0;
-    timeOff = 500;
-    convection = false;
-    radiation = false;
-    thermal_Conductivity2 = 0.33;
-    interfaceK = 0.2;
-    density2 = 1600;
-    specific_heat2 = 4130;
-    distribution = 1;
-    frequency2 = 12;
-    extraConduction = false;
-    extraConvection = false;
-    extraRadiation = false;
-    %%%%%%%%%%%%
-    
-    
-    f = figure('Visible', 'off','color','white','Position',...
+
+
+
+f = figure('Visible', 'off','color','white','Position',...
     [360,500,200,200]);
     if isempty(dimensions)
         dimensions = 3;
@@ -66,7 +25,7 @@ function overallGUI
                 set(huitext2,'String', '1 Matrix, 1 Receiver');
     end
     
-    set(f,'Name','Input Number of Dimensions Needed:')
+    set(f,'Name','Repick Important Settings:')
     movegui(f,'center')
     hbutton = uicontrol('Style','pushbutton',...
         'String','Continue',...

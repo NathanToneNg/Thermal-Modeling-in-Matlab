@@ -5,7 +5,7 @@ function temperatureMenu
         materials = 3;
     end
     if materials == 3
-        absorption = 5;
+        absorption = 6;
     end
     if isempty(roomTemp)
         roomTemp = 0;
@@ -23,7 +23,7 @@ function temperatureMenu
         absorption = 4;
     end
     if isempty(energyRate)
-        energyRate = 0;
+        energyRate = 20;
     end
     if isempty(distributionFrequency)
         distributionFrequency = 12;
@@ -185,7 +185,7 @@ function temperatureMenu
                 set(hsttext20,'Visible','off');
                 set(huitext21,'Visible','off');
                 set(hsttext21,'Visible','off');
-        case 5
+        case 6
                 if materials == 3
                     set(button2, 'String', 'Located at 2nd Material');
                 else

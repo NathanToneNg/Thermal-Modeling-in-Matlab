@@ -71,7 +71,7 @@ function material2Menu
     DB = uicontrol('Style','pushbutton','Position',[20,110,100,40],'Callback',@DBF);
     
     frequencytext = uicontrol('Style','text','BackgroundColor','White',...
-        'Position',[20, 20, 100, 80], 'String','Inverse Frequency of second material');
+        'Position',[20, 20, 100, 80], 'String','Density of second material');
     frequencyEdit = uicontrol('Style','edit','BackgroundColor','White',...
         'Position',[50,30,40,40],'String', num2str(frequency2),'Callback',@callbackfn);
     switch distribution

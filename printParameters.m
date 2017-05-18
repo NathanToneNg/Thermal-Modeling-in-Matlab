@@ -70,6 +70,10 @@ for j = 1:9
                 if strcmp(strList2{j}, 'Distribution of second material')
                     text = strcat(strList2{j}, ': Randomly spread');
                 end
+            case 5
+                text = strcat(strList2{j}, ': Random spheres');
+            case 6
+                text = strcat(strList2{j}, ': Same as 2nd material');
             case 0
                 text = strcat(strList2{j}, ': Off');
         end

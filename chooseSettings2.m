@@ -40,9 +40,12 @@ energySettings = uicontrol(grouph, 'Style', 'pushbutton', ...
 temperatureSettings = uicontrol(grouph, 'Style', 'pushbutton', ...
     'String', 'Energy Insertion', 'Units', 'Normalized',...
     'Position', [.05 .3 .3 .1],'Callback',@whattodo);
+repickSettings = uicontrol(grouph, 'Style', 'pushbutton', ...
+    'String', 'Repick#Mat/Dimensions', 'Units', 'Normalized',...
+    'Position', [.05 .2 .3 .1],'Callback',@whattodo);
 calculateBar = uicontrol(grouph, 'Style', 'pushbutton', ...
     'String', 'Calculate', 'Units', 'Normalized',...
-    'Position', [.05 .2 .3 .1],'Callback',@whattodo);
+    'Position', [.05 .1 .3 .1],'Callback',@whattodo);
 
 warningText1 = uicontrol('Style','text', ...
     'Position',[250,170,120,200],'String', ...
@@ -94,6 +97,9 @@ function whattodo(hObject, ~)
             energyMenu;
         case temperatureSettings
             temperatureMenu;
+        case repickSettings
+            close(gcf);
+            repickDimensions;
         case calculateBar
             printParameters;
             if dimensions == 1
@@ -105,7 +111,7 @@ function whattodo(hObject, ~)
             else
                 disp('Number of dimensions must be declared');
                 close(gcf);
-                overallGUI;
+                repickDimensions;
             end
 
 

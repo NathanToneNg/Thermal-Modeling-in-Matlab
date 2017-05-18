@@ -5,7 +5,8 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction extraConvection extraRadiation;
-global list
+clear list;
+global list;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,7 +131,7 @@ wholeMatrix = zeros(xintervals + 2, 1) + roomTemp;
 wholeMatrix(2:end-1) = Tempgrid;
 
 %%% movie stuff
-
+clear F;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 
 if(radiation || convection)
@@ -146,7 +147,7 @@ else
 end
 if(radiation)
     sigma = 5.67 * 10^-8;
-    rConst = sigma .* emissivity .* constants(parameterBounds) * area;
+    rConst = sigma .* emissivity .* constants(parameterBounds) * area * dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
 end
 if extraConvection
@@ -155,7 +156,7 @@ else
     area = 1;
 end
 if(convection)
-    convRatio = 20 .* constants(parameterBounds) * area;
+    convRatio = 20 .* constants(parameterBounds) * area .* dd;
     convAir = convRatio .* roomTemp;
 end
 
@@ -208,7 +209,7 @@ for j= 2:iter + 1
     end
     
     if mod(j - 1, framerate) == 0
-        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt .* dd); %Energy per meter squared in infinite dimensions
+        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt .* dd); %Energy per meter squared
         figure;
         plot(0:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);
@@ -222,11 +223,13 @@ end
 %After creating all the slides, will pause and let you analyze
 %variables. Then press a key and it will play the movie twice and end on
 %the last frame.
+mean(wholeMatrix(2:end-1)./constants.* dt ./ dd);
+
 
 pause
 close all;
 fig = figure;
-movie(fig,F,2)
+movie(fig,F,1)
 close all;
 
 plot(0:dd:xdist, wholeMatrix(2:end-1));
@@ -237,5 +240,4 @@ num = numel(Tempgrid);
 ratio = melted/num;
 
 fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
-
 end

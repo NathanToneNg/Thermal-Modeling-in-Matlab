@@ -82,14 +82,14 @@ function energyMenu
     if borders
         set(huitext,'String','Currently on');
         if dimensions < 3
-            set(conductionOff,'Visible','on');
-            set(conductionOffB,'Visible','on');
+            set(conductionOff,'Visible','off');
+            set(conductionOffB,'Visible','off');
         end
     else
         set(huitext,'String','Currently off');
         if dimensions < 3
-            set(conductionOff,'Visible','off');
-            set(conductionOffB,'Visible','off');
+            set(conductionOff,'Visible','on');
+            set(conductionOffB,'Visible','on');
         end
     end
     if convection
@@ -128,14 +128,14 @@ function energyMenu
                 if borders
                     set(huitext,'String','Currently on');
                     if dimensions < 3
-                        set(conductionOff,'Visible','on');
-                        set(conductionOffB,'Visible','on');
+                        set(conductionOff,'Visible','off');
+                        set(conductionOffB,'Visible','off');
                     end
                 else
                     set(huitext,'String','Currently off');
                     if dimensions < 3
-                        set(conductionOff,'Visible','off');
-                        set(conductionOffB,'Visible','off');
+                        set(conductionOff,'Visible','on');
+                        set(conductionOffB,'Visible','on');
                     end
                 end
             case huitext2

@@ -1,5 +1,5 @@
 # A Thermal Modeling program written in Matlab.
-	This program was created for the purpose of modeling microwave heating by receptive materials within a polymer matrix for use in the [Banaszak Holl Group](http://bhgroup.lsa.umich.edu//). 
+This program was created for the purpose of modeling microwave heating by receptive materials within a polymer matrix for use in the [Banaszak Holl Group](http://bhgroup.lsa.umich.edu//). 
 
 ## Usage
 * The GUI is initially accessed with overallGUI. This function will reset all variables to defaults, so if you want to change only a few variables, use chooseSettings1 in the case of one material, or chooseSettings2 in the case of two materials of differing properties.  
