@@ -18,7 +18,7 @@ for i = 1:length(globalVars)
         fprintf(file, '%%%s = %s\n', varname, var);
     else
         fprintf(file, 'global %s\n', varname);
-        fprintf(file, '%s = %s\n', varname, var);
+        fprintf(file, '%s = %s;\n', varname, var);
     end
     
 end

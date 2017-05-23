@@ -8,7 +8,6 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
 clear global list;
 global list;
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -350,13 +349,17 @@ for j= 2:iter + 1
     if mod(j - 1, framerate) == 0
         list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Energy
             ./ constants .* dt .* dd)));
-        figure;
-        slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-        caxis([0 (Tm + 20)])
-        colorbar('horiz')
-        %alpha(0.7);
-        drawnow
-        F(index) = getframe(gcf);
+        try
+            figure;
+            slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+            caxis([0 (Tm + 20)])
+            colorbar('horiz')
+            %alpha(0.7);
+            drawnow
+            F(index) = getframe(gcf);
+        catch
+            disp('Cannot graph');
+        end
         index = index + 1;
     end
 end
@@ -368,13 +371,17 @@ mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ...
             ./ constants .* dt ./ dd)));
 pause
 close all;
-fig = figure;
-movie(fig,F,1)
-close all;
+try
+    fig = figure;
+    movie(fig,F,1)
+    close all;
 
-slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-caxis([0 (Tm + 20)])
-colorbar('horiz')
+    slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+    caxis([0 (Tm + 20)])
+    colorbar('horiz')
+catch
+    disp('Cannot graph');
+end
 
 melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);
 num = numel(Tempgrid);

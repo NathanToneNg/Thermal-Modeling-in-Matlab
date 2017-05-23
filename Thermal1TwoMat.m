@@ -180,7 +180,7 @@ for j= 2:iter + 1
         (old(1:end-2) - old(2:end-1)).*constants .* leftK + ...
         (old(3:end) - old(2:end-1)).*constants .* rightK;
     if extraConduction
-        wholeMatrix(2:end-1) = wholeMatrix(2:end-1) + old(2:end-1) .* constants .* k;
+        wholeMatrix(2:end-1) = wholeMatrix(2:end-1) + 4.* old(2:end-1) .* constants .* k;
     end
     if(radiation)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
@@ -209,7 +209,7 @@ for j= 2:iter + 1
     end
     
     if mod(j - 1, framerate) == 0
-        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt .* dd); %Energy per meter squared
+        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt ./ dd); %Energy per meter squared
         figure;
         plot(0:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);

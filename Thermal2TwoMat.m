@@ -1,4 +1,4 @@
-function Thermal2TwoMat
+%function Thermal2TwoMat
 
 global precision xdist ydist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
@@ -7,7 +7,6 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     frequency2 extraConduction extraConvection extraRadiation;
 clear global list;
 global list;
-
 
 digits(precision);
 index = 1;
@@ -247,7 +246,7 @@ for j= 2:iter + 1
         (old(3:end,2:end-1) - old(2:end-1,2:end-1)).*constants .* rightK;
     if extraConduction
         wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) + ...
-            old(2:end-1,2:end-1) .* constants .* k;
+            2.* old(2:end-1,2:end-1) .* constants .* k;
     end
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
@@ -282,13 +281,17 @@ for j= 2:iter + 1
     if mod(j - 1, framerate) == 0
         list(index) = mean(mean(wholeMatrix(2:end-1,2:end-1) ... %Energy per meter
             ./ constants .* dt));
-        figure;
-        surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
-        caxis([0 (Tm + 20)])
-        colorbar('horiz')
-        %alpha(0.7);
-        drawnow
-        F(index) = getframe(gcf);
+        try
+            figure;
+            surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
+            caxis([0 (Tm + 20)])
+            colorbar('horiz')
+            %alpha(0.7);
+            drawnow
+            F(index) = getframe(gcf);
+        catch
+            disp('Cannot graph');
+        end
         index = index + 1;
         %mean(mean(wholeMatrix(2:end-1,2:end-1)))
     end
@@ -301,18 +304,21 @@ mean(mean(wholeMatrix(2:end-1,2:end-1) ...
             ./ constants .* dt)); %Energy per meter 
 pause
 close all;
-fig = figure;
-movie(fig,F,1)
-close all;
+try
+    fig = figure;
+    movie(fig,F,1)
+    close all;
 
-surf(X,Y,wholeMatrix(2:end-1,2:end-1));
-caxis([0 (Tm + 20)])
-colorbar('horiz')
-
+    surf(X,Y,wholeMatrix(2:end-1,2:end-1));
+    caxis([0 (Tm + 20)])
+    colorbar('horiz')
+catch
+    disp('Cannot graph');
+end
 melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);
 num = numel(Tempgrid);
 ratio = melted/num;
 
 fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
 list
-end
+%end
