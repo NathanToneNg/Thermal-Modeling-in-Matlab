@@ -6,7 +6,12 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction extraConvection extraRadiation;
 clear global list;
+clear global tempsList;
+clear global materialMatrix;
 global list;
+global tempsList;
+global materialMatrix;
+global finalTemps;
 
 digits(precision);
 index = 1;
@@ -31,7 +36,7 @@ end
 
 
 iter = total_time/dt;
-if(absorption)
+if absorption
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
 end
@@ -52,7 +57,7 @@ switch distribution
                         midy + ceil(midy/10)) = 1;
     case 3
         freq = sqrt(frequency2);
-        second(ceil(1:freq:end),ceil(1:freq:end)) = 1;
+        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals)) = 1;
     case 4
         if frequency2 <= 1.1
             second(:,:) = 1;
@@ -61,8 +66,8 @@ switch distribution
             while i <= ceil(xintervals*yintervals/frequency2)
                 potentialRand = randi(xintervals);
                 potentialRand2 = randi(yintervals);
-                if(~second(potentialRand,potentialRand2))
-                    second(potentialRand,potentialRand2) = true;
+                if(second(potentialRand,potentialRand2) ~= 1)
+                    second(potentialRand,potentialRand2) = 1;
                     i = i + 1;
                 end
             end
@@ -91,8 +96,8 @@ switch distribution
                     for k = potentialRand2 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
                             potentialRand2 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
                         if k > 0 && k < yintervals
-                            if(~second(j,k))
-                                second(j,k) = true;
+                            if(second(j,k) ~= 1)
+                                second(j,k) = 1;
                                 i = i + 1;
                             end
                         end
@@ -102,12 +107,80 @@ switch distribution
         end
 end
 second = logical(second);
-bigSecond = zeros(xintervals + 2, yintervals + 2);
-bigSecond = logical(bigSecond);
-bigSecond(2:end-1, 2:end-1) = second;
+
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 materialMatrix(second) = 2;
 k(second) = thermal_Conductivity2;
+
+
+if materials == 3
+    receivers = second;
+else
+    receivers = zeros(xintervals, yintervals);
+    switch absorption
+        case 1
+            receivers(midx, midy) = 1;
+        case 2
+            receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10)) = 1;
+        case 3
+            frequ = sqrt(distributionFrequency);
+            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals)) = 1;
+        case 4
+            if distributionFrequency <= 1.1
+                receivers(:,:) = 1;
+            else
+                i = 1;
+                while i <= ceil(xintervals*yintervals/distributionFrequency)
+                    potentialRand = randi(xintervals);
+                    potentialRand2 = randi(yintervals);
+                    if(receivers(potentialRand,potentialRand2) ~= 1)
+                        receivers(potentialRand,potentialRand2) = 1;
+                        i = i + 1;
+                    end
+                end
+            end
+        case 5
+            if distributionFrequency <= 1.1
+                receivers(:) = 1;
+            else
+                i = 0;
+                num = ceil(xintervals * yintervals/distributionFrequency);
+                while i <= num
+                    potentialRand = randi(xintervals);
+                    potentialRand2 = randi(yintervals);
+                    randRadius = randi(floor(sqrt(num)/3.14));
+                    if(potentialRand - randRadius < 1)
+                        startx = 1;
+                    else
+                        startx = potentialRand - randRadius;
+                    end
+                    if(potentialRand + randRadius > xintervals)
+                        endingx = xintervals;
+                    else
+                        endingx = potentialRand + randRadius;
+                    end
+                    for j = startx:endingx
+                        for k = potentialRand2 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
+                                potentialRand2 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
+                            if k > 0 && k < yintervals
+                                if(receivers(j,k) ~= 1)
+                                    receivers(j,k) = 1;
+                                    i = i + 1;
+                                end
+                            end
+                        end
+                    end
+                end
+            end   
+        
+        
+    end
+end
+receivers = logical(receivers);
+bigReceivers = zeros(xintervals + 2, yintervals + 2);
+bigReceivers = logical(bigReceivers);
+bigReceivers(2:end-1,2:end-1) = receivers;
+
 
 for i = 1:xintervals
     for j = 1:yintervals
@@ -128,9 +201,9 @@ for i = 1:xintervals
             end
             if i == xintervals
                 if(materialMatrix(i,j) == 1)
-                    leftK(i,j) = thermal_Conductivity;
+                    rightK(i,j) = thermal_Conductivity;
                 else
-                    leftK(i,j) = thermal_Conductivity2;
+                    rightK(i,j) = thermal_Conductivity2;
                 end
             else
                 if(materialMatrix(i,j) == 1 && materialMatrix(i+1,j) == 1)    
@@ -183,7 +256,7 @@ clear F;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 [X,Y] = meshgrid(0:dd:ydist, 0:dd:xdist);
 
-if(radiation || convection)
+if radiation || convection 
     boundaries = zeros(xintervals + 2, yintervals + 2);
     corners = boundaries;
     boundaries([2,end-1],2:end-1) = 1;
@@ -192,31 +265,37 @@ if(radiation || convection)
     corners([2,end-1],[2,end-1]) = 1;
     corners = logical(corners);
     area = zeros(xintervals, yintervals);
-    %g(boundaries).('area') = 1;
-    %g(corners).('area')= 2;
     pBoundaries = boundaries(2:end-1,2:end-1);
     pCorners = corners(2:end-1,2:end-1);
     area(pBoundaries) = 1;
     area(pCorners) = 2;
 end
 
-if extraRadiation
+if radiation && extraRadiation
     area = area + 2;
 end
-if(radiation)
+if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
 end
-if extraRadiation
+if radiation && extraRadiation
     area = area - 2;
 end
-if extraConvection
+if radiation && extraRadiation
+    rMidConst = sigma .* emissivity .* constants(2:end-1,2:end-1) .* 2 .* dd;
+    rMidAir = rMidConst .* (roomTemp + 273.15)^4;
+end
+if convection && extraConvection
     area = area + 2;
 end
-if(convection)
+if convection
     convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
+end
+if convection && extraConvection
+    convMidRatio = 20 .* constants(2:end-1,2:end-1) .* 2 .* dd;
+    convMidAir = convMidRatio .* roomTemp;
 end
 
 
@@ -244,43 +323,36 @@ for j= 2:iter + 1
         (old(2:end-1,3:end)-old(2:end-1,2:end-1)).*constants .* downK + ...
         (old(1:end-2,2:end-1)-old(2:end-1,2:end-1)).*constants .* leftK + ...
         (old(3:end,2:end-1) - old(2:end-1,2:end-1)).*constants .* rightK;
-    if extraConduction
-        wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) + ...
+    if ~borders && extraConduction
+        wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) - ...
             2.* old(2:end-1,2:end-1) .* constants .* k;
     end
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
     end
+    if radiation && extraRadiation
+        wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+            (rMidConst .* ((old(3:end-2,3:end-2) + 273.15).^4)) + rMidAir;
+    end
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             ((old(boundaries) .* convRatio) - convAir);
     end
-    if j >= iterOn && j <= iterOff
-        if materials == 3
-            wholeMatrix(bigSecond) = wholeMatrix(bigSecond) + energyRate .* constants(second);
-        else
-           switch absorption
-                case 1
-                    wholeMatrix(midx,midy) = wholeMatrix(midx,midy) + energyRate .* constants(midx,midy);
-                case 2
-                    wholeMatrix(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10)) = wholeMatrix(midx - ceil(midx/10): midx + ...
-                        ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10)) + ...
-                        energyRate .* constants(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10));
-                case 3
-                    frequ = sqrt(distributionFrequency);
-                    wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1)) = wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1)) ...
-                        + energyRate .* constants(ceil(2:frequ:end-1),ceil(2:frequ:end-1));
-                    
-           end
-        end
+    if convection && extraConvection
+        wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+            ((old(3:end-2,3:end-2) .*convMidRatio) - convMidAir);
     end
+    
+    if j >= iterOn && j <= iterOff
+        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) .* dd;
+    end
+    
     
     if mod(j - 1, framerate) == 0
         list(index) = mean(mean(wholeMatrix(2:end-1,2:end-1) ... %Energy per meter
             ./ constants .* dt));
+        tempsList(index) = mean(mean(wholeMatrix(2:end-1,2:end-1)));
         try
             figure;
             surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
@@ -293,9 +365,9 @@ for j= 2:iter + 1
             disp('Cannot graph');
         end
         index = index + 1;
-        %mean(mean(wholeMatrix(2:end-1,2:end-1)))
     end
 end
+finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 
 %After creating all the slides, will pause and let you analyze
 %variables. Then press a key and it will play the movie twice and end on

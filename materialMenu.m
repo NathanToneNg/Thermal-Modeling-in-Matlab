@@ -1,5 +1,5 @@
 function materialMenu
-    global Tm specific_heat density thermal_Conductivity constant dt dd self_set emissivity materials;
+    global Tm specific_heat density thermal_Conductivity constant dt dd emissivity materials;
     if isempty(materials)
         materials = 1;
     end
@@ -12,9 +12,7 @@ function materialMenu
     if isempty(dd)
         dd = 0.005;
     end
-    if isempty(self_set)
-        self_set = false;
-    end
+
     % guiMultiplierIf has 2 edit boxes for numbers and
     % multiplies them
     % Format: guiMultiplierIf or guiMultiplierIf()
@@ -61,25 +59,11 @@ function materialMenu
 
     hsttext5 = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[120,100,80,80],'String','Conduction Constant');
-    if materials == 1
-        huitext5 = uicontrol('Style','edit','Position',[120,110,80,40],...
-        'String',num2str(constant),...
-        'Callback',@callbackfn);
-    else 
         huitext5 = uicontrol('Style','text','Position',[120,110,80,40],...
         'String',num2str(constant),'BackgroundColor','white',...
         'Callback',@callbackfn);
-    end
     
-    hsttext6 = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[0,100,120,80],'String','Set Constant by Self (must be ~ < 0.05)');
-    huitext6 = uicontrol('Style','pushbutton','Position',[20,110,80,40],...
-    'String','Turn Off','Callback',@calltwo);
-    if materials ~= 1
-        self_set = false;
-        set(hsttext6,'Visible', 'off');
-        set(huitext6,'Visible', 'off');
-    end
+
     hsttext7 = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[210,100,100,80],'String','Radiation Emissivity Constant');
     huitext7 = uicontrol('Style','edit','Position',[240,110,40,40],...
@@ -92,23 +76,12 @@ function materialMenu
         'Position',[107.5,50,100,50], 'Callback',@callbackfn);
     set(f,'Visible','on')
     
-    if(self_set)
-            set(hsttext2, 'Visible', 'off');
-            set(huitext2, 'Visible', 'off');
-            set(hsttext3, 'Visible', 'off');
-            set(huitext3, 'Visible', 'off');
-            set(hsttext4, 'Visible', 'off');
-            set(huitext4, 'Visible', 'off');
-            set(huitext6, 'String', 'Turn On');
-        else
             set(hsttext2, 'Visible', 'on');
             set(huitext2, 'Visible', 'on');
             set(hsttext3, 'Visible', 'on');
             set(huitext3, 'Visible', 'on');
             set(hsttext4, 'Visible', 'on');
             set(huitext4, 'Visible', 'on');
-            set(huitext6, 'String', 'Turn Off');
-    end
         
     
     function callbackfn(hObject,eventdata)
@@ -119,32 +92,8 @@ function materialMenu
         density = str2double(get(huitext3,'String'));
         thermal_Conductivity = str2double(get(huitext4,'String'));
         emissivity = str2double(get(huitext7,'String'));
-        if ~self_set
-            constant = thermal_Conductivity * dt / (density * specific_heat * dd * dd);
-        else
-            constant = str2double(get(huitext5,'String'));
-        end
+        constant = thermal_Conductivity * dt / (density * specific_heat * dd * dd);
         set(huitext5, 'String', num2str(constant));
     end
     
-    function calltwo(hObject, eventdata)
-        self_set = ~self_set;
-        if(self_set)
-            set(hsttext2, 'Visible', 'off');
-            set(huitext2, 'Visible', 'off');
-            set(hsttext3, 'Visible', 'off');
-            set(huitext3, 'Visible', 'off');
-            set(hsttext4, 'Visible', 'off');
-            set(huitext4, 'Visible', 'off');
-            set(huitext6, 'String', 'Turn On');
-        else
-            set(hsttext2, 'Visible', 'on');
-            set(huitext2, 'Visible', 'on');
-            set(hsttext3, 'Visible', 'on');
-            set(huitext3, 'Visible', 'on');
-            set(hsttext4, 'Visible', 'on');
-            set(huitext4, 'Visible', 'on');
-            set(huitext6, 'String', 'Turn Off');
-        end
-    end
 end

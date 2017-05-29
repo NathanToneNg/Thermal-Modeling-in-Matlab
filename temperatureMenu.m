@@ -5,7 +5,7 @@ function temperatureMenu
         materials = 3;
     end
     if materials == 3
-        absorption = 6;
+        absorption = 7;
     end
     if isempty(roomTemp)
         roomTemp = 0;
@@ -162,7 +162,7 @@ function temperatureMenu
                 set(huitext21,'Visible','on');
                 set(hsttext21,'Visible','on');
             case 3
-                set(button2, 'String','Spread');
+                set(button2, 'String','Uniform Distribution');
                 if materials ~= 3
                     set(huitext5,'Visible','on');
                     set(hsttext5,'Visible','on');
@@ -174,6 +174,30 @@ function temperatureMenu
                 set(huitext21,'Visible','on');
                 set(hsttext21,'Visible','on');
             case 4
+                set(button2, 'String','Random Distribution');
+                if materials ~= 3
+                    set(huitext5,'Visible','on');
+                    set(hsttext5,'Visible','on');
+                end
+                set(huitext4,'Visible','on');
+                set(hsttext4,'Visible','on');
+                set(huitext20,'Visible','on');
+                set(hsttext20,'Visible','on');
+                set(huitext21,'Visible','on');
+                set(hsttext21,'Visible','on');
+            case 5
+                set(button2, 'String','Random Spheres');
+                if materials ~= 3
+                    set(huitext5,'Visible','on');
+                    set(hsttext5,'Visible','on');
+                end
+                set(huitext4,'Visible','on');
+                set(hsttext4,'Visible','on');
+                set(huitext20,'Visible','on');
+                set(hsttext20,'Visible','on');
+                set(huitext21,'Visible','on');
+                set(hsttext21,'Visible','on');
+            case 6
                 set(button2, 'String','Off');
                 set(huitext4,'Visible','off');
                 set(hsttext4,'Visible','off');
@@ -185,7 +209,7 @@ function temperatureMenu
                 set(hsttext20,'Visible','off');
                 set(huitext21,'Visible','off');
                 set(hsttext21,'Visible','off');
-        case 6
+        case 7
                 if materials == 3
                     set(button2, 'String', 'Located at 2nd Material');
                 else
@@ -216,7 +240,7 @@ function temperatureMenu
     function button2call(~, ~)
         if materials ~= 3
             absorption = absorption + 1;
-            if absorption > 4
+            if absorption > 6
                 absorption = 1;
             end
             switch absorption
@@ -231,12 +255,16 @@ function temperatureMenu
                 case 2
                     set(button2, 'String','Middle Block');
                 case 3
-                    set(button2, 'String','Spread');
+                    set(button2, 'String','Uniform Distribution');
                     if materials ~= 3
                         set(huitext5,'Visible','on');
                         set(hsttext5,'Visible','on');
                     end
                 case 4
+                    set(button2, 'String','Random Distribution');
+                case 5
+                    set(button2, 'String','Random Spheres');
+                case 6
                     set(button2, 'String','Off');
                     set(huitext4,'Visible','off');
                     set(hsttext4,'Visible','off');

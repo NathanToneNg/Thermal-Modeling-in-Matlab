@@ -1,4 +1,4 @@
-function Thermal3TwoMat
+%function Thermal3TwoMat
 
 global precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
@@ -6,7 +6,12 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2;
 clear global list;
+clear global tempsList;
+clear global materialMatrix;
 global list;
+global tempsList;
+global materialMatrix;
+global finalTemps;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -57,7 +62,7 @@ second = zeros(xintervals,yintervals,zintervals);
 
 
 iter = total_time/dt;
-if(absorption)
+if absorption
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
 end
@@ -70,7 +75,7 @@ switch distribution
                         midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = 1;
     case 3
         freq = nthroot(frequency2, 3);
-        second(ceil(1:freq:end),ceil(1:freq:end),ceil(1:freq:end)) = 1;
+        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = 1;
     case 4
         if frequency2 <= 1.1
             second(:,:,:) = 1;
@@ -80,8 +85,8 @@ switch distribution
                 potentialRand = randi(xintervals);
                 potentialRand2 = randi(yintervals);
                 potentialRand3 = randi(zintervals);
-                if(~second(potentialRand,potentialRand2,potentialRand3))
-                    second(potentialRand,potentialRand2,potentialRand3) = true;
+                if(second(potentialRand,potentialRand2,potentialRand3) ~= 1)
+                    second(potentialRand,potentialRand2,potentialRand3) = 1;
                     i = i + 1;
                 end
             end
@@ -114,8 +119,8 @@ switch distribution
                             for l = potentialRand3 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2)))) : ...
                             potentialRand3 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2))))
                                 if l > 0 && l < zintervals
-                                    if(~second(j,k,l))
-                                        second(j,k,l) = true;
+                                    if(second(j,k,l) ~= 1)
+                                        second(j,k,l) = 1;
                                         i = i + 1;
                                     end
                                 end
@@ -127,12 +132,86 @@ switch distribution
         end
 end
 second = logical(second);
-bigSecond = zeros(xintervals + 2, yintervals + 2,zintervals + 2);
-bigSecond = logical(bigSecond);
-bigSecond(2:end-1, 2:end-1,2:end-1) = second;
+
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 materialMatrix(second) = 2;
 k(second) = thermal_Conductivity2;
+
+if materials == 3
+    receivers = second;
+else
+    receivers = zeros(xintervals, yintervals, zintervals);
+    switch absorption
+        case 1
+            receivers(midx, midy, midz) = 1;
+        case 2
+            receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10), midz - ceil(midz/10): midz + ceil(midz/10)) = 1;
+        case 3
+            frequ = nthroot(distributionFrequency,3);
+            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals), ceil(1:frequ:zintervals)) = 1;
+        case 4
+            if frequency2 <= 1.1
+                receivers(:,:,:) = 1;
+            else
+                i = 1;
+                while i <= ceil(xintervals*yintervals*zintervals/distributionFrequency)
+                    potentialRand = randi(xintervals);
+                    potentialRand2 = randi(yintervals);
+                    potentialRand3 = randi(zintervals);
+                    if(receivers(potentialRand,potentialRand2,potentialRand3) ~= 1)
+                        receivers(potentialRand,potentialRand2,potentialRand3) = 1;
+                        i = i + 1;
+                    end
+                end
+            end
+         case 5
+            if distributionFrequency <= 1.1
+                receivers(:) = 1;
+            else
+                i = 0;
+                num = ceil(xintervals * yintervals * zintervals/distributionFrequency);
+                while i <= num
+                    potentialRand = randi(xintervals);
+                    potentialRand2 = randi(yintervals);
+                    potentialRand3 = randi(zintervals);
+                    randRadius = randi(floor(nthroot(num,3)/(4*3.14/3)));
+                    if(potentialRand - randRadius < 1)
+                        startx = 1;
+                    else
+                        startx = potentialRand - randRadius;
+                    end
+                    if(potentialRand + randRadius > xintervals)
+                        endingx = xintervals;
+                    else
+                        endingx = potentialRand + randRadius;
+                    end
+                    for j = startx:endingx
+                        for k = potentialRand2 - floor(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
+                                potentialRand2 + floor(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
+                            if k > 0 && k < yintervals
+                                for l = potentialRand3 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2)))) : ...
+                                potentialRand3 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2))))
+                                    if l > 0 && l < zintervals
+                                        if(receivers(j,k,l) ~= 1)
+                                            receivers(j,k,l) = 1;
+                                            i = i + 1;
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end    
+        
+        
+    end
+end
+receivers = logical(receivers);
+bigReceivers = zeros(xintervals + 2, yintervals + 2,zintervals + 2);
+bigReceivers = logical(bigReceivers);
+bigReceivers(2:end-1,2:end-1,2:end-1) = receivers;
+
 
 
 for i = 1:xintervals
@@ -155,9 +234,9 @@ for i = 1:xintervals
             end
             if i == xintervals
                 if(materialMatrix(i,j,l) == 1)
-                    leftK(i,j,l) = thermal_Conductivity;
+                    rightK(i,j,l) = thermal_Conductivity;
                 else
-                    leftK(i,j,l) = thermal_Conductivity2;
+                    rightK(i,j,l) = thermal_Conductivity2;
                 end
             else
                 if(materialMatrix(i,j,l) == 1 && materialMatrix(i+1,j,l) == 1)    
@@ -242,7 +321,7 @@ clear F;
 F(floor((iter)/80)) = struct('cdata',[],'colormap',[]);
 [X,Y,Z] = meshgrid(0:dd:ydist, 0:dd:xdist, 0:dd:zdist);
 
-if(radiation || convection)
+if radiation || convection
     boundaries = zeros(xintervals + 2, yintervals + 2, zintervals + 2);
     corners = boundaries;
     corners([2,end-1],[2,end-1],[2,end-1]) = 1;
@@ -257,9 +336,6 @@ if(radiation || convection)
     boundaries([2,end-1],2:end-1,2:end-1) = 1;
     boundaries = logical(boundaries);
     area = zeros(xintervals, yintervals, zintervals);
-    %g(boundaries).area = 1;
-    %g(edges).area = 2;
-    %g(corners).area = 3;
     pBoundaries = boundaries(2:end-1,2:end-1,2:end-1);
     pEdges = edges(2:end-1,2:end-1,2:end-1);
     pCorners = corners(2:end-1,2:end-1,2:end-1);
@@ -269,12 +345,12 @@ if(radiation || convection)
     
 end
 
-if(radiation)
+if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
 end
-if(convection)
+if convection
     convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
 end
@@ -314,41 +390,22 @@ for j= 2:iter + 1
             .*constants .* outK;
 
     
-    if(radiation)        
+    if radiation
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
     end
-    if(convection)
+    if convection
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            ((old .* convRatio) - convAir);
+            ((old(boundaries) .* convRatio) - convAir);
     end
+    
     if j >= iterOn && j <= iterOff
-        if materials == 3
-            wholeMatrix(bigSecond) = wholeMatrix(bigSecond) + energyRate .* constants(second) ./ dd;
-        else
-            switch absorption
-                case 1
-                    wholeMatrix(midx,midy, midz) = wholeMatrix(midx,midy, midz) + ...
-                        energyRate .* constants(midx,midy,midz) ./ dd;
-                case 2
-                    wholeMatrix(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = ...
-                        wholeMatrix(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) + ...
-                        energyRate .* constants(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) ./ dd;
-                case 3
-                    frequ = nthroot(distributionFrequency,3);
-                    wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1),ceil(2:frequ:end-1)) = ...
-                        wholeMatrix(ceil(2:frequ:end-1),ceil(2:frequ:end-1),ceil(2:frequ:end-1)) + ...
-                        energyRate .* constants(ceil(1:frequ:end),ceil(1:frequ:end),ceil(1:frequ:end)) ...
-                         ./ dd;
-            end
-        end
+        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) .* dd;
     end
     if mod(j - 1, framerate) == 0
         list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Energy
             ./ constants .* dt .* dd)));
+        tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
         try
             figure;
             slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
@@ -363,7 +420,7 @@ for j= 2:iter + 1
         index = index + 1;
     end
 end
-
+finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 %After creating all the slides, will pause and let you analyze
 %variables. Then press a key and it will play the movie twice and end on
 %the last frame.
@@ -391,4 +448,4 @@ fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
 
 
 
-end
+%end
