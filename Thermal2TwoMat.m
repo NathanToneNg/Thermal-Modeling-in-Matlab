@@ -1,5 +1,8 @@
-%function Thermal2TwoMat
+function Thermal2TwoMat
 
+%Globals allow this to carry over from set-up functions. They are used
+%instead of persistent so that they can be used in the command frame if
+%necessary.
 global precision xdist ydist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
@@ -13,56 +16,83 @@ global tempsList;
 global materialMatrix;
 global finalTemps;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%rng('default'); %This can be used to make the randomized distributions
+%consistent for repeatability
+
+%Precision marks how many digits out calculations are carried to. The
+%normal precision is 32, but using lower numbers saves time.
 digits(precision);
+
+%Index for frames in the movie
 index = 1;
 
-
+%Number of pixels across the grid
 xintervals = floor(xdist / dd + 1);
 yintervals = floor(ydist / dd + 1);
-Tempgrid = zeros(xintervals, yintervals) + roomTemp;
+
 midx = ceil(xintervals/2);
 midy = ceil(yintervals/2);
+
+%This creates a temporary grid of which pixels start at higher temperature
+Tempgrid = zeros(xintervals, yintervals) + roomTemp;
 switch elevLocation 
     case 1
+        %Center pixel
         Tempgrid(midx, midy) = elevatedTemp;
     case 2
+        %Center block, 1/5 in each direction
         Tempgrid(midx - ceil(midx/10): midx + ceil(midx/10),...
             midy - ceil(midy/10):midy + ceil(midy/10)) = elevatedTemp;
     case 3
+        %Uniform distribution
         xfreq = ceil(sqrt(elevFrequency));
         yfreq = floor(elevFrequency/xfreq);
         Tempgrid(1:xfreq:end,1:yfreq:end) = elevatedTemp;
 end
 
-
+%Total number of time steps that are taken.
 iter = total_time/dt;
 if absorption
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
 end
+
+%Holds a grid of constants so that less calculations need to be repeated.
 constants = ones(xintervals, yintervals) .* dt ./ (specific_heat .* dd .* dd .* density);
 materialMatrix = ones(xintervals, yintervals);
+
+%Holds the thermal conductivities at each pixel in each direction.
 k = ones(xintervals, yintervals) * thermal_Conductivity;
 leftK = ones(xintervals, yintervals);
 rightK = ones(xintervals, yintervals);
 upK = ones(xintervals, yintervals);
 downK = ones(xintervals, yintervals);
-second = zeros(xintervals,yintervals);
 
+%Declare where the second material is based on parameter "distribution" and
+%the frequencies
+second = zeros(xintervals,yintervals);
 switch distribution
     case 1
+        %Center pixel
         second(midx, midy) = 1;
     case 2
+        %Center block (5th of size in each direction)
         second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
                         midy + ceil(midy/10)) = 1;
     case 3
+        %Uniform distribution
         freq = sqrt(frequency2);
         second(ceil(1:freq:xintervals),ceil(1:freq:yintervals)) = 1;
     case 4
+        %Random distribution
         if frequency2 <= 1.1
             second(:,:) = 1;
         else
             i = 1;
+            %Fills until the ratio is fulfilled.
             while i <= ceil(xintervals*yintervals/frequency2)
                 potentialRand = randi(xintervals);
                 potentialRand2 = randi(yintervals);
@@ -73,14 +103,17 @@ switch distribution
             end
         end
     case 5
+        %Random spheres
         if frequency2 <= 1.1
             second(:) = 1;
         else
             i = 0;
             num = ceil(xintervals * yintervals/frequency2);
+            %Fills until the ratio is fulfilled
             while i <= num
                 potentialRand = randi(xintervals);
                 potentialRand2 = randi(yintervals);
+                %Picks a random radius, and then random center after
                 randRadius = randi(floor(sqrt(num)/3.14));
                 if(potentialRand - randRadius < 1)
                     startx = 1;
@@ -106,13 +139,17 @@ switch distribution
             end
         end
 end
+%Easier to assign as a matrix of doubles, but then make it a logical matrix
+%afterwards.
 second = logical(second);
 
+%essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 materialMatrix(second) = 2;
 k(second) = thermal_Conductivity2;
 
-
+%Determine where the receiver materials are. Same possibilities as for
+%second material.
 if materials == 3
     receivers = second;
 else
@@ -176,12 +213,17 @@ else
         
     end
 end
+%Receivers is the iteratable size matrix, bigReceivers holds when we need to
+%access from the matrix with edges.
 receivers = logical(receivers);
 bigReceivers = zeros(xintervals + 2, yintervals + 2);
 bigReceivers = logical(bigReceivers);
 bigReceivers(2:end-1,2:end-1) = receivers;
 
 
+%Creates the directional thermal conductivities matrices. Borders are
+%different, and then conductivity depends on what two materials heat
+%transfers between.
 for i = 1:xintervals
     for j = 1:yintervals
             if i == 1
@@ -247,15 +289,17 @@ for i = 1:xintervals
     end
 end
 
+%The initial temperature grid is assigned.
 wholeMatrix = zeros(xintervals + 2, yintervals + 2) + roomTemp;
 wholeMatrix(2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
-
 clear F;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 [X,Y] = meshgrid(0:dd:ydist, 0:dd:xdist);
 
+%Creates logicals that assign where the borders are. Corners have twice the
+%area. Not meant to be accurate with single dimension sizes in this form.
 if radiation || convection 
     boundaries = zeros(xintervals + 2, yintervals + 2);
     corners = boundaries;
@@ -271,9 +315,14 @@ if radiation || convection
     area(pCorners) = 2;
 end
 
+%If extra loss is turned on, that means we are treating it as
+%thin, where heat loss is off all area.
 if radiation && extraRadiation
     area = area + 2;
 end
+
+%Ratios and room temperature constants set ahead of time for less
+%calculation between timesteps.
 if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
@@ -302,21 +351,28 @@ end
 %%%
 
 
-
+% This is where the program iterates through time steps. The first time
+% step is considered the initial values, and iter + 1 is the last. 
 for j= 2:iter + 1
     if any(any(isnan(wholeMatrix)))
         text = strcat('Error at iteration ', num2str(j));
         disp(text);
         return
     end
+    %Keep an older version so we aren't counting changes in the same time
     old = wholeMatrix(:,:);
+    
+    %If borders are on, we want no conduction off edges so we make the
+    %edges the same temperature so there is no difference and so no
+    %change
     if(borders)
         old(1,:) = old(2,:);
         old(end,:) = old(end-1,:);
         old(:,1) = old(:,2);
         old(:,end) = old(:,end-1);
     end
-    
+    %Use constants, thermal conductivity, and difference in temperatures
+    %between pixels on the grid to calculate conductive transfer
     wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) + ...
         ...
         (old(2:end-1, 1:end-2)-old(2:end-1,2:end-1)).*constants .* upK + ...
@@ -327,6 +383,7 @@ for j= 2:iter + 1
         wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) - ...
             2.* old(2:end-1,2:end-1) .* constants .* k;
     end
+    %Changes based on radiation
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
@@ -335,6 +392,7 @@ for j= 2:iter + 1
         wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
             (rMidConst .* ((old(3:end-2,3:end-2) + 273.15).^4)) + rMidAir;
     end
+    %Changes based on convection
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             ((old(boundaries) .* convRatio) - convAir);
@@ -343,13 +401,14 @@ for j= 2:iter + 1
         wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
             ((old(3:end-2,3:end-2) .*convMidRatio) - convMidAir);
     end
-    
+    %Increments by energy (turned into temp) if between the correct time
+    %interval
     if j >= iterOn && j <= iterOff
         wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) .* dd;
     end
     
-    
-    if mod(j - 1, framerate) == 0
+    %Will graph/ save averages at correct framerate checking multiplicity.
+    if mod(j - 1, framerate) == 0 %Could alternatively be mod(j, framerate) == 1
         list(index) = mean(mean(wholeMatrix(2:end-1,2:end-1) ... %Energy per meter
             ./ constants .* dt));
         tempsList(index) = mean(mean(wholeMatrix(2:end-1,2:end-1)));
@@ -367,13 +426,12 @@ for j= 2:iter + 1
         index = index + 1;
     end
 end
-finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 
-%After creating all the slides, will pause and let you analyze
-%variables. Then press a key and it will play the movie twice and end on
-%the last frame.
-mean(mean(wholeMatrix(2:end-1,2:end-1) ...
-            ./ constants .* dt)); %Energy per meter 
+%Save final data frame in finalTemps
+finalTemps = wholeMatrix(2:end-1,2:end-1);
+
+%Will wait for user to give word, and will then close all windows, play the
+%movie, and then show just the last screen.
 pause
 close all;
 try
@@ -387,10 +445,13 @@ try
 catch
     disp('Cannot graph');
 end
+
+%Used in tests where we need to check what percent of the material melts in
+%a given heating simulation. Checks over all materials at the Tm passed in.
 melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);
 num = numel(Tempgrid);
 ratio = melted/num;
 
 fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
-list
-%end
+
+end

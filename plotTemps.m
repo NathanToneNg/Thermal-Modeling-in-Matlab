@@ -1,7 +1,7 @@
 function plotTemps(matrix)
     global xdist ydist zdist dd dimensions;
     if nargin < 1
-        matrix = input('Which matrix: ');
+        matrix = input('What matrix?\n ');
     end
     text = sprintf('global %s',matrix);
     eval(text);

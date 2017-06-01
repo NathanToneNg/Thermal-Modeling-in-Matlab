@@ -5,10 +5,15 @@ global precision xdist ydist zdist dd total_time dt framerate  convection radiat
 clear global list;
 global list;
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+%%% MaterialMatrix must be custom made, but then thermal conductivities
+%%% retrieved from it. 
+%%% Allows for more than 2 materials, disallows conductivity off edges
+%%% which shouldn't be needed anyway realistically. Calculations each time
+%%% step remain the same.
 
 digits(precision);
 index = 1;
@@ -117,9 +122,7 @@ bigReceivers(2:end-1,2:end-1,2:end-1) = receivers;
 for i = 1:xintervals
     for j = 1:yintervals
         for l = 1:zintervals
-            if i == 1
-                leftK(i,j,l) = 0; %No conduction off borders.
-            else
+            if i ~= 1
                 switch materialMatrix(i,j,l) + materialMatrix(i-1,j,l)
                     
                     case 2
@@ -140,9 +143,7 @@ for i = 1:xintervals
                     
                 end
             end
-            if i == xintervals
-                rightK(i,j,l) = 0;
-            else
+            if i ~= xintervals
                 switch materialMatrix(i,j,l) + materialMatrix(i-1,j,l)
                     
                     case 2
@@ -162,9 +163,7 @@ for i = 1:xintervals
                     
                 end
             end
-            if j == 1
-                upK(i,j,l) = 0;
-            else
+            if j ~= 1
                 switch materialMatrix(i,j,l) + materialMatrix(i-1,j,l)
                     
                     case 2
@@ -184,9 +183,7 @@ for i = 1:xintervals
                     
                 end
             end
-            if j == yintervals
-                downK(i,j,l) = 0;
-            else
+            if j ~= yintervals
                 switch materialMatrix(i,j,l) + materialMatrix(i-1,j,l)
                     
                     case 2
@@ -206,9 +203,7 @@ for i = 1:xintervals
                     
                 end
             end
-            if l == 1
-                inK(i,j,l) = thermal_Conductivity;
-            else
+            if l ~= 1
                 switch materialMatrix(i,j,l) + materialMatrix(i-1,j,l)
                     
                     case 2
@@ -228,9 +223,7 @@ for i = 1:xintervals
                     
                 end
             end
-            if l == zintervals
-                outK(i,j,l) = 0;
-            else
+            if l ~= zintervals
                 switch materialMatrix(i,j,l) + materialMatrix(i-1,j,l)
                     
                     case 2
@@ -268,7 +261,7 @@ if radiation || convection
     pBoundaries = (materialMatrix(:,:) == 4);
     boundaries = logical(zeros(xintervals + 2, yintervals + 2, zintervals + 2));
     boundaries(2:end-1,2:end-1,2:end-1) = pBoundaries;
-    area = int8(upK == 0) + int8(downK == 0) + int8(leftK == 0) + int8(rightK == 0);
+    area = (upK == 0) + (downK == 0) + (leftK == 0) + (rightK == 0);
 
     
 end
