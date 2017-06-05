@@ -88,9 +88,17 @@ global ydist
 ydist = 0.2;
 global zdist
 zdist = 0.2;
+sigma = 5.67 * 10^-8;
+
+z = 273.15 + roomTemp;
+T = 273.15 + elevatedTemp;
+C = ((1/(4*sqrt(2)*(z^3))) * (-log(T^2 - sqrt(2)*T*z + z^2) + log(T^2 + sqrt(2)*T*z + z^2) - 2*atan(1 - sqrt(2)*T/z)+ 2*atan(1 + sqrt(2)*T/z)))
+
 
 x = 25:25:500;
-experimentalTemps = list ./ specific_heat ./ density ./ dd;
-analyticalTemps = (3.*((emissivity.*sigma.*x./specific_heat./density./dd) + (2.32809.*10.^(-9)))).^(-1./3) - 273.15; %Not meant to work with single pixel/layer
-differences = (abs((experimentalTemps - analyticalTemps) ./ analyticalTemps)); 
-offset = mean(differences)
+kelvinList = tempsList + 273.15;
+analyticalTimes = (((1/(4*sqrt(2)*(z^3))) * (-log(kelvinList.^2 - sqrt(2).*kelvinList.*z + z.^2) + log(kelvinList.^2 + ...
+    sqrt(2).*kelvinList.*z + z.^2) - 2*atan(1 - sqrt(2).*kelvinList./z)+ 2*atan(1 + sqrt(2).*kelvinList./z))) - C) ...
+    .* -1 .*density .* specific_heat .* dd ./ emissivity ./ sigma
+
+

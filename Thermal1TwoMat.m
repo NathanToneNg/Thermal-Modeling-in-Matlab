@@ -7,7 +7,7 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     specific_heat density Tm thermal_Conductivity roomTemp elevatedTemp elevLocation ...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 extraConduction extraConvection extraRadiation;
+    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -15,6 +15,9 @@ global list;
 global tempsList;
 global materialMatrix;
 global finalTemps;
+if isempty(cycle)
+    cycle = 1;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,6 +198,32 @@ receivers = logical(receivers);
 bigReceivers = zeros(xintervals + 2, 1);
 bigReceivers = logical(bigReceivers);
 bigReceivers(2:end-1) = receivers;
+
+%Cycle setup. In try catch so older tests still work
+rotation = ones(sum(receivers), 1);
+try 
+    cycleRate = round(cycleSpeed ./ dt ./ cycleIntervals);
+    ratios = sin(0:pi/cycleIntervals:pi-pi/cycleIntervals);
+    if cycle == 1
+        ratios(:) = 1;
+    end
+    %Set however spread you want rotation to be, and where in the cycle each
+    %starts
+    if cycle == 3 || cycle == 5
+        ratios = ratios .* 2;
+    end
+    if cycle == 4 || cycle == 5
+        for i = 1:cycleIntervals
+            %Right now this makes it into 20 groups (by matlab ordering, which 
+            %is in x first, then y then z).
+            rotation(1+floor(sum(receivers)/cycleIntervals*(i-1)):floor(sum(receivers)/cycleIntervals*i)) = i;
+        end
+    end
+catch
+    ratios = 1;
+    rotation = rotation';
+    disp('No rotation');
+end
         
 %Creates the directional thermal conductivities matrices. Borders are
 %different, and then conductivity depends on what two materials heat
@@ -323,8 +352,14 @@ for j= 2:iter + 1
     %Increments by energy (turned into temp) if between the correct time
     %interval
     if j >= iterOn && j <= iterOff
-        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) .* dd;
+        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) .* dd .* ratios(rotation)';
     end
+    %If cycle/rotations are on, this will change
+    if ~isempty(cycle) && cycle ~= 1 && mod(j - 1, cycleRate) == 0
+        rotation = rotation + 1;
+        rotation(rotation > cycleIntervals) = 1;
+    end
+    
     
     %Will graph/ save averages at correct framerate checking multiplicity.
     if mod(j - 1, framerate) == 0 %Could alternatively be mod(j, framerate) == 1

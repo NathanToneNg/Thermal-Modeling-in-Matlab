@@ -3,7 +3,7 @@ function overallGUI
     specific_heat density Tm constant roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     materials thermal_Conductivity2 interfaceK density2 specific_heat2 distribution frequency2 ...
-    extraConduction extraConvection extraRadiation;
+    extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed;
 
     
     %%%%Defaults
@@ -42,6 +42,9 @@ function overallGUI
     extraConduction = false;
     extraConvection = false;
     extraRadiation = false;
+    cycle = 1;
+    cycleIntervals = 20;
+    cycleSpeed = 20;
     %%%%%%%%%%%%
     
     

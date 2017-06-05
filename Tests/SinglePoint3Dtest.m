@@ -93,4 +93,4 @@ x = 25:25:500;
 experimentalTemps = list ./ specific_heat ./ density ./ dd ./ dd ./ dd
 analyticalTemps = 250.*(exp(-6.*x.*thermal_Conductivity./specific_heat./density./dd./dd))
 differences = (abs((experimentalTemps - analyticalTemps) ./ analyticalTemps));
-%percentOffest = mean(differences)
+percentOffest = mean(differences)
