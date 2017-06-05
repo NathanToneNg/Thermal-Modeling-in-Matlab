@@ -1,3 +1,5 @@
+%Initializes to default variables and accepts input for dimensions and
+%number of materials from user.
 function overallGUI
     global dimensions precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm constant roomTemp elevatedTemp elevLocation thermal_Conductivity...
@@ -56,17 +58,17 @@ function overallGUI
     if isempty(materials)
         materials = 1;
     end
-    hsttext = uicontrol('Style','text','BackgroundColor','white','Position',[30,100,80,80],'String','Dimensions');
-    huitext = uicontrol('Style','edit','Position',[50,100,40,40],'String',num2str(dimensions));
-    hsttext2 = uicontrol('Style','text','BackgroundColor','white','Position',[100,100,80,80],'String','Materials');
-    huitext2 = uicontrol('Style','pushbutton','Position',[90,100,100,40], 'Callback', @materialsButton);
+    dimensionText = uicontrol('Style','text','BackgroundColor','white','Position',[30,100,80,80],'String','Dimensions');
+    dimensionEdit = uicontrol('Style','edit','Position',[50,100,40,40],'String',num2str(dimensions));
+    materialText = uicontrol('Style','text','BackgroundColor','white','Position',[100,100,80,80],'String','Materials');
+    materialButton = uicontrol('Style','pushbutton','Position',[90,100,100,40], 'Callback', @materialsButton);
     switch materials
             case 1
-                set(huitext2,'String','1 Material');
+                set(materialButton,'String','1 Material');
             case 2
-                set(huitext2,'String','2 Materials');
+                set(materialButton,'String','2 Materials');
             case 3
-                set(huitext2,'String', '1 Matrix, 1 Receiver');
+                set(materialButton,'String', '1 Matrix, 1 Receiver');
     end
     
     set(f,'Name','Input Number of Dimensions Needed:')
@@ -77,9 +79,7 @@ function overallGUI
     set(f,'Visible','on')
     
     function callbackfn(~,~)
-        % callbackfn is called by the 'Callback' property
-        % in either the second edit box or the pushbutton
-        dimensions=str2double(get(huitext,'String'));
+        dimensions=str2double(get(dimensionEdit,'String'));
         close(gcf);
         if materials == 1
             distribution = 0;
@@ -97,11 +97,11 @@ function overallGUI
         end
         switch materials
             case 1
-                set(huitext2,'String','1 Material');
+                set(materialButton,'String','1 Material');
             case 2
-                set(huitext2,'String','2 Materials');
+                set(materialButton,'String','2 Materials');
             case 3
-                set(huitext2,'String', '1 Matrix, 1 Receiver');
+                set(materialButton,'String', '1 Matrix, 1 Receiver');
         end
         
     end

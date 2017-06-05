@@ -25,19 +25,19 @@ function energyMenu
     f = figure('Visible', 'off','color','white','Position',[360,500,320,300]);
     
     
-    hsttext = uicontrol('Style','text','BackgroundColor','white',...
+    bordersText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[0,190,150,80],'String','No conduction off edges');
-    huitext = uicontrol('Style','pushbutton','Position',[20,210,80,40],...
+    bordersButton = uicontrol('Style','pushbutton','Position',[20,210,80,40],...
     'String','Currently on','Callback',@callbackfn);
 
-    hsttext2 = uicontrol('Style','text','BackgroundColor','white',...
+    convectionText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[20,110,80,80],'String','Convection');
-    huitext2 = uicontrol('Style','pushbutton','Position',[20,130,80,40],...
+    convectionButton = uicontrol('Style','pushbutton','Position',[20,130,80,40],...
     'String','Currently off','Callback',@callbackfn);
     
-    hsttext3 = uicontrol('Style','text','BackgroundColor','white',...
+    radiationText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[20,30,80,80],'String','Radiation');
-    huitext3 = uicontrol('Style','pushbutton','Position',[20,50,80,40],...
+    radiationButton = uicontrol('Style','pushbutton','Position',[20,50,80,40],...
     'String','Currently off','Callback',@callbackfn);
     
 
@@ -80,39 +80,39 @@ function energyMenu
     set(f,'Visible','on')
     
     if borders
-        set(huitext,'String','Currently on');
+        set(bordersButton,'String','Currently on');
         if dimensions < 3
             set(conductionOff,'Visible','off');
             set(conductionOffB,'Visible','off');
         end
     else
-        set(huitext,'String','Currently off');
+        set(bordersButton,'String','Currently off');
         if dimensions < 3
             set(conductionOff,'Visible','on');
             set(conductionOffB,'Visible','on');
         end
     end
     if convection
-        set(huitext2,'String','Currently on');
+        set(convectionButton,'String','Currently on');
         if dimensions < 3
             set(convectionOff,'Visible','on');
             set(convectionOffB,'Visible','on');
         end
     else
-        set(huitext2,'String','Currently off');
+        set(convectionButton,'String','Currently off');
         if dimensions < 3
             set(convectionOff,'Visible','off');
             set(convectionOffB,'Visible','off');
         end
     end
     if radiation
-        set(huitext3,'String','Currently on');
+        set(radiationButton,'String','Currently on');
         if dimensions < 3
             set(radiationOff,'Visible','on');
             set(radiationOffB,'Visible','on');
         end
     else
-        set(huitext3,'String','Currently off');
+        set(radiationButton,'String','Currently off');
         if dimensions < 3
             set(radiationOff,'Visible','off');
             set(radiationOffB,'Visible','off');
@@ -120,49 +120,47 @@ function energyMenu
     end
     
     function callbackfn(hObject,~)
-        % callbackfn is called by the 'Callback' property
-        % in either the second edit box or the pushbutton
         switch hObject
-            case huitext
+            case bordersButton
                 borders = ~borders;
                 if borders
-                    set(huitext,'String','Currently on');
+                    set(bordersButton,'String','Currently on');
                     if dimensions < 3
                         set(conductionOff,'Visible','off');
                         set(conductionOffB,'Visible','off');
                     end
                 else
-                    set(huitext,'String','Currently off');
+                    set(bordersButton,'String','Currently off');
                     if dimensions < 3
                         set(conductionOff,'Visible','on');
                         set(conductionOffB,'Visible','on');
                     end
                 end
-            case huitext2
+            case convectionButton
                 convection = ~convection;
                 if convection
-                    set(huitext2,'String','Currently on');
+                    set(convectionButton,'String','Currently on');
                     if dimensions < 3
                         set(convectionOff,'Visible','on');
                         set(convectionOffB,'Visible','on');
                     end
                 else
-                    set(huitext2,'String','Currently off');
+                    set(convectionButton,'String','Currently off');
                     if dimensions < 3
                         set(convectionOff,'Visible','off');
                         set(convectionOffB,'Visible','off');
                     end
                 end
-            case huitext3
+            case radiationButton
                 radiation = ~radiation;
                 if radiation
-                    set(huitext3,'String','Currently on');
+                    set(radiationButton,'String','Currently on');
                     if dimensions < 3
                         set(radiationOff,'Visible','on');
                         set(radiationOffB,'Visible','on');
                     end
                 else
-                    set(huitext3,'String','Currently off');
+                    set(radiationButton,'String','Currently off');
                     if dimensions < 3
                         set(radiationOff,'Visible','off');
                         set(radiationOffB,'Visible','off');

@@ -1,3 +1,6 @@
+%A tool used to plot primarily finalTemps, but any matrix no matter whether
+%it is 1, 2, or 3, dimensions: If that number of dimensions matches the
+%global 'dimensions' variable
 function plotTemps(matrix)
     global xdist ydist zdist dd dimensions;
     if nargin < 1

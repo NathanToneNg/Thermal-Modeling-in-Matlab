@@ -43,12 +43,10 @@ function temperatureMenu
     if isempty(cycleSpeed)
         cycleSpeed = 20;
     end
-    % guiMultiplierIf has 2 edit boxes for numbers and
-    % multiplies them
-    % Format: guiMultiplierIf or guiMultiplierIf()
+
+    
     f = figure('Visible', 'off','color','white','Position',...
     [360,500,360,500]);
-
     
     roomTempText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[0,400,80,80],'String','Initial Room Temperature');
@@ -100,11 +98,6 @@ function temperatureMenu
     absorptionOffBar = uicontrol('Style','edit','Position',[260,200,40,40],...
     'String',num2str(timeOff),...
     'Callback',@callbackfn);
-    
-%     buttontext1 = uicontrol('Style','text','BackgroundColor','white',...
-%     'Position',[0,300,120,80],'String','Initial Elevated Temperature'); %#ok<*NASGU>
-%     button1 = uicontrol('Style','pushbutton','Position',[20,300,80,40],...
-%     'String','Currently On','Callback',@button1call);
     
     receiverButtonText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[10,300,120,80],'String','Energy Receivers Present'); 

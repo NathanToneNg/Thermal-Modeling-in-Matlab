@@ -1,3 +1,5 @@
+%Goes to the correct chooseSettings script based on how many materials
+%there are. 
 function chooseSettings
     global materials;
     if isempty(materials)

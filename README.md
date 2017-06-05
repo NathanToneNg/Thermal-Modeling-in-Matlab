@@ -32,28 +32,16 @@ The following equations were used to determine the numerical calculations.
 ### Implementation versions
 * Each version states how many dimensions it applies over within the name of the file.
 
-#### The following indicate what the files with this term in their names mean for the version
-
-*  Efficient
-	* _These versions were created and eliminated an unnecessary dimension, instead reusing the previous frame_
-	
-*  Ind
-	* _These versions are called by the interface whenever only one material is used_
-	
-*  TwoMat
-	* _These versions are called by the interface whenever two different materials are needed_
-	
-*  check
-	* _These versions were used to check simple characteristics of the program and ensured that they aligned with theory_
-	
-*  settle
-	* _These versions namely declare a global "list" and work with one material. The list includes averages of the temperatures across the matrix and were usually used to ensure that no energy was lost when all energy loss methods were removed_
-
+### Extra Tools
+* _OverallGUI_ should be run to reset all conditions and set them all up fresh.
+* _chooseSettings_ should be run to keep most conditions the same but with the ability to change just a few.
+* _anyMelting(Melting point, temperature matrix, [logical array for matrix])_ will return the number of pixels in the matrix (in the logical in the matrix) above the melting point provided. 
+* _plotTemps [matrix]_ can plot a matrix with number of dimensions set (specifically useful for finalTemps).
+* _saveConditions [filename.m]_ is a function that can be run to save all global variables (parameters to run the program, and important results such as final data and average temperatures) into a file in the home directory. They can be run as a matlab script and set up the program.
+* _calculate_ will choose which program to run based on the number of dimensions. 
 
 ### Implementation choices
 * There are three versions of almost everything: One for one dimension, two dimensions, and three dimensions. This is because the differences between number of dimensions causes enough changes in implementation that it saves time to write and run them separately.
-
-* The _Efficient_ versions were created so that previous matrices are re-used instead of having additional layers on each matrix. For example, with 10 time intervals and 2 dimensions, instead of adding a third time dimensions on a matrix, each time step is taken and a figure is printed and saved and then the two dimensional matrix is re-used.
 
 * Each main Matrix is two larger in each dimension, with the bound properties depending on whether conduction is turned on on the borders. This makes the program work with one conduction statement instead of multiple and saves repeating statements with various conditionals. 
 

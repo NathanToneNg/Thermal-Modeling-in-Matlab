@@ -4,9 +4,6 @@ function sizeMenu
         dimensions = 1;
     end
     
-    % guiMultiplierIf has 2 edit boxes for numbers and
-    % multiplies them
-    % Format: guiMultiplierIf or guiMultiplierIf()
     f = figure('Visible', 'off','color','white','Position',...
     [360,500,300,300]);
     if isempty(dd)
@@ -15,27 +12,28 @@ function sizeMenu
     if isempty(xdist)
         xdist = 0.2;
     end
-    pixels = ((xdist / dd) + 1);
-    hsttext = uicontrol('Style','text','BackgroundColor','white',...
+    ddText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[0,200,80,80],'String','Distance increment');
-    huitext = uicontrol('Style','edit','Position',[20,200,40,40],...
+    ddEdit = uicontrol('Style','edit','Position',[20,200,40,40],...
     'String',num2str(dd),...
     'Callback',@callbackfn);
 
-    hsttext2 = uicontrol('Style','text','BackgroundColor','white',...
+    xdistText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[70,200,80,80],'String','X distance');
-    huitext2 = uicontrol('Style','edit','Position',[90,200,40,40],...
+    xdistEdit = uicontrol('Style','edit','Position',[90,200,40,40],...
     'String',num2str(xdist),...
     'Callback',@callbackfn);
     text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)));
+    
+    %More distance increments iff there are more dimensions.
     if dimensions > 1
         global ydist;
         if isempty(ydist)
             ydist = 0.2;
         end
-        hsttext3 = uicontrol('Style','text','BackgroundColor','white',...
+        ydistText = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[150,200,80,80],'String','Y distance');
-        huitext3 = uicontrol('Style','edit','Position',[170,200,40,40],...
+        ydistEdit = uicontrol('Style','edit','Position',[170,200,40,40],...
         'String',num2str(ydist),...
         'Callback',@callbackfn);
         text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', num2str(floor((ydist/dd) + 1)));
@@ -45,41 +43,39 @@ function sizeMenu
         if isempty(zdist)
             zdist = 0.2;
         end
-        hsttext4 = uicontrol('Style','text','BackgroundColor','white',...
+        zdistText = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[230,200,80,80],'String','Z distance');
-        huitext4 = uicontrol('Style','edit','Position',[250,200,40,40],...
+        zdistEdit = uicontrol('Style','edit','Position',[250,200,40,40],...
         'String',num2str(zdist),...
         'Callback',@callbackfn);
         text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', ...
             num2str(floor((ydist/dd) + 1)), ' by', num2str(floor(zdist/dd + 1)));
     end
     
-    hsttext5 = uicontrol('Style','text','BackgroundColor','white',...
+    pixelsText = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[110,10,80,150],'String',text);
     
     set(f,'Name','Size Settings')
     movegui(f,'center')
-    hbutton = uicontrol('Style','pushbutton',...
+    setButton = uicontrol('Style','pushbutton',...
         'String','Set values',...
         'Position',[100,50,100,50], 'Callback',@callbackfn);
     set(f,'Visible','on')
     
-    function callbackfn(hObject,eventdata)
-        % callbackfn is called by the 'Callback' property
-        % in either the second edit box or the pushbutton
-        dd=str2double(get(huitext,'String'));
-        xdist=str2double(get(huitext2,'String'));
+    function callbackfn(~,~)
+        dd=str2double(get(ddEdit,'String'));
+        xdist=str2double(get(xdistEdit,'String'));
         text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)));
         if dimensions > 1
-            ydist = str2double(get(huitext3, 'String'));
+            ydist = str2double(get(ydistEdit, 'String'));
             text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', num2str(floor((ydist/dd) + 1)));
 
         end
         if dimensions > 2
-            zdist = str2double(get(huitext4, 'String'));
+            zdist = str2double(get(zdistEdit, 'String'));
             text = strcat('Number of pixels: ', num2str(floor((xdist / dd) + 1)), ' by', ...
             num2str(floor((ydist/dd) + 1)), ' by', num2str(floor(zdist/dd + 1)));
         end
-        set(hsttext5, 'String', text);
+        set(pixelsText, 'String', text);
     end
 end

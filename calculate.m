@@ -1,3 +1,5 @@
+%Runs the correct thermal program based on how many dimensions there are.
+%Useful for running immediately after running test case script
 function calculate
     global dimensions
     if dimensions == 1
