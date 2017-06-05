@@ -73,7 +73,7 @@ end
 
 %Holds a grid of constants so that less calculations need to be repeated.
 constants = ones(xintervals, yintervals,zintervals) .* dt ./ (specific_heat .* dd .* dd .* density);
-materialMatrix = ones(xintervals, yintervals,zintervals);
+materialMatrix = int8(ones(xintervals, yintervals,zintervals));
 
 %Holds the thermal conductivities at each pixel in each direction.
 k = ones(xintervals, yintervals,zintervals) * thermal_Conductivity;

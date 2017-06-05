@@ -3,11 +3,9 @@ if exist('name','var')
     file = fopen(name, 'w+');
 else
     file = fopen('MostRecentTest.m','w+');
+    name = 'MostRecentTest';
 end
-if ~file
-    disp('Create file ''mostRecentTest.txt''.');
-end
-
+limit = 500000;
 globalVars = who('global');
 
 for i = 1:length(globalVars)
@@ -19,8 +17,16 @@ for i = 1:length(globalVars)
     end
     fprintf(file, 'global %s\n', varname);
     if strcmp(varname, 'list') || strcmp(varname, 'tempsList') || strcmp(varname, 'materialMatrix') || strcmp(varname, 'finalTemps')
-        fprintf(file, '%s = %s;\n', varname, mat2str(var));
-        fprintf(file, '%s = str2num(%s);\n',varname,varname);
+        strmatrix = mat2str(var);
+        data = whos('strmatrix');
+        if data.bytes > limit
+            matrixname = genvarname(strcat(varname, name));
+            save(matrixname,varname);
+            fprintf(file, 'load %s\n', matrixname);
+        else
+            fprintf(file, '%s = %s;\n', varname, mat2str(var));
+            fprintf(file, '%s = str2num(%s);\n',varname,varname);
+        end
     else
         fprintf(file, '%s = %s;\n', varname, var);
     end
