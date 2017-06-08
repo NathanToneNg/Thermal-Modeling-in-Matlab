@@ -76,7 +76,6 @@ function whattodo(hObject, ~)
             close(gcf);
             repickDimensions;
         case calculateBar
-            printParameters;
             calculate
 
 

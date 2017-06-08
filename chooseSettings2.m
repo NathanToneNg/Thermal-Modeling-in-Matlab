@@ -91,7 +91,6 @@ function whattodo(hObject, ~)
             close(gcf);
             repickDimensions;
         case calculateBar
-            printParameters;
             if dimensions == 1
                 Thermal1TwoMat;
             elseif dimensions == 2

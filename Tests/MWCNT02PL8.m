@@ -39,7 +39,7 @@ elevatedTemp = 250;
 global emissivity
 emissivity = 0.97;
 global energyRate
-energyRate = 136000;
+energyRate = 397712;
 global extraConduction
 extraConduction = 0;
 global extraConvection
@@ -47,7 +47,7 @@ extraConvection = 0;
 global extraRadiation
 extraRadiation = 0;
 global finalTemps
-load finalTempsMWCNT02PL20x2Em
+load finalTempsMWCNT02PL80x2Em
 global framerate
 framerate = 2000;
 global frequency2
@@ -55,10 +55,10 @@ frequency2 = 133.7;
 global interfaceK
 interfaceK = 20;
 global list
-list = '0.00080202  0.00086526  0.00092826  0.00099103   0.0010535';
+list = '0.00092416   0.0011091   0.0012932   0.0014767   0.0016594';
 list = str2num(list);
 global materialMatrix
-load materialMatrixMWCNT02PL20x2Em
+load materialMatrixMWCNT02PL80x2Em
 global materials
 materials = 3;
 global precision
@@ -74,7 +74,7 @@ specific_heat = 1900;
 global specific_heat2
 specific_heat2 = 4130;
 global tempsList
-tempsList = '26.9967      29.1214      31.2469      33.3672      35.4805';
+tempsList = '30.8324       37.042      43.2545      49.4506      55.6255';
 tempsList = str2num(tempsList);
 global thermal_Conductivity
 thermal_Conductivity = 0.51;

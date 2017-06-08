@@ -59,45 +59,6 @@ zslice = (ceil((zintervals-1)/2) * dd);
 
 %%%% Declare materialMatrix here
 
-materialMatrix = int8(zeros(xintervals, yintervals, zintervals));
-
-
-%First fiber
-materialMatrix(midx-1:midx+1,1:yintervals,2:10) = 1;
-materialMatrix([midx - 2, midx + 2], 1:yintervals, 3:9) = 1;
-materialMatrix([midx - 3, midx + 3], 1:yintervals, 4:8) = 1;
-materialMatrix([midx - 4, midx + 4], 1:yintervals, 5:7) = 1;
-
-materialMatrix(midx, 1:yintervals, 5:7) = 3;
-materialMatrix([midx + 1, midx - 1], 1:yintervals, 6) = 3;
-
-%Second fiber
-materialMatrix(1:xintervals, midy-1:midy+1,10:18) = 1;
-materialMatrix(1:xintervals, [midy - 2, midy + 2], 11:17) = 1;
-materialMatrix(1:xintervals, [midy - 3, midy + 3], 12:16) = 1;
-materialMatrix(1:xintervals, [midy - 4, midy + 4], 13:15) = 1;
-
-materialMatrix(1:xintervals, midy, 13:15) = 3;
-materialMatrix(1:xintervals, [midy + 1, midy - 1], 14) = 3;
-boundsSum = (materialMatrix(1:end-2,2:end-1,2:end-1) + ...
-    materialMatrix(3:end,2:end-1,2:end-1) + materialMatrix(2:end-1,1:end-2,2:end-1) + ...
-    materialMatrix(2:end-1,3:end,2:end-1) + materialMatrix(2:end-1,2:end-1,1:end-2) + ...
-    materialMatrix(2:end-1,2:end-1,3:end) );
-bounds = boundsSum > 1 & boundsSum < 5; %Right now it can replace air or can replace the very edge PE.
-bigBounds = zeros(xintervals, yintervals, zintervals);
-bigBounds(2:end-1,2:end-1,2:end-1) = bounds;
-bigBounds = logical(bigBounds);
-receptorLocation = materialMatrix(bigBounds);
-i = 1;
-%Fills until the ratio is fulfilled.
-while i <= ceil(size(receptorLocation,1)/frequency2)
-    potentialRand = randi(size(receptorLocation,1));
-    if(receptorLocation(potentialRand) ~= 7)
-        receptorLocation(potentialRand) = 7;
-        i = i + 1;
-    end
-end
-materialMatrix(bigBounds) = receptorLocation;
 
 
 specific_heat = 1900;
@@ -410,12 +371,11 @@ for j= 2:iter + 1
             ./ constants .* dt .* dd)));
         tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
         try
-            isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
-%             figure;
-%             slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-%             caxis([0 (Tm + 20)])
-%             colorbar('horiz')
-%             %alpha(0.7);
+            figure;
+            slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+            caxis([0 (Tm + 20)])
+            colorbar('horiz')
+            %alpha(0.7);
             drawnow
             F(index) = getframe(gcf);
         catch

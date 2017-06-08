@@ -90,8 +90,7 @@ global zdist
 zdist = 0.2;
 
 x = 25:25:500;
-experimentalTemps = list ./ specific_heat ./ density ./ dd;
-analyticalTemps = 250.*(exp(-2.*x.*thermal_Conductivity./specific_heat./density./dd./dd));
-differences = (abs((experimentalTemps - analyticalTemps) ./ analyticalTemps));
-percentOffest = mean(differences)
-
+experimentalTemps = list ./ specific_heat ./ density ./ dd
+analyticalTemps = 250.*(exp(-2.*x.*thermal_Conductivity./specific_heat./density./dd./dd))
+differences = (abs((experimentalTemps - analyticalTemps) ./ analyticalTemps)) %Higher at end because of smaller temperatures
+mean(differences(1:10))

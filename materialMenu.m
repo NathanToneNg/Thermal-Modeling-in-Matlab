@@ -83,7 +83,7 @@ function materialMenu
     set(kEdit, 'Visible', 'on');
         
     
-    function callbackfn(hObject,eventdata)
+    function callbackfn(~,~)
         % callbackfn is called by the 'Callback' property
         % in either the second edit box or the pushbutton
         Tm=str2double(get(TmEdit,'String'));
