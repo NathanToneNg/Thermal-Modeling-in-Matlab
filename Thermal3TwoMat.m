@@ -7,7 +7,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 cycle cycleIntervals cycleSpeed;
+    frequency2 cycle cycleIntervals cycleSpeed isotherm;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -488,11 +488,16 @@ for j= 2:iter + 1
             ./ constants .* dt .* dd)));
         tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
         try
-            figure;
-            slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-            caxis([0 (Tm + 20)])
-            colorbar('horiz')
-            %alpha(0.7);
+            if isotherm
+                isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+            else
+                figure;
+                slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+                caxis([0 (Tm + 20)])
+                colorbar('horiz')
+                %alpha(0.7);
+                
+            end
             drawnow
             F(index) = getframe(gcf);
         catch
@@ -510,13 +515,17 @@ finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 pause
 close all;
 try
-    fig = figure;
-    movie(fig,F,1)
-    close all;
+    if isotherm
+        isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+    else
+        fig = figure;
+        movie(fig,F,1)
+        close all;
 
-    slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-    caxis([0 (Tm + 20)])
-    colorbar('horiz')
+        slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+        caxis([0 (Tm + 20)])
+        colorbar('horiz')
+    end
 catch
     disp('Cannot graph');
 end

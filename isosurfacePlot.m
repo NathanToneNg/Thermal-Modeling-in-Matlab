@@ -29,4 +29,8 @@ end
 alpha(.075); % set the transparency for the isosurfaces
 daspect([1 1 1]); box on; axis tight;
 hold off;
+
+%To see what the most red is, that is Vmax. Each shade green-er is a tenth
+%of the range less. 
+
 end

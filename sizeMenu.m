@@ -1,5 +1,8 @@
 function sizeMenu
-    global dimensions xdist dd;
+    global dimensions xdist dd isotherm;
+    if isempty(isotherm)
+        isotherm = false;
+    end
     if isempty(dimensions)
         dimensions = 1;
     end
@@ -54,7 +57,16 @@ function sizeMenu
     
     pixelsText = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[110,10,80,150],'String',text);
-    
+    if dimensions == 3
+        graphButton = uicontrol('Style','pushbutton',...
+            'Position',[20,50, 80, 50],'Callback',@graphfunction);
+        if isotherm
+            set(graphButton,'String','Isosurface plot');
+        else
+            set(graphButton,'String','Slice plot');
+        end
+    end
+        
     set(f,'Name','Size Settings')
     movegui(f,'center')
     setButton = uicontrol('Style','pushbutton',...
@@ -77,5 +89,14 @@ function sizeMenu
             num2str(floor((ydist/dd) + 1)), ' by', num2str(floor(zdist/dd + 1)));
         end
         set(pixelsText, 'String', text);
+    end
+
+    function graphfunction(~,~)
+        isotherm = ~isotherm;
+        if isotherm
+            set(graphButton,'String','Isosurface plot');
+        else
+            set(graphButton,'String','Slice plot');
+        end
     end
 end
