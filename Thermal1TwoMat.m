@@ -1,5 +1,5 @@
 function Thermal1TwoMat
-
+%% Initialize globals
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
 %necessary.
@@ -7,7 +7,7 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     specific_heat density Tm thermal_Conductivity roomTemp elevatedTemp elevLocation ...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed;
+    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed convecc;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -17,6 +17,9 @@ global materialMatrix;
 global finalTemps;
 if isempty(cycle)
     cycle = 1;
+end
+if isempty(convecc)
+    convecc = 20;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -36,7 +39,7 @@ index = 1;
 xintervals = floor(xdist / dd + 1);
 mid = ceil(xintervals/2);
 
-
+%% Create Initial temperatures
 %This creates a temporary grid of which pixels start at higher temperature
 Tempgrid = zeros(xintervals,1) + roomTemp;
 switch elevLocation 
@@ -58,6 +61,7 @@ if(absorption)
     iterOff = floor(timeOff / dt) + 1;
 end
 
+%% Create relevant constants
 %Holds a grid of constants so that less calculations need to be repeated.
 constants = ones(xintervals, 1) .* dt ./ (specific_heat .* dd .* dd .* density);
 materialMatrix = int8(ones(xintervals, 1));
@@ -67,6 +71,7 @@ k = ones(xintervals, 1) * thermal_Conductivity;
 leftK = ones(xintervals, 1);
 rightK = ones(xintervals, 1);
 
+%% Create materials grid
 %Declare where the second material is based on parameter "distribution" and
 %the frequencies
 second = zeros(xintervals,1);
@@ -199,6 +204,7 @@ bigReceivers = zeros(xintervals + 2, 1);
 bigReceivers = logical(bigReceivers);
 bigReceivers(2:end-1) = receivers;
 
+%% Create cycle if relevant
 %Cycle setup. In try catch so older tests still work
 rotation = ones(sum(receivers), 1);
 try 
@@ -224,7 +230,8 @@ catch
     rotation = rotation';
     disp('No rotation');
 end
-        
+     
+%% Create conductivity grids
 %Creates the directional thermal conductivities matrices. Borders are
 %different, and then conductivity depends on what two materials heat
 %transfers between.
@@ -261,6 +268,7 @@ wholeMatrix(2:end-1) = Tempgrid;
 clear F;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 
+%% Create constants for radiation and convection
 %Creates a logical that assigns where the borders are. Not meant to be accurate 
 %with single dimension sizes in this form.
 if radiation || convection
@@ -295,16 +303,16 @@ else
     area = 1;
 end
 if convection
-    convRatio = 20 .* constants(parameterBounds) .* area .* dd;
+    convRatio = convecc .* constants(parameterBounds) .* area .* dd;
     convAir = convRatio .* roomTemp;
 end
 if convection && extraConvection
-    convMidRatio = 20 .* constants(2:end-1) .* 4 .* dd;
+    convMidRatio = convecc .* constants(2:end-1) .* 4 .* dd;
     convMidAir = convMidRatio .* roomTemp;
 end
 %%%
 
-
+%% Iterate
 % This is where the program iterates through time steps. The first time
 % step is considered the initial values, and iter + 1 is the last. 
 for j= 2:iter + 1
@@ -375,6 +383,7 @@ for j= 2:iter + 1
     end
 end
 
+%% Save final settings and play movie/ display final frame
 %Save final data frame in finalTemps
 finalTemps = wholeMatrix(2:end-1);
 

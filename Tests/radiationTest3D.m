@@ -101,3 +101,19 @@ kelvinList = tempsList + 273.15;
 analyticalTimes = (((1/(4*sqrt(2)*(z^3))) * (-log(kelvinList.^2 - sqrt(2).*kelvinList.*z + z.^2) + log(kelvinList.^2 + ...
     sqrt(2).*kelvinList.*z + z.^2) - 2*atan(1 - sqrt(2).*kelvinList./z)+ 2*atan(1 + sqrt(2).*kelvinList./z))) - C) ...
     .* -(1/3) .*density .* specific_heat .* dd ./ emissivity ./ sigma
+
+
+
+dt2 = 0.0001
+temp = zeros(total_time/dt2 + 1,1);
+temp(1) = 250;
+
+for i = 2:(total_time/dt2 + 1)
+    temp(i) = temp(i-1) - (3 * 0.97 * 5.67 * (10^-8) / density / specific_heat / dd * dt2 * (((temp(i-1) + 273.15)^4) - ...
+        273.15^4));
+    
+    
+end
+
+
+%plot([0:dt2:total_time],temp(:));

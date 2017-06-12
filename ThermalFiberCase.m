@@ -131,11 +131,11 @@ constantArray(8) = dt ./ (specific_heat2 .* dd .* dd .* density2); % Receptor
 constants = constantArray(materialMatrix(:,:,:) + 1);
 kArray = zeros(15,1);
 kArray(3) = thermal_Conductivity;
-kArray(7) = thermal_Conductivity2;
 kArray(5) = interfaceK12;
-kArray(15) = thermal_Conductivity3;
+kArray(7) = thermal_Conductivity2;
 kArray(9) = interfaceK13;
 kArray(11) = interfaceK23;
+kArray(15) = thermal_Conductivity3;
 k = kArray(materialMatrix(:,:,:) + 1);
 
 

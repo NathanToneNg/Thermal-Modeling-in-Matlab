@@ -2,7 +2,7 @@ global precision xdist ydist zdist dd total_time dt framerate convection radiati
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK ...
-    frequency2 cycle cycleIntervals cycleSpeed;
+    frequency2 cycle cycleIntervals cycleSpeed isotherm;
 clear global list;
 clear global tempsList;
 global list;
@@ -92,11 +92,11 @@ constantArray(8) = dt ./ (specific_heat2 .* dd .* dd .* density2); % Receptor
 constants = constantArray(materialMatrix(:,:,:) + 1);
 kArray = zeros(15,1);
 kArray(3) = thermal_Conductivity;
-kArray(7) = thermal_Conductivity2;
 kArray(5) = interfaceK12;
-kArray(15) = thermal_Conductivity3;
+kArray(7) = thermal_Conductivity2;
 kArray(9) = interfaceK13;
 kArray(11) = interfaceK23;
+kArray(15) = thermal_Conductivity3;
 k = kArray(materialMatrix(:,:,:) + 1);
 
 
@@ -371,11 +371,15 @@ for j= 2:iter + 1
             ./ constants .* dt .* dd)));
         tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
         try
-            figure;
-            slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-            caxis([0 (Tm + 20)])
-            colorbar('horiz')
-            %alpha(0.7);
+            if isotherm
+                isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+            else
+                figure;
+                slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+                caxis([0 (Tm + 20)])
+                colorbar('horiz')
+                %alpha(0.7);
+            end
             drawnow
             F(index) = getframe(gcf);
         catch
@@ -392,13 +396,17 @@ finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 pause
 close all;
 try
-    fig = figure;
-    movie(fig,F,1)
-    close all;
+    if isotherm
+        isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+    else
+        fig = figure;
+        movie(fig,F,1)
+        close all;
 
-    slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-    caxis([0 (Tm + 20)])
-    colorbar('horiz')
+        slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+        caxis([0 (Tm + 20)])
+        colorbar('horiz')
+    end
 catch
     disp('Cannot graph');
 end
