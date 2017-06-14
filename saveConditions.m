@@ -13,7 +13,7 @@ end
 
 %This limit is how big a matrix may be before putting it into a separate
 %variable. 
-limit = 500000;
+limit = 200000;
 
 %Retrieve all global variables and print them into the file
 globalVars = who('global');

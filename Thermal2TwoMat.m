@@ -21,7 +21,7 @@ end
 if isempty(convecc)
     convecc = 20;
 end
-
+rng('default');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -331,7 +331,6 @@ wholeMatrix = zeros(xintervals + 2, yintervals + 2) + roomTemp;
 wholeMatrix(2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
-clear F;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 [X,Y] = meshgrid(0:dd:ydist, 0:dd:xdist);
 

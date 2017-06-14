@@ -51,7 +51,7 @@ extraRadiation = 0;
 global finalTemps
 load finalTempsGaussTest3DSuccess0x2Em
 global framerate
-framerate = 10000;
+framerate = 2000;
 global frequency2
 frequency2 = 12;
 global interfaceK

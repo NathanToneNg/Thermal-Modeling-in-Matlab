@@ -35,10 +35,10 @@ function overallGUI
     timeOff = 500;
     convection = false;
     radiation = false;
-    thermal_Conductivity2 = 0.33;
-    interfaceK = 0.2;
-    density2 = 1600;
-    specific_heat2 = 4130;
+    thermal_Conductivity2 = 120;
+    interfaceK = 60;
+    density2 = 3210;
+    specific_heat2 = 750;
     distribution = 1;
     frequency2 = 12;
     extraConduction = false;

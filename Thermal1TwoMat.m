@@ -265,7 +265,6 @@ wholeMatrix = zeros(xintervals + 2, 1) + roomTemp;
 wholeMatrix(2:end-1) = Tempgrid;
 
 %%% movie stuff
-clear F;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 
 %% Create constants for radiation and convection
