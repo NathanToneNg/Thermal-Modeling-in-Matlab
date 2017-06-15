@@ -4,11 +4,11 @@ This program was created for the purpose of modeling microwave heating by recept
 ## Usage
 * The GUI is initially accessed with overallGUI. This function will reset all variables to defaults, so if you want to change only a few variables, use chooseSettings1 in the case of one material, or chooseSettings2 in the case of two materials of differing properties.  
 
-* The parameters can be viewed using printParameters, and individual programs with variables set can be run in the Thermal*Ind functions. 
+* The parameters can be viewed and modified in the workspace using printParameters, and individual programs with variables set can be run in the Thermal*Ind functions. 
 
 * It is recommended that the user run "clear global" between different instances to ensure that there are no artifacts from previous runs.
 
-Other programs with _check and exp are various checks that the program works as predicted in basic cases, checking that total energy/temperature remains constant when no energy should be lost, and that there is exponential decay. 
+* Clarifications on parameter settings can are in the _clarifications.md_ file.
 
 #### Time-distance scale
 * In everything except the amount of energy used, time and distance are proportional by time \alpha distance^2. Thus, if we are doing simple cases of heat dissipation, converting distance up by a degree of magnitude means increasing time by two degrees of magnitude. Note that all dimensions must decrease evenly- you may not decrease just one dimension by a degree of magnitude and decrease time with it.
@@ -25,19 +25,22 @@ Other programs with _check and exp are various checks that the program works as 
 
 ### Physics
 The following equations were used to determine the numerical calculations.
-	* Q = mc (dT)
-	* dQ/dt = kA(dT/dx) (_conduction_)
-	* dQ/dt = 
+	* Specific Heat formula
+	* Fourier Equation
+	* Newton's Law of Cooling
+	* Stefan-Boltzmann Law
+	
 
 ### Implementation versions
 * Each version states how many dimensions it applies over within the name of the file.
 
 ### Extra Tools
-* _OverallGUI_ should be run to reset all conditions and set them all up fresh.
+* _OverallGUI_ should be run to reset all conditions and set them all up to defaults.
 * _chooseSettings_ should be run to keep most conditions the same but with the ability to change just a few.
 * _anyMelting(Melting point, temperature matrix, [logical array for matrix])_ will return the number of pixels in the matrix (in the logical in the matrix) above the melting point provided. 
 * _plotTemps [matrix]_ can plot a matrix with number of dimensions set (specifically useful for finalTemps).
-* _saveConditions [filename.m]_ is a function that can be run to save all global variables (parameters to run the program, and important results such as final data and average temperatures) into a file in the home directory. They can be run as a matlab script and set up the program.
+* _saveConditions [filename.m]_ is a function that can be run to save all global variables (parameters to run the program, and important results such as final data and average temperatures) into a file in the home directory. They can be run as a MATLAB script and set up the program.
+* _printParameters_ brings all global variables into the workspace so that they can be seen and modified from the Command Window.
 * _calculate_ will choose which program to run based on the number of dimensions. 
 
 ### Implementation choices
