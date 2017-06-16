@@ -37,9 +37,9 @@ end
 index = 1;
 
 %Number of pixels across the grid
-xintervals = floor(xdist / dd + 1);
-yintervals = floor(ydist / dd + 1);
-zintervals = floor(zdist / dd + 1);
+xintervals = floor(xdist / dd);
+yintervals = floor(ydist / dd);
+zintervals = floor(zdist / dd);
 
 
 midx = ceil(xintervals/2);
@@ -386,7 +386,7 @@ wholeMatrix(2:end-1, 2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
 F(floor((iter)/80)) = struct('cdata',[],'colormap',[]);
-[X,Y,Z] = meshgrid(0:dd:ydist, 0:dd:xdist, 0:dd:zdist);
+[X,Y,Z] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist, dd/2:dd:zdist);
 
 %% Create constants for radiation and convection
 %Creates logicals that assign where the borders are. Edges have twice the
@@ -479,7 +479,7 @@ for j= 2:iter + 1
     %Increments by energy (turned into temp) if between the correct time
     %interval
     if j >= iterOn && j <= iterOff
-        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) .* dd .* ratios(rotation)';
+        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) ./ dd .* ratios(rotation)';
     end
     %If cycle/rotations are on, this will change
     if ~isempty(cycle) && cycle ~= 1 && mod(j - 1, cycleRate) == 0
@@ -487,10 +487,10 @@ for j= 2:iter + 1
         rotation(rotation > cycleIntervals) = 1;
     end
     
-    %Will graph/ save averages at correct framerate checking multiplicity.
+    %Will graph/ save total energy/ average temps at correct framerate checking multiplicity.
     if mod(j - 1, framerate) == 0 %Could alternatively be mod(j, framerate) == 1
-        list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Energy
-            ./ constants .* dt .* dd)));
+        list(index) = sum(sum(sum(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Total Energy
+            ./ constants))) .* dt .* dd;
         tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
         try
             if isotherm

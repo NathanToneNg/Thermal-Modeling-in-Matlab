@@ -38,7 +38,7 @@ end
 index = 1;
 
 %Number of pixels across the grid
-xintervals = floor(xdist / dd + 1);
+xintervals = floor(xdist / dd);
 mid = ceil(xintervals/2);
 
 %% Create Initial temperatures
@@ -361,7 +361,7 @@ for j= 2:iter + 1
     %Increments by energy (turned into temp) if between the correct time
     %interval
     if j >= iterOn && j <= iterOff
-        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) .* dd .* ratios(rotation)';
+        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) ./ dd .* ratios(rotation)';
     end
     %If cycle/rotations are on, this will change
     if ~isempty(cycle) && cycle ~= 1 && mod(j - 1, cycleRate) == 0
@@ -370,12 +370,12 @@ for j= 2:iter + 1
     end
     
     
-    %Will graph/ save averages at correct framerate checking multiplicity.
+    %Will graph/ save total energy/ average temps at correct framerate checking multiplicity.
     if mod(j - 1, framerate) == 0 %Could alternatively be mod(j, framerate) == 1
-        list(index) = mean(wholeMatrix(2:end-1)./constants.* dt ./ dd); %Energy per meter squared
+        list(index) = sum(wholeMatrix(2:end-1)./constants) .* dt .* dd; %Energy per meter squared
         tempsList(index) = mean(wholeMatrix(2:end-1));
         figure;
-        plot(0:dd:xdist, wholeMatrix(2:end-1));
+        plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);
         %alpha(0.7);
         drawnow
@@ -396,7 +396,7 @@ fig = figure;
 movie(fig,F,1)
 close all;
 
-plot(0:dd:xdist, wholeMatrix(2:end-1));
+plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
 %ylim([0 50]);
 
 %Used in tests where we need to check what percent of the material melts in
