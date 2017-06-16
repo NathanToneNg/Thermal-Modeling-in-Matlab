@@ -11,24 +11,27 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
-global list;
-global tempsList;
-global materialMatrix;
-global finalTemps;
+global list tempsList materialMatrix finalTemps; %Results
+
 if isempty(cycle)
     cycle = 1;
 end
 if isempty(convecc)
     convecc = 20;
 end
-rng('default');
+if isempty(isotherm)
+    isotherm = false;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %rng('default'); %This can be used to make the randomized distributions
 %consistent for repeatability
-
-digits(precision);
+try
+    digits(precision);
+catch
+    error('Must set parameters: use overallGUI');
+end
 
 %Index for frames in the movie
 index = 1;
@@ -92,23 +95,23 @@ outK = ones(xintervals, yintervals,zintervals);
 %% Create materials grid
 %Declare where the second material is based on parameter "distribution" and
 %the frequencies
-second = zeros(xintervals,yintervals,zintervals);
+second = false(xintervals,yintervals,zintervals);
 switch distribution
     case 1
         %Center pixel
-        second(midx, midy, midz) = 1;
+        second(midx, midy, midz) = true;
     case 2
         %Center block (5th of size in each direction)
         second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = 1;
+                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = true;
     case 3
         %Uniform distribution
         freq = nthroot(frequency2, 3);
-        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = 1;
+        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = true;
     case 4
         %Random distribution
         if frequency2 <= 1.1
-            second(:,:,:) = 1;
+            second(:,:,:) = true;
         else
             i = 1;
             %Fills until the ratio is fulfilled.
@@ -116,8 +119,8 @@ switch distribution
                 potentialRand = randi(xintervals);
                 potentialRand2 = randi(yintervals);
                 potentialRand3 = randi(zintervals);
-                if(second(potentialRand,potentialRand2,potentialRand3) ~= 1)
-                    second(potentialRand,potentialRand2,potentialRand3) = 1;
+                if(~second(potentialRand,potentialRand2,potentialRand3))
+                    second(potentialRand,potentialRand2,potentialRand3) = true;
                     i = i + 1;
                 end
             end
@@ -125,7 +128,7 @@ switch distribution
      case 5
          %Random spheres
         if frequency2 <= 1.1
-            second(:) = 1;
+            second(:) = true;
         else
             i = 0;
             num = ceil(xintervals * yintervals * zintervals/frequency2);
@@ -153,8 +156,8 @@ switch distribution
                             for l = potentialRand3 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2)))) : ...
                             potentialRand3 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2))))
                                 if l > 0 && l < zintervals
-                                    if(second(j,k,l) ~= 1)
-                                        second(j,k,l) = 1;
+                                    if(~second(j,k,l))
+                                        second(j,k,l) = true;
                                         i = i + 1;
                                     end
                                 end
@@ -165,9 +168,6 @@ switch distribution
             end
         end
 end
-%Easier to assign as a matrix of doubles, but then make it a logical matrix
-%afterwards.
-second = logical(second);
 
 %essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
@@ -179,33 +179,34 @@ k(second) = thermal_Conductivity2;
 if materials == 3
     receivers = second;
 else
-    receivers = zeros(xintervals, yintervals, zintervals);
+    receivers = false(xintervals, yintervals, zintervals);
     switch absorption
         case 1
-            receivers(midx, midy, midz) = 1;
+            receivers(midx, midy, midz) = true;
         case 2
-            receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10), midz - ceil(midz/10): midz + ceil(midz/10)) = 1;
+            receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ...
+                ceil(midy/10): midy + ceil(midy/10), midz - ceil(midz/10): midz + ceil(midz/10)) = true;
         case 3
             frequ = nthroot(distributionFrequency,3);
-            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals), ceil(1:frequ:zintervals)) = 1;
+            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals), ceil(1:frequ:zintervals)) = true;
         case 4
             if frequency2 <= 1.1
-                receivers(:,:,:) = 1;
+                receivers(:,:,:) = true;
             else
                 i = 1;
                 while i <= ceil(xintervals*yintervals*zintervals/distributionFrequency)
                     potentialRand = randi(xintervals);
                     potentialRand2 = randi(yintervals);
                     potentialRand3 = randi(zintervals);
-                    if(receivers(potentialRand,potentialRand2,potentialRand3) ~= 1)
-                        receivers(potentialRand,potentialRand2,potentialRand3) = 1;
+                    if(~receivers(potentialRand,potentialRand2,potentialRand3))
+                        receivers(potentialRand,potentialRand2,potentialRand3) = true;
                         i = i + 1;
                     end
                 end
             end
          case 5
             if distributionFrequency <= 1.1
-                receivers(:) = 1;
+                receivers(:) = true;
             else
                 i = 0;
                 num = ceil(xintervals * yintervals * zintervals/distributionFrequency);
@@ -231,8 +232,8 @@ else
                                 for l = potentialRand3 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2)))) : ...
                                 potentialRand3 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2))))
                                     if l > 0 && l < zintervals
-                                        if(receivers(j,k,l) ~= 1)
-                                            receivers(j,k,l) = 1;
+                                        if(~receivers(j,k,l))
+                                            receivers(j,k,l) = true;
                                             i = i + 1;
                                         end
                                     end
@@ -248,9 +249,7 @@ else
 end
 %Receivers is the iteratable size matrix, bigReceivers holds when we need to
 %access from the matrix with edges.
-receivers = logical(receivers);
-bigReceivers = zeros(xintervals + 2, yintervals + 2,zintervals + 2);
-bigReceivers = logical(bigReceivers);
+bigReceivers = false(xintervals + 2, yintervals + 2,zintervals + 2);
 bigReceivers(2:end-1,2:end-1,2:end-1) = receivers;
 
 %% Create cycle if relevant
@@ -394,19 +393,16 @@ F(floor((iter)/80)) = struct('cdata',[],'colormap',[]);
 %area, and corners triple. Not meant to be accurate with single dimension
 %sizes in this form.
 if radiation || convection
-    boundaries = zeros(xintervals + 2, yintervals + 2, zintervals + 2);
+    boundaries = zeros(xintervals + 2, yintervals + 2, zintervals + 2,'logical');
     corners = boundaries;
-    corners([2,end-1],[2,end-1],[2,end-1]) = 1;
-    corners = logical(corners);
+    corners([2,end-1],[2,end-1],[2,end-1]) = true;
     edges = boundaries;
-    edges(2:end-1,[2,end-1],[2,end-1]) = 1;
-    edges([2,end-1],[2,end-1],2:end-1) = 1;
-    edges([2,end-1],2:end-1,[2,end-1]) = 1;
-    edges = logical(edges);
-    boundaries(2:end-1,2:end-1,[2,end-1]) = 1;
-    boundaries(2:end-1,[2,end-1],2:end-1) = 1;
-    boundaries([2,end-1],2:end-1,2:end-1) = 1;
-    boundaries = logical(boundaries);
+    edges(2:end-1,[2,end-1],[2,end-1]) = true;
+    edges([2,end-1],[2,end-1],2:end-1) = true;
+    edges([2,end-1],2:end-1,[2,end-1]) = true;
+    boundaries(2:end-1,2:end-1,[2,end-1]) = true;
+    boundaries(2:end-1,[2,end-1],2:end-1) = true;
+    boundaries([2,end-1],2:end-1,2:end-1) = true;
     area = zeros(xintervals, yintervals, zintervals);
     pBoundaries = boundaries(2:end-1,2:end-1,2:end-1);
     pEdges = edges(2:end-1,2:end-1,2:end-1);
@@ -414,6 +410,7 @@ if radiation || convection
     area(pBoundaries) = 1;
     area(pEdges) = 2;
     area(pCorners) = 3;
+    area = area + (xintervals == 1) + (yintervals == 1) + (zintervals == 1);
 end
 
 %Ratios and room temperature constants set ahead of time for less

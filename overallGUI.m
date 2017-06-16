@@ -29,7 +29,7 @@ function overallGUI
     elevLocation = 1;
     elevFrequency = 12;
     absorption = 4;
-    energyRate = 20;
+    energyRate = 1250;
     distributionFrequency = 12;
     timeOn = 0;
     timeOff = 500;

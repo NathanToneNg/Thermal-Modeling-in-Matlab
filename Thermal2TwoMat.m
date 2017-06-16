@@ -11,17 +11,14 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
-global list;
-global tempsList;
-global materialMatrix;
-global finalTemps;
+global list tempsList materialMatrix finalTemps; %Results
+
 if isempty(cycle)
     cycle = 1;
 end
 if isempty(convecc)
     convecc = 20;
 end
-rng('default');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -30,7 +27,11 @@ rng('default');
 
 %Precision marks how many digits out calculations are carried to. The
 %normal precision is 32, but using lower numbers saves time.
-digits(precision);
+try
+    digits(precision);
+catch
+    error('Must set parameters: use overallGUI');
+end
 
 %Index for frames in the movie
 index = 1;
@@ -83,31 +84,31 @@ downK = ones(xintervals, yintervals);
 %% Create materials grid
 %Declare where the second material is based on parameter "distribution" and
 %the frequencies
-second = zeros(xintervals,yintervals);
+second = false(xintervals,yintervals);
 switch distribution
     case 1
         %Center pixel
-        second(midx, midy) = 1;
+        second(midx, midy) = true;
     case 2
         %Center block (5th of size in each direction)
         second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10)) = 1;
+                        midy + ceil(midy/10)) = true;
     case 3
         %Uniform distribution
         freq = sqrt(frequency2);
-        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals)) = 1;
+        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals)) = true;
     case 4
         %Random distribution
         if frequency2 <= 1.1
-            second(:,:) = 1;
+            second(:,:) = true;
         else
             i = 1;
             %Fills until the ratio is fulfilled.
             while i <= ceil(xintervals*yintervals/frequency2)
                 potentialRand = randi(xintervals);
                 potentialRand2 = randi(yintervals);
-                if(second(potentialRand,potentialRand2) ~= 1)
-                    second(potentialRand,potentialRand2) = 1;
+                if(~second(potentialRand,potentialRand2))
+                    second(potentialRand,potentialRand2) = true;
                     i = i + 1;
                 end
             end
@@ -115,7 +116,7 @@ switch distribution
     case 5
         %Random spheres
         if frequency2 <= 1.1
-            second(:) = 1;
+            second(:) = true;
         else
             i = 0;
             num = ceil(xintervals * yintervals/frequency2);
@@ -139,8 +140,8 @@ switch distribution
                     for k = potentialRand2 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
                             potentialRand2 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
                         if k > 0 && k < yintervals
-                            if(second(j,k) ~= 1)
-                                second(j,k) = 1;
+                            if(~second(j,k))
+                                second(j,k) = true;
                                 i = i + 1;
                             end
                         end
@@ -149,9 +150,6 @@ switch distribution
             end
         end
 end
-%Easier to assign as a matrix of doubles, but then make it a logical matrix
-%afterwards.
-second = logical(second);
 
 %essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
@@ -163,32 +161,32 @@ k(second) = thermal_Conductivity2;
 if materials == 3
     receivers = second;
 else
-    receivers = zeros(xintervals, yintervals);
+    receivers = false(xintervals, yintervals);
     switch absorption
         case 1
-            receivers(midx, midy) = 1;
+            receivers(midx, midy) = true;
         case 2
-            receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10)) = 1;
+            receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10)) = true;
         case 3
             frequ = sqrt(distributionFrequency);
-            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals)) = 1;
+            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals)) = true;
         case 4
             if distributionFrequency <= 1.1
-                receivers(:,:) = 1;
+                receivers(:,:) = true;
             else
                 i = 1;
                 while i <= ceil(xintervals*yintervals/distributionFrequency)
                     potentialRand = randi(xintervals);
                     potentialRand2 = randi(yintervals);
-                    if(receivers(potentialRand,potentialRand2) ~= 1)
-                        receivers(potentialRand,potentialRand2) = 1;
+                    if(~receivers(potentialRand,potentialRand2))
+                        receivers(potentialRand,potentialRand2) = true;
                         i = i + 1;
                     end
                 end
             end
         case 5
             if distributionFrequency <= 1.1
-                receivers(:) = 1;
+                receivers(:) = true;
             else
                 i = 0;
                 num = ceil(xintervals * yintervals/distributionFrequency);
@@ -210,8 +208,8 @@ else
                         for k = potentialRand2 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
                                 potentialRand2 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
                             if k > 0 && k < yintervals
-                                if(receivers(j,k) ~= 1)
-                                    receivers(j,k) = 1;
+                                if(~receivers(j,k))
+                                    receivers(j,k) = true;
                                     i = i + 1;
                                 end
                             end
@@ -225,9 +223,7 @@ else
 end
 %Receivers is the iteratable size matrix, bigReceivers holds when we need to
 %access from the matrix with edges.
-receivers = logical(receivers);
-bigReceivers = zeros(xintervals + 2, yintervals + 2);
-bigReceivers = logical(bigReceivers);
+bigReceivers = false(xintervals + 2, yintervals + 2);
 bigReceivers(2:end-1,2:end-1) = receivers;
 
 %% Create cycle if relevant
@@ -338,50 +334,50 @@ F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 %Creates logicals that assign where the borders are. Corners have twice the
 %area. Not meant to be accurate with single dimension sizes in this form.
 if radiation || convection 
-    boundaries = zeros(xintervals + 2, yintervals + 2);
+    boundaries = zeros(xintervals + 2, yintervals + 2,'logical');
     corners = boundaries;
-    boundaries([2,end-1],2:end-1) = 1;
-    boundaries(2:end-1,[2,end-1]) = 1;
-    boundaries = logical(boundaries);
-    corners([2,end-1],[2,end-1]) = 1;
-    corners = logical(corners);
+    boundaries([2,end-1],2:end-1) = true;
+    boundaries(2:end-1,[2,end-1]) = true;
+    corners([2,end-1],[2,end-1]) = true;
     area = zeros(xintervals, yintervals);
     pBoundaries = boundaries(2:end-1,2:end-1);
     pCorners = corners(2:end-1,2:end-1);
     area(pBoundaries) = 1;
     area(pCorners) = 2;
+    area = area + (xintervals == 1) + (yintervals == 1);
 end
 
 %If extra loss is turned on, that means we are treating it as
 %thin, where heat loss is off all area.
-if radiation && extraRadiation
-    area = area + 2;
-end
 
 %Ratios and room temperature constants set ahead of time for less
 %calculation between timesteps.
 if radiation
+    if extraRadiation
+        area = area + 2;
+    end
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
+    if extraRadiation
+        area = area - 2;
+        midAreaR = 2 + (xintervals == 1) + (yintervals == 1);
+        rMidConst = sigma .* emissivity .* constants(2:end-1,2:end-1) .* midAreaR .* dd;
+        rMidAir = rMidConst .* (roomTemp + 273.15)^4;
+    end
 end
-if radiation && extraRadiation
-    area = area - 2;
-end
-if radiation && extraRadiation
-    rMidConst = sigma .* emissivity .* constants(2:end-1,2:end-1) .* 2 .* dd;
-    rMidAir = rMidConst .* (roomTemp + 273.15)^4;
-end
-if convection && extraConvection
-    area = area + 2;
-end
+
 if convection
+    if extraConvection
+        area = area + 2;
+    end
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
-end
-if convection && extraConvection
-    convMidRatio = convecc .* constants(2:end-1,2:end-1) .* 2 .* dd;
-    convMidAir = convMidRatio .* roomTemp;
+    if extraConvection
+        midAreaC = 2 + (xintervals == 1) + (yintervals == 1);
+        convMidRatio = convecc .* constants(2:end-1,2:end-1) .* midAreaC .* dd;
+        convMidAir = convMidRatio .* roomTemp;
+    end
 end
 
 
@@ -424,20 +420,21 @@ for j= 2:iter + 1
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
-    end
-    if radiation && extraRadiation
-        wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
-            (rMidConst .* ((old(3:end-2,3:end-2) + 273.15).^4)) + rMidAir;
+        if extraRadiation
+            wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+                (rMidConst .* ((old(3:end-2,3:end-2) + 273.15).^4)) + rMidAir;
+        end
     end
     %Changes based on convection
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             ((old(boundaries) .* convRatio) - convAir);
+        if convection && extraConvection
+            wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+                ((old(3:end-2,3:end-2) .*convMidRatio) - convMidAir);
+        end
     end
-    if convection && extraConvection
-        wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
-            ((old(3:end-2,3:end-2) .*convMidRatio) - convMidAir);
-    end
+    
     %Increments by energy (turned into temp) if between the correct time
     %interval
     if j >= iterOn && j <= iterOff

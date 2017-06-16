@@ -11,10 +11,8 @@ global precision xdist dd total_time dt framerate borders convection radiation .
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
-global list;
-global tempsList;
-global materialMatrix;
-global finalTemps;
+global list tempsList materialMatrix finalTemps; %Results
+
 if isempty(cycle)
     cycle = 1;
 end
@@ -30,7 +28,11 @@ end
 
 %Precision marks how many digits out calculations are carried to. The
 %normal precision is 32, but using lower numbers saves time.
-digits(precision);
+try
+    digits(precision);
+catch
+    error('Must set parameters: use overallGUI');
+end
 
 %Index for frames in the movie
 index = 1;
@@ -74,28 +76,28 @@ rightK = ones(xintervals, 1);
 %% Create materials grid
 %Declare where the second material is based on parameter "distribution" and
 %the frequencies
-second = zeros(xintervals,1);
+second = false(xintervals,1);
 switch distribution
     case 1
         %Center pixel
-        second(mid) = 1;
+        second(mid) = true;
     case 2
         %Center block (5th of size in each direction)
-        second(mid - ceil(mid/10): mid + ceil(mid/10)) = 1;
+        second(mid - ceil(mid/10): mid + ceil(mid/10)) = true;
     case 3
         %Uniform distribution
-        second(1:ceil(frequency2):xintervals) = 1;
+        second(1:ceil(frequency2):xintervals) = true;
     case 4
         %Random distribution
         if frequency2 <= 1.1
-            second(:) = 1;
+            second(:) = true;
         else
             i = 1;
             %Fills until the ratio is fulfilled.
             while i <= ceil(xintervals/frequency2)
                 potentialRand = randi(xintervals);
-                if(second(potentialRand) ~= 1)
-                    second(potentialRand) = 1;
+                if(~second(potentialRand))
+                    second(potentialRand) = true;
                     i = i + 1;
                 end
             end
@@ -103,7 +105,7 @@ switch distribution
     case 5
         %Random spheres
         if frequency2 <= 1.1
-            second(:) = 1;
+            second(:) = true;
         else
             i = 0;
             num = ceil(xintervals/frequency2);
@@ -131,9 +133,6 @@ switch distribution
             end
         end
 end
-%Easier to assign as a matrix of doubles, but then make it a logical matrix
-%afterwards.
-second = logical(second);
 
 %essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
@@ -146,30 +145,30 @@ k(second) = thermal_Conductivity2;
 if materials == 3
     receivers = second;
 else
-    receivers = zeros(xintervals, 1);
+    receivers = false(xintervals, 1);
     switch absorption
         case 1
-            receivers(mid) = 1;
+            receivers(mid) = true;
         case 2
-            receivers(mid - ceil(mid/10): mid + ceil(mid/10)) = 1;
+            receivers(mid - ceil(mid/10): mid + ceil(mid/10)) = true;
         case 3
-            receivers(1:ceil(distributionFrequency):end) = 1;
+            receivers(1:ceil(distributionFrequency):end) = true;
         case 4
             if distributionFrequency <= 1.1
-                receivers(:) = 1;
+                receivers(:) = true;
             else
                 i = 1;
                 while i <= ceil(xintervals/distributionFrequency)
                     potentialRand = randi(xintervals);
-                    if(receivers(potentialRand) ~= 1)
-                        receivers(potentialRand) = 1;
+                    if(~receivers(potentialRand))
+                        receivers(potentialRand) = true;
                         i = i + 1;
                     end
                 end
             end
         case 5
             if distributionFrequency <= 1.1
-                receivers(:) = 1;
+                receivers(:) = true;
             else
                 i = 0;
                 num = ceil(xintervals/distributionFrequency);
@@ -187,8 +186,8 @@ else
                         ending = potentialRand + randRadius;
                     end
                     for j = start:ending
-                        if(receiver(j) ~= 1)
-                            second(j) = 1;
+                        if(~receivers(j))
+                            receivers(j) = true;
                             i = i + 1;
                         end
                     end
@@ -199,9 +198,7 @@ else
 end
 %Receivers is the iteratable size matrix, bigReceivers holds when we need to
 %access from the matrix with edges.
-receivers = logical(receivers);
-bigReceivers = zeros(xintervals + 2, 1);
-bigReceivers = logical(bigReceivers);
+bigReceivers = false(xintervals + 2, 1);
 bigReceivers(2:end-1) = receivers;
 
 %% Create cycle if relevant
@@ -271,9 +268,8 @@ F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 %Creates a logical that assigns where the borders are. Not meant to be accurate 
 %with single dimension sizes in this form.
 if radiation || convection
-    boundaries = zeros(xintervals + 2,1);
-    boundaries([2,end-1]) = 1;
-    boundaries = logical(boundaries);
+    boundaries = zeros(xintervals + 2,1,'logical');
+    boundaries([2,end-1]) = true;
     parameterBounds = boundaries(2:end-1);
 end
 
@@ -284,6 +280,7 @@ if radiation && extraRadiation
 else
     area = 1;
 end
+area = area + (xintervals == 1);
 
 %Ratios and room temperature constants set ahead of time for less
 %calculation between timesteps.
@@ -291,23 +288,26 @@ if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(parameterBounds) .* area .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
+    if extraRadiation
+        rMidConst = sigma .* emissivity .* constants(2:end-1) .* 4 .* dd;
+        rMidAir = rMidConst .* (roomTemp + 273.15)^4;
+    end
 end
-if radiation && extraRadiation
-    rMidConst = sigma .* emissivity .* constants(2:end-1) .* 4 .* dd;
-    rMidAir = rMidConst .* (roomTemp + 273.15)^4;
-end
+
 if convection && extraConvection
     area = 5;
 else
     area = 1;
 end
+area = area + (xintervals == 1);
+
 if convection
     convRatio = convecc .* constants(parameterBounds) .* area .* dd;
     convAir = convRatio .* roomTemp;
-end
-if convection && extraConvection
-    convMidRatio = convecc .* constants(2:end-1) .* 4 .* dd;
-    convMidAir = convMidRatio .* roomTemp;
+    if extraConvection
+        convMidRatio = convecc .* constants(2:end-1) .* 4 .* dd;
+        convMidAir = convMidRatio .* roomTemp;
+    end
 end
 %%%
 
@@ -342,20 +342,22 @@ for j= 2:iter + 1
     if radiation
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
+        if extraRadiation
+            wholeMatrix(3:end-2) = wholeMatrix(3:end-2) - ...
+                (rMidConst .* ((old(3:end-2) + 273.15).^4)) + rMidAir;
+        end
     end
-    if extraRadiation
-        wholeMatrix(3:end-2) = wholeMatrix(3:end-2) - ...
-            (rMidConst .* ((old(3:end-2) + 273.15).^4)) + rMidAir;
-    end
+    
     %Changes based on convection
     if convection
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             ((old(boundaries) .* convRatio) - convAir);
+        if extraConvection
+            wholeMatrix(3:end-2) = wholeMatrix(3:end-2) - ...
+                ((old(3:end-2) .*convMidRatio) - convMidAir);
+        end
     end
-    if extraConvection
-        wholeMatrix(3:end-2) = wholeMatrix(3:end-2) - ...
-            ((old(3:end-2) .*convMidRatio) - convMidAir);
-    end
+    
     %Increments by energy (turned into temp) if between the correct time
     %interval
     if j >= iterOn && j <= iterOff

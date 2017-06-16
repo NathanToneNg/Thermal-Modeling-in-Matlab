@@ -8,8 +8,16 @@ global borders
 borders = 1;
 global constant
 constant = 0.00038172;
+global convecc
+convecc = 20;
 global convection
 convection = 1;
+global cycle
+cycle = 5;
+global cycleIntervals
+cycleIntervals = 20;
+global cycleSpeed
+cycleSpeed = 20;
 global dd
 dd = 0.005;
 global density
@@ -41,7 +49,7 @@ extraConvection = 0;
 global extraRadiation
 extraRadiation = 0;
 global finalTemps
-finalTemps = '25.1731';
+finalTemps = '2.7615';
 finalTemps = str2num(finalTemps);
 global framerate
 framerate = 500;
@@ -49,8 +57,10 @@ global frequency2
 frequency2 = 12;
 global interfaceK
 interfaceK = 0.2;
+global isotherm
+isotherm = 0;
 global list
-list = '9628.0696      8578.6009      7643.7826      6811.0897      6069.3652      5408.6714      4820.1558      4295.9333      3828.9801      3413.0397      3042.5393      2712.5146      2418.5438      2156.6882      1923.4394      1715.6721      1530.6025      1365.7511      1218.9091       1088.109';
+list = '8576.3591      6807.6104      5404.4426      4290.8089      3406.8704      2706.0289      2150.1612      1708.7933      1358.2446      1080.6059      860.51623      685.56171       546.3911      436.46417      349.44056      280.06347      224.66023       181.1961      146.90547      119.36785';
 list = str2num(list);
 global materialMatrix
 materialMatrix = '1';
@@ -68,7 +78,7 @@ specific_heat = 1900;
 global specific_heat2
 specific_heat2 = 4130;
 global tempsList
-tempsList = '222.7431      198.4639      176.8371      157.5729      140.4133      125.1283      111.5131      99.38539      88.58254      78.95985      70.38842      62.75337      55.95243      49.89446      44.49831      39.69166      35.41012      31.59632      28.19917      25.17314';
+tempsList = '198.412      157.4924      125.0305      99.26683      78.81713      62.60333      49.74346      39.53252      31.42266      24.99956      19.90784      15.86031      12.64063      10.09749      8.084223      6.479201       5.19746      4.191928      3.398623      2.761547';
 tempsList = str2num(tempsList);
 global thermal_Conductivity
 thermal_Conductivity = 0.33;
@@ -89,7 +99,6 @@ zdist = 0.2;
 
 x = 25:25:500;
 experimentalTemps = list ./ specific_heat ./ density ./ dd ./ dd;
-analyticalTemps = 250.*(exp(-2.*x.*20./specific_heat./density./dd)); %Not meant to work with single pixel/layer
+analyticalTemps = 250.*(exp(-4.*x.*20./specific_heat./density./dd));
 differences = (abs((experimentalTemps - analyticalTemps) ./ analyticalTemps)); 
 offset = mean(differences)
-
