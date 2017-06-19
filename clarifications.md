@@ -62,3 +62,7 @@
 
 # 9: Repick #Materials / Dimensions 
 	* Allows the user to repick the number of materials or dimensions without resetting all other settings.
+
+# 10: Graphing Settings:
+	* Isosurface option applies for 3D case only: Will plot Isosurfaces for every 10th percentile
+	* Saving the movie will have the program save the movie as recentTestMovie.avi in your MATLAB folder. Drag this into the MATLAB Command Window to bring the movie to the workspace, and use * movie(recentTestMovie) * to play it.

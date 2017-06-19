@@ -3,17 +3,25 @@ Tm = 110;
 global Tm2
 Tm2 = 110;
 global absorption
-absorption = 4;
+absorption = 6;
 global borders
 borders = 0;
 global constant
-constant = 0.00038172;
+constant = 0.00036184;
+global convecc
+convecc = 1020;
 global convection
 convection = 0;
+global cycle
+cycle = 1;
+global cycleIntervals
+cycleIntervals = 20;
+global cycleSpeed
+cycleSpeed = 20;
 global dd
 dd = 0.005;
 global density
-density = 910;
+density = 960;
 global density2
 density2 = 1600;
 global dimensions
@@ -41,7 +49,7 @@ extraConvection = 0;
 global extraRadiation
 extraRadiation = 0;
 global finalTemps
-finalTemps = '0.075815';
+finalTemps = '0.0001281';
 finalTemps = str2num(finalTemps);
 global framerate
 framerate = 500;
@@ -49,8 +57,10 @@ global frequency2
 frequency2 = 12;
 global interfaceK
 interfaceK = 0.2;
+global isotherm
+isotherm = 0;
 global list
-list = '5035.1415      2347.0442       1094.968      511.76931      240.12396      113.59556       54.66049      27.209402       14.42309      8.4674138      5.6933476      4.4012283      3.7993782      3.5190453      3.3884704      3.3276505      3.2993215      3.2861262      3.2799801      3.2771173';
+list = '27.6284      13.3917      6.49106      3.14627      1.52502     0.739191     0.358292     0.173667    0.0841777    0.0408016    0.0197769   0.00958602   0.00464642   0.00225216   0.00109164  0.000529126  0.000256472  0.000124314   6.0256e-05  2.92066e-05';
 list = str2num(list);
 global materialMatrix
 materialMatrix = '1';
@@ -70,7 +80,7 @@ specific_heat = 1900;
 global specific_heat2
 specific_heat2 = 4130;
 global tempsList
-tempsList = '116.4868       54.2983      25.33182      11.83966       5.55521      2.628006      1.264557      0.629483     0.3336747     0.1958916     0.1317142     0.1018214     0.0878977    0.08141227    0.07839145    0.07698439    0.07632901    0.07602374    0.07588155    0.07581532';
+tempsList = '121.177      58.73548      28.46956      13.79943      6.688695      3.242064      1.571455     0.7616969     0.3692007     0.1789545    0.08674072    0.04204393    0.02037903   0.009877882   0.004787889   0.002320729   0.001124876  0.0005452365  0.0002642805  0.0001280989';
 tempsList = str2num(tempsList);
 global thermal_Conductivity
 thermal_Conductivity = 0.33;
@@ -83,15 +93,13 @@ timeOn = 0;
 global total_time
 total_time = 500;
 global xdist
-xdist = 0;
+xdist = 0.005;
 global ydist
-ydist = 0;
+ydist = 0.005;
 global zdist
 zdist = 0.2;
 
 x = 25:25:500;
-experimentalTemps = list ./ specific_heat ./ density ./ dd ./ dd
 analyticalTemps = 250.*(exp(-4.*x.*thermal_Conductivity./specific_heat./density./dd./dd))
-differences = (abs((experimentalTemps - analyticalTemps) ./ analyticalTemps)) %Higher at end because of smaller temperatures
+differences = (abs((tempsList - analyticalTemps) ./ analyticalTemps)) %Higher at end because of smaller temperatures
 percentOffest = mean(differences)
-

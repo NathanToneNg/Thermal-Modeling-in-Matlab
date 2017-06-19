@@ -5,7 +5,8 @@ function overallGUI
     specific_heat density Tm constant roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     materials thermal_Conductivity2 interfaceK density2 specific_heat2 distribution frequency2 ...
-    extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed isotherm convecc;
+    extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed ...
+    saveMovie isotherm convecc melting Tm2;
 
     
     %%%%Defaults
@@ -39,6 +40,7 @@ function overallGUI
     interfaceK = 60;
     density2 = 3210;
     specific_heat2 = 750;
+    Tm2 = 110;
     distribution = 1;
     frequency2 = 12;
     extraConduction = false;
@@ -49,6 +51,8 @@ function overallGUI
     cycleSpeed = 20;
     isotherm = false;
     convecc = 20;
+    saveMovie = false;
+    melting = false;
     %%%%%%%%%%%%
     
     

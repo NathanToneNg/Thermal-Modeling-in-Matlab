@@ -1,4 +1,4 @@
-function Thermal3TwoMat
+%function Thermal3TwoMat
 %% Initialize globals
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
@@ -7,7 +7,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc;
+    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -21,6 +21,12 @@ if isempty(convecc)
 end
 if isempty(isotherm)
     isotherm = false;
+end
+if isempty(saveMovie)
+    saveMovie = false;
+end
+if isempty(melting)
+    melting = false;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,6 +179,8 @@ end
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 materialMatrix(second) = 2;
 k(second) = thermal_Conductivity2;
+Tms = ones(xintervals, yintervals, zintervals) .* Tm;
+Tms(second) = Tm2;
 
 %Determine where the receiver materials are. Same possibilities as for
 %second material.
@@ -385,8 +393,11 @@ wholeMatrix = zeros(xintervals + 2, yintervals + 2, zintervals + 2) + roomTemp;
 wholeMatrix(2:end-1, 2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
-F(floor((iter)/80)) = struct('cdata',[],'colormap',[]);
+F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 [X,Y,Z] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist, dd/2:dd:zdist);
+
+%Melting Stuff
+melted = false(xintervals,yintervals, zintervals);
 
 %% Create constants for radiation and convection
 %Creates logicals that assign where the borders are. Edges have twice the
@@ -495,6 +506,7 @@ for j= 2:iter + 1
         try
             if isotherm
                 isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+                view(3)
             else
                 figure;
                 slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
@@ -509,6 +521,9 @@ for j= 2:iter + 1
             disp('Cannot graph');
         end
         index = index + 1;
+        if melting
+            melted = anyMeltingIter(wholeMatrix(2:end-1,2:end-1,2:end-1),melted,Tms);
+        end
     end
 end
 
@@ -520,14 +535,18 @@ finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 %movie, and then show just the last screen.
 pause
 close all;
+fig = figure;
+movie(fig,F,1);
+close all;
+
 try
     if isotherm
         isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+        view(3);
+        hold on;
+        s = slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+        alpha(s, 0.3);
     else
-        fig = figure;
-        movie(fig,F,1)
-        close all;
-
         slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
         caxis([0 (Tm + 20)])
         colorbar('horiz')
@@ -535,13 +554,18 @@ try
 catch
     disp('Cannot graph');
 end
+if saveMovie
+    v = VideoWriter('recentTestMovie');
+    v.open;
+    v.writeVideo(F)
+    v.close;
+end
 
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
-melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);
 num = numel(Tempgrid);
-ratio = melted/num;
+ratio = sum(sum(sum(melted)))/num;
 
-fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
+fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(sum(melted))), num, ratio, ratio*100);
 
-end
+%end

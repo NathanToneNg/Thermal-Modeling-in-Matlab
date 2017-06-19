@@ -7,7 +7,8 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed convecc;
+    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals ...
+    cycleSpeed convecc saveMovie melting Tm2;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -18,6 +19,12 @@ if isempty(cycle)
 end
 if isempty(convecc)
     convecc = 20;
+end
+if isempty(saveMovie)
+    saveMovie = false;
+end
+if isempty(melting)
+    melting = false;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,6 +162,8 @@ end
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 materialMatrix(second) = 2;
 k(second) = thermal_Conductivity2;
+Tms = ones(xintervals, yintervals) .* Tm;
+Tms(second) = Tm2;
 
 %Determine where the receiver materials are. Same possibilities as for
 %second material.
@@ -330,6 +339,9 @@ wholeMatrix(2:end-1, 2:end-1) = Tempgrid;
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 [X,Y] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist);
 
+%Melting Stuff
+melted = false(xintervals,yintervals);
+
 %% Create constants for radiation and convection
 %Creates logicals that assign where the borders are. Corners have twice the
 %area. Not meant to be accurate with single dimension sizes in this form.
@@ -463,6 +475,9 @@ for j= 2:iter + 1
             disp('Cannot graph');
         end
         index = index + 1;
+        if melting
+            melted = anyMeltingIter(wholeMatrix(2:end-1,2:end-1),melted,Tms);
+        end
     end
 end
 
@@ -485,13 +500,18 @@ try
 catch
     disp('Cannot graph');
 end
+if saveMovie
+    v = VideoWriter('recentTestMovie','Motion JPEG 2000');
+    v.open;
+    v.writeVideo(F)
+    v.close;
+end
 
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
-melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);
 num = numel(Tempgrid);
-ratio = melted/num;
+ratio = sum(sum(melted))/num;
 
-fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
+fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(melted)), num, ratio, ratio*100);
 
 end

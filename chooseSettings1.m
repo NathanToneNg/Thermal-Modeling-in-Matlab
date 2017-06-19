@@ -37,6 +37,10 @@ calculateBar = uicontrol(grouph, 'Style', 'pushbutton', ...
     'String', 'Calculate', 'Units', 'Normalized',...
     'Position', [.05 .2 .3 .1],'Callback',@whattodo);
 
+graphingSettings = uicontrol(grouph, 'Style', 'pushbutton', ...
+    'String', 'Graphing Settings', 'Units', 'Normalized',...
+    'Position', [.35 .9 .3 .1],'Callback',@whattodo);
+
 warningText1 = uicontrol('Style','text', ...
     'Position',[250,170,120,200],'String', ...
     'Warning: The program may not run under these parameters. Decrease the time-step or increase one of the following: Material 1''s density, specific_heat, or conductivity, or the distance increment.');
@@ -75,10 +79,10 @@ function whattodo(hObject, ~)
         case repickSettings
             close(gcf);
             repickDimensions;
+        case graphingSettings
+            graphingMenu;
         case calculateBar
             calculate
-
-
 
     end
 

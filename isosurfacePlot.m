@@ -4,14 +4,14 @@ function isosurfacePlot(matrix)
 global finalTemps xdist ydist zdist dd;
 
 if nargin == 0
-    V = reshape(finalTemps, floor(xdist / dd + 1),floor(ydist / dd + 1),floor(zdist / dd + 1));
+    V = reshape(finalTemps, floor(xdist / dd),floor(ydist / dd),floor(zdist / dd));
 else
-    V = reshape(matrix, floor(xdist / dd + 1),floor(ydist / dd + 1),floor(zdist / dd + 1));
+    V = reshape(matrix, floor(xdist / dd),floor(ydist / dd),floor(zdist / dd));
 end
 
 
 
-[X,Y,Z] = meshgrid(0:dd:ydist, 0:dd:xdist, 0:dd:zdist);
+[X,Y,Z] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist, dd/2:dd:zdist);
 Vmax = max(max(max(V)));
 Vmin = min(min(min(V)));
 Vrange = Vmax - Vmin;

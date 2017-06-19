@@ -7,7 +7,7 @@ absorption = 6;
 global borders
 borders = 1;
 global constant
-constant = 0.00038172;
+constant = 0.00036184;
 global convecc
 convecc = 20;
 global convection
@@ -21,7 +21,7 @@ cycleSpeed = 20;
 global dd
 dd = 0.005;
 global density
-density = 910;
+density = 960;
 global density2
 density2 = 1600;
 global dimensions
@@ -59,7 +59,7 @@ interfaceK = 0.2;
 global isotherm
 isotherm = 0;
 global list
-list = '303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75        303794.75';
+list = '320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396';
 list = str2num(list);
 global materialMatrix
 load materialMatrixConstantEnergy3dTest0x2Em
@@ -71,12 +71,14 @@ global radiation
 radiation = 0;
 global roomTemp
 roomTemp = 0;
+global self_set
+self_set = 0;
 global specific_heat
 specific_heat = 1900;
 global specific_heat2
 specific_heat2 = 4130;
 global tempsList
-tempsList = '21.8716      21.8691      21.8673      21.8659      21.8648      21.8639      21.8632      21.8626      21.8621      21.8616      21.8612      21.8609      21.8606      21.8603      21.8601      21.8599      21.8597      21.8595      21.8593      21.8591';
+tempsList = '21.8718      21.8695      21.8677      21.8664      21.8654      21.8645      21.8638      21.8633      21.8628      21.8624       21.862      21.8617      21.8615      21.8612       21.861      21.8608      21.8606      21.8604      21.8602        21.86';
 tempsList = str2num(tempsList);
 global thermal_Conductivity
 thermal_Conductivity = 0.33;

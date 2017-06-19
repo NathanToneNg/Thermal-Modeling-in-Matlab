@@ -1,4 +1,4 @@
-function Thermal1TwoMat
+%function Thermal1TwoMat
 %% Initialize globals
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
@@ -7,7 +7,8 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     specific_heat density Tm thermal_Conductivity roomTemp elevatedTemp elevLocation ...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed convecc;
+    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals ...
+    cycleSpeed convecc saveMovie melting Tm2;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -19,7 +20,12 @@ end
 if isempty(convecc)
     convecc = 20;
 end
-
+if isempty(saveMovie)
+    saveMovie = false;
+end
+if isempty(melting)
+    melting = false;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -138,7 +144,8 @@ end
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 materialMatrix(second) = 2;
 k(second) = thermal_Conductivity2;
-
+Tms = ones(xintervals, 1) .* Tm;
+Tms(second) = Tm2;
 
 %Determine where the receiver materials are. Same possibilities as for
 %second material.
@@ -264,6 +271,9 @@ wholeMatrix(2:end-1) = Tempgrid;
 %%% movie stuff
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
 
+%Melting Stuff
+melted = false(xintervals,1);
+
 %% Create constants for radiation and convection
 %Creates a logical that assigns where the borders are. Not meant to be accurate 
 %with single dimension sizes in this form.
@@ -381,6 +391,9 @@ for j= 2:iter + 1
         drawnow
         F(index) = getframe(gcf);
         index = index + 1;
+        if melting
+            melted = anyMeltingIter(wholeMatrix(2:end-1),melted,Tms);
+        end
     end
 end
 
@@ -395,16 +408,21 @@ close all;
 fig = figure;
 movie(fig,F,1)
 close all;
+if saveMovie
+    v = VideoWriter('recentTestMovie','Motion JPEG 2000');
+    v.open;
+    v.writeVideo(F)
+    v.close;
+end
 
 plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
 %ylim([0 50]);
 
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
-melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);
 num = numel(Tempgrid);
-ratio = melted/num;
+ratio = sum(melted)/num;
 
-fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
+fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(melted), num, ratio, ratio*100);
 
-end
+%end

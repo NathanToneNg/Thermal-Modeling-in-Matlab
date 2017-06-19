@@ -59,7 +59,7 @@ interfaceK = 0.2;
 global isotherm
 isotherm = 0;
 global list
-list = '0.0014179   0.0014179';
+list = '0.114       0.114';
 list = str2num(list);
 global materialMatrix
 load materialMatrixGaussTest2DSuccess0x2Em
@@ -78,7 +78,7 @@ specific_heat = 1900;
 global specific_heat2
 specific_heat2 = 4130;
 global tempsList
-tempsList = '0.0031094   0.0031094';
+tempsList = '0.003125    0.003125';
 tempsList = str2num(tempsList);
 global thermal_Conductivity
 thermal_Conductivity = 0.51;
@@ -97,9 +97,7 @@ ydist = 0.2;
 global zdist
 zdist = 0.2;
 
-
-x = [0:dd:xdist]';
-% y = [0:dd:ydist]';
+x = [dd/2:dd:xdist]';
 D = thermal_Conductivity / specific_heat / density;
 f = fit(x,finalTemps(201,:)','gauss1');
 
@@ -110,4 +108,5 @@ theoreticalC = sqrt(4 .* D .* (5:5:100)');
 
 fprintf('Inaccuracy from gaussian model is %d after %d seconds with %d distance increment.\n',...
     (theoreticalC(20) - f.c1) / theoreticalC(20), total_time, dd);
+
 
