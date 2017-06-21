@@ -1,3 +1,35 @@
+%material2Menu: Opens a menu where the user can specify constants for the second material
+%necessary for thermal calculations.
+%
+% Clarifications:
+%   Conduction Constant is used in Newton's Law of Cooling
+%
+%   Radiation Emissivity is used in the Stefan-Boltzmann Law
+%
+%   All assumed units are seconds, meters, kilograms, Watts, and degrees Celcius
+%       For example, density is expected to be provided in kg/m^3
+%
+%   Thermal Conductivity on interface between materials is the second
+%       conductivity box, and usually lies in value between the two individual
+%       Thermal conductivities.
+%
+%
+% Distribution (For both 2nd Material and/or Energy Receptors)
+%	Center Pixel: Only the single pixel in the center of the grid
+%
+%   Center Block: With the center at the middle, a line/square/cube covering a 
+%       5th of the total dimension (a 10th out from the center in each direction)
+%
+%   Uniform Distribution: 1 out of every (input) pixels become the second 
+%       material/receptor, by taking the nth root and rounding.
+%
+%   Random Distribution: 1 out of every (input) pixels become the second 
+%       material/ receptor, by randomly finding unselected spots and filling 
+%       until the ratio is fulfilled.
+%   Random Spheres: 1 out of every (input) pixels become the second 
+%       material/ receptor, by randomly finding a radius within the remainder 
+%       of needed pixels, and then picking a random unselected spot. The 
+%       process is repeated until the ratio is fulfilled.
 function material2Menu
     global Tm2 specific_heat2 density2 thermal_Conductivity2  dt dd materials interfaceK ...
         distribution frequency2;

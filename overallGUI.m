@@ -1,12 +1,16 @@
-%Initializes to default variables and accepts input for dimensions and
+%overallGUI: Initializes to default variables and accepts input for dimensions and
 %number of materials from user.
+%
+%Clarifications: 2 Materials mean there are two different materials, but 
+%   neither is necessarily the receptor. 1 Matrix/ 1 Receptor guarantees that 
+%   the receptors will be located where the second material is.
 function overallGUI
     global dimensions precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm constant roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     materials thermal_Conductivity2 interfaceK density2 specific_heat2 distribution frequency2 ...
     extraConduction extraConvection extraRadiation cycle cycleIntervals cycleSpeed ...
-    saveMovie isotherm convecc melting Tm2;
+    saveMovie isotherm convecc melting Tm2 graph;
 
     
     %%%%Defaults
@@ -53,6 +57,7 @@ function overallGUI
     convecc = 20;
     saveMovie = false;
     melting = false;
+    graph = true;
     %%%%%%%%%%%%
     
     

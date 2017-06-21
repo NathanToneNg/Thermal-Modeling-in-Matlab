@@ -1,8 +1,17 @@
+%isosurfacePlot: Plots the matrix provided (or finalTemps if none is given)
+%   in an isosurface plot, currently configured to plot every 10th
+%   percentile from lowest = green to highest = red.
+%
+% Only works with 3D variables; program assumes that finalTemps, xdist,
+% ydist, zdist, and dd (result temperatures and size settings) are aligned.
+%
 function isosurfacePlot(matrix)
 
 % X,Y,Z iz the meshgrid and V is my function evaluated at each meshpoint
 global finalTemps xdist ydist zdist dd;
-
+if numel(finalTemps) ~= floor(xdist / dd)*floor(ydist / dd)*floor(zdist / dd)
+    error('Incorrect number of elements in matrix compared to global parameters');
+end
 if nargin == 0
     V = reshape(finalTemps, floor(xdist / dd),floor(ydist / dd),floor(zdist / dd));
 else

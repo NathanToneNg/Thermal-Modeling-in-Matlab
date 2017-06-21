@@ -1,6 +1,5 @@
 function chooseSettings1
-global dimensions;
-global dt dd thermal_Conductivity specific_heat density ;
+global dt dd thermal_Conductivity specific_heat density;
 
 
 f = figure('Visible', 'off','color','black','Position',...
@@ -49,9 +48,9 @@ checkButton = uicontrol('Style','pushbutton',...
     'Re-check parameters', 'Callback',@recheck);
 
 if (1/7) <= dt * thermal_Conductivity / (dd * dd * specific_heat * density)
-            set(warningText1,'Visible','on');
+    set(warningText1,'Visible','on');
 else
-            set(warningText1,'Visible','off');
+    set(warningText1,'Visible','off');
 end
         
 

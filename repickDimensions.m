@@ -1,3 +1,11 @@
+%repickDimensions: Opens a menu where the user may set number of dimensions
+%and materials without resetting all other constants to defaults with
+%overallGUI. 
+%
+%Clarifications: 2 Materials mean there are two different materials, but 
+%   neither is necessarily the receptor. 1 Matrix/ 1 Receptor guarantees that 
+%   the receptors will be located where the second material is.
+%
 function repickDimensions
     global dimensions materials distribution
 

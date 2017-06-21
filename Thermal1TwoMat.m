@@ -1,4 +1,4 @@
-%function Thermal1TwoMat
+function Thermal1TwoMat
 %% Initialize globals
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
@@ -8,7 +8,7 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2;
+    cycleSpeed convecc saveMovie melting Tm2 graph;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -25,6 +25,9 @@ if isempty(saveMovie)
 end
 if isempty(melting)
     melting = false;
+end
+if isempty(graph)
+    graph = true;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,6 +67,10 @@ end
 
 %Total number of time steps that are taken.
 iter = total_time/dt;
+if framerate > iter
+    disp('Framerate too high- adjusting to graph only last frame.')
+    framerate = iter;
+end
 if(absorption)
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
@@ -346,7 +353,7 @@ for j= 2:iter + 1
         (old(1:end-2) - old(2:end-1)).*constants .* leftK + ...
         (old(3:end) - old(2:end-1)).*constants .* rightK;
     if ~borders && extraConduction
-        wholeMatrix(2:end-1) = wholeMatrix(2:end-1) - 4.* old(2:end-1) .* constants .* k;
+        wholeMatrix(2:end-1) = wholeMatrix(2:end-1) - 4.* (old(2:end-1)-roomTemp) .* constants .* k;
     end
     %Changes based on radiation
     if radiation
@@ -380,16 +387,18 @@ for j= 2:iter + 1
     end
     
     
-    %Will graph/ save total energy/ average temps at correct framerate checking multiplicity.
+    %Will graph/ save total energy/ average temps at correct framerate.
     if mod(j - 1, framerate) == 0 %Could alternatively be mod(j, framerate) == 1
         list(index) = sum(wholeMatrix(2:end-1)./constants) .* dt .* dd; %Energy per meter squared
         tempsList(index) = mean(wholeMatrix(2:end-1));
-        figure;
-        plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
-        %ylim([0 50]);
-        %alpha(0.7);
-        drawnow
-        F(index) = getframe(gcf);
+        if graph
+            figure;
+            plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
+            %ylim([0 50]);
+            %alpha(0.7);
+            drawnow
+            F(index) = getframe(gcf);
+        end
         index = index + 1;
         if melting
             melted = anyMeltingIter(wholeMatrix(2:end-1),melted,Tms);
@@ -403,26 +412,30 @@ finalTemps = wholeMatrix(2:end-1);
 
 %Will wait for user to give word, and will then close all windows, play the
 %movie, and then show just the last screen. 
-pause
-close all;
-fig = figure;
-movie(fig,F,1)
-close all;
-if saveMovie
-    v = VideoWriter('recentTestMovie','Motion JPEG 2000');
-    v.open;
-    v.writeVideo(F)
-    v.close;
-end
+if graph
+    pause
+    close all;
+    fig = figure;
+    movie(fig,F,1)
+    close all;
+    if saveMovie
+        v = VideoWriter('recentTestMovie','Motion JPEG 2000');
+        v.open;
+        v.writeVideo(F)
+        v.close;
+    end
 
-plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
-%ylim([0 50]);
+    plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
+    %ylim([0 50]);
+end
 
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
-num = numel(Tempgrid);
-ratio = sum(melted)/num;
+if melting
+    num = numel(Tempgrid);
+    ratio = sum(melted)/num;
 
-fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(melted), num, ratio, ratio*100);
+    fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(melted), num, ratio, ratio*100);
+end
 
-%end
+end

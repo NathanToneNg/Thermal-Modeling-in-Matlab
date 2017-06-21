@@ -8,7 +8,7 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2;
+    cycleSpeed convecc saveMovie melting Tm2 graph;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -25,6 +25,9 @@ if isempty(saveMovie)
 end
 if isempty(melting)
     melting = false;
+end
+if isempty(graph)
+    graph = true;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,6 +73,10 @@ end
 
 %Total number of time steps that are taken.
 iter = total_time/dt;
+if framerate > iter
+    disp('Framerate too high- adjusting to graph only last frame.')
+    framerate = iter;
+end
 if absorption
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
@@ -426,7 +433,7 @@ for j= 2:iter + 1
         (old(3:end,2:end-1) - old(2:end-1,2:end-1)).*constants .* rightK;
     if ~borders && extraConduction
         wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) - ...
-            2.* old(2:end-1,2:end-1) .* constants .* k;
+            2.* (old(2:end-1,2:end-1)-roomTemp) .* constants .* k;
     end
     %Changes based on radiation
     if(radiation)        
@@ -458,21 +465,23 @@ for j= 2:iter + 1
         rotation(rotation > cycleIntervals) = 1;
     end
     
-    %Will graph/ save total energy and average temps at correct framerate checking multiplicity.
+    %Will graph/ save total energy and average temps at correct framerate.
     if mod(j - 1, framerate) == 0 %Could alternatively be mod(j, framerate) == 1
         list(index) = sum(sum(wholeMatrix(2:end-1,2:end-1) ... %Total Energy
             ./ constants)) .* dt .* dd;
         tempsList(index) = mean(mean(wholeMatrix(2:end-1,2:end-1)));
-        try
-            figure;
-            surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
-            caxis([0 (Tm + 20)])
-            colorbar('horiz')
-            %alpha(0.7);
-            drawnow
-            F(index) = getframe(gcf);
-        catch
-            disp('Cannot graph');
+        if graph
+            try
+                figure;
+                surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
+                caxis([0 (Tm + 20)])
+                colorbar('horiz')
+                %alpha(0.7);
+                drawnow
+                F(index) = getframe(gcf);
+            catch
+                disp('Cannot graph');
+            end
         end
         index = index + 1;
         if melting
@@ -487,31 +496,35 @@ finalTemps = wholeMatrix(2:end-1,2:end-1);
 
 %Will wait for user to give word, and will then close all windows, play the
 %movie, and then show just the last screen.
-pause
-close all;
-try
-    fig = figure;
-    movie(fig,F,1)
+if graph
+    pause
     close all;
+    try
+        fig = figure;
+        movie(fig,F,1)
+        close all;
 
-    surf(X,Y,wholeMatrix(2:end-1,2:end-1));
-    caxis([0 (Tm + 20)])
-    colorbar('horiz')
-catch
-    disp('Cannot graph');
-end
-if saveMovie
-    v = VideoWriter('recentTestMovie','Motion JPEG 2000');
-    v.open;
-    v.writeVideo(F)
-    v.close;
+        surf(X,Y,wholeMatrix(2:end-1,2:end-1));
+        caxis([0 (Tm + 20)])
+        colorbar('horiz')
+    catch
+        disp('Cannot graph');
+    end
+    if saveMovie
+        v = VideoWriter('recentTestMovie','Motion JPEG 2000');
+        v.open;
+        v.writeVideo(F)
+        v.close;
+    end
 end
 
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
-num = numel(Tempgrid);
-ratio = sum(sum(melted))/num;
+if melting
+    num = numel(Tempgrid);
+    ratio = sum(sum(melted))/num;
 
-fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(melted)), num, ratio, ratio*100);
+    fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(melted)), num, ratio, ratio*100);
+end
 
 end

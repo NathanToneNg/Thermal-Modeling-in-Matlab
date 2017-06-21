@@ -1,38 +1,54 @@
-global precision xdist ydist zdist dd total_time dt framerate convection radiation ...
+%% Initialize globals
+%Globals allow this to carry over from set-up functions. They are used
+%instead of persistent so that they can be used in the command frame if
+%necessary.
+global precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
-    elevFrequency absorption energyRate emissivity timeOn timeOff...
-    density2 specific_heat2 thermal_Conductivity2 interfaceK ...
-    frequency2 cycle cycleIntervals cycleSpeed isotherm;
+    elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
+    density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
+    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph;
 clear global list;
 clear global tempsList;
-global list;
-global tempsList;
-global materialMatrix;
-global finalTemps;
-xdist = 0.2;
-ydist = 0.2;
-zdist = 0.1;
-dd = 0.005;
+clear global materialMatrix;
+global list tempsList materialMatrix finalTemps; %Results
 
-
-
+if isempty(cycle)
+    cycle = 1;
+end
+if isempty(convecc)
+    convecc = 20;
+end
+if isempty(isotherm)
+    isotherm = false;
+end
+if isempty(saveMovie)
+    saveMovie = false;
+end
+if isempty(melting)
+    melting = false;
+end
+if isempty(graph)
+    graph = true;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% MaterialMatrix must be custom made, but then thermal conductivities
-%%% retrieved from it. 
-%%% Allows for more than 2 materials, disallows conductivity off edges
-%%% which shouldn't be needed anyway realistically. Calculations each time
-%%% step remain the same.
+%rng('default'); %This can be used to make the randomized distributions
+%consistent for repeatability
+try
+    digits(precision);
+catch
+    error('Must set parameters: use overallGUI');
+end
 
-digits(precision);
+%Index for frames in the movie
 index = 1;
 
+%Number of pixels across the grid
+xintervals = floor(xdist / dd);
+yintervals = floor(ydist / dd);
+zintervals = floor(zdist / dd);
 
-xintervals = floor(xdist / dd + 1);
-yintervals = floor(ydist / dd + 1);
-zintervals = floor(zdist / dd + 1);
-Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTemp;
 
 midx = ceil(xintervals/2);
 midy = ceil(yintervals/2);
@@ -42,6 +58,9 @@ xslice = (ceil((xintervals-1)/2) * dd); %Locations to graph
 yslice = (ceil((yintervals-1)/2) * dd);
 zslice = (ceil((zintervals-1)/2) * dd);
 
+%% Create initial temperatures
+%This creates a temporary grid of which pixels start at higher temperature
+Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTemp;
 % switch elevLocation 
 %     case 1
 %         Tempgrid(midx, midy, midz) = elevatedTemp;
@@ -142,7 +161,12 @@ k = kArray(materialMatrix(:,:,:) + 1);
 k = k .* 10;
 
 
+%Total number of time steps that are taken.
 iter = total_time/dt;
+if framerate > iter
+    disp('Framerate too high- adjusting to graph only last frame.')
+    framerate = iter;
+end
 if absorption
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
@@ -175,6 +199,8 @@ bigReceivers = logical(bigReceivers);
 bigReceivers(2:end-1,2:end-1,2:end-1) = receivers;
 
 
+%% Create cycle if relevant
+%Cycle setup. In try catch so older tests still work
 rotation = ones(sum(sum(sum(receivers))), 1);
 try 
     cycleRate = round(cycleSpeed ./ dt ./ cycleIntervals);
@@ -199,7 +225,6 @@ catch
     rotation = rotation';
     disp('No rotation');
 end
-
 
 
 for i = 1:xintervals
@@ -331,47 +356,57 @@ for i = 1:xintervals
 end
 
 
+%The initial temperature grid is assigned.
 wholeMatrix = zeros(xintervals + 2, yintervals + 2, zintervals + 2) + roomTemp;
 wholeMatrix(2:end-1, 2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
+F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
+[X,Y,Z] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist, dd/2:dd:zdist);
 
-clear F;
-F(floor((iter)/80)) = struct('cdata',[],'colormap',[]);
-[X,Y,Z] = meshgrid(0:dd:ydist, 0:dd:xdist, 0:dd:zdist);
+%Melting Stuff
+melted = false(xintervals,yintervals, zintervals);
 
+%% Create constants for radiation and convection
+%Creates logicals that assign where the borders are. Edges have twice the
+%area, and corners triple. Not meant to be accurate with single dimension
+%sizes in this form.
 if radiation || convection
     area = (upK == 0) + (downK == 0) + (leftK == 0) + (rightK == 0);
     pBoundaries = (area ~= 0);
-    boundaries = logical(zeros(xintervals + 2, yintervals + 2, zintervals + 2));
+    boundaries = falses(xintervals, yintervals, zintervals));
     boundaries(2:end-1,2:end-1,2:end-1) = pBoundaries;
-
-    
 end
 
+%Ratios and room temperature constants set ahead of time for less
+%calculation between timesteps.
 if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
-    rAir = rConst .* (roomTemp + 273.15)^4;
+    rAir = rConst .* (roomTemp + 273.15).^4;
 end
 if convection
-    convRatio = 20 .* constants(pBoundaries) .* area(pBoundaries) .* dd;
+    convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
 end
 
 %%%
 
-
-
+%% Iterate
+% This is where the program iterates through time steps. The first time
+% step is considered the initial values, and iter + 1 is the last. 
 for j= 2:iter + 1
     if any(any(any(isnan(wholeMatrix))))
         text = strcat('Error at iteration ', num2str(j));
         disp(text);
         return
     end
+    %Keep an older version so we aren't counting changes in the same time
     old = wholeMatrix(:,:,:);
-     wholeMatrix(2:end-1, 2:end-1,2:end-1) = wholeMatrix(2:end-1, 2:end-1,2:end-1) + ...
-         ...
+    %Use constants, thermal conductivity, and difference in temperatures
+    %between pixels on the grid to calculate conductive transfer
+    wholeMatrix(2:end-1, 2:end-1,2:end-1) = wholeMatrix(2:end-1, 2:end-1,2:end-1) + ...
+        ...
         (old(2:end-1, 1:end-2,2:end-1)-old(2:end-1,2:end-1,2:end-1)) ...
             .*constants .* upK + ...
         (old(2:end-1,3:end,2:end-1)-old(2:end-1,2:end-1,2:end-1))...
@@ -405,53 +440,76 @@ for j= 2:iter + 1
         rotation = rotation + 1;
         rotation(rotation > cycleIntervals) = 1;
     end
+    
+    %Will graph/ save total energy/ average temps at correct framerate.
     if mod(j - 1, framerate) == 0
         list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Energy
             ./ constants .* dt .* dd)));
         tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
-        try
-            if isotherm
-                isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
-            else
-                figure;
-                slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-                caxis([0 (Tm + 20)])
-                colorbar('horiz')
-                %alpha(0.7);
+        if graph
+            try
+                if isotherm
+                    isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+                    view(3)
+                else
+                    figure;
+                    slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+                    caxis([0 (Tm + 20)])
+                    colorbar('horiz')                
+                end
+                drawnow
+                F(index) = getframe(gcf);
+            catch
+                disp('Cannot graph');
             end
-            drawnow
-            F(index) = getframe(gcf);
-        catch
-            disp('Cannot graph');
         end
         index = index + 1;
+        if melting
+            melted = anyMeltingIter(wholeMatrix(2:end-1,2:end-1,2:end-1),melted,Tms);
+        end
     end
 end
 
+%% Save final settings and play movie/display final frame
 %Save final data frame in finalTemps
 finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 
+%Will wait for user to give word, and will then close all windows, play the
+%movie, and then show just the last screen.
+if graph
+    pause
+    close all;
+    fig = figure;
+    movie(fig,F,1);
+    close all;
 
-pause
-close all;
-try
-    if isotherm
-        isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
-    else
-        fig = figure;
-        movie(fig,F,1)
-        close all;
-
-        slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-        caxis([0 (Tm + 20)])
-        colorbar('horiz')
+    try
+        if isotherm
+            isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+            view(3);
+            hold on;
+            s = slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+            alpha(s, 0.3);
+        else
+            slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+            caxis([0 (Tm + 20)])
+            colorbar('horiz')
+        end
+    catch
+        disp('Cannot graph');
     end
-catch
-    disp('Cannot graph');
+    if saveMovie
+        v = VideoWriter('recentTestMovie');
+        v.open;
+        v.writeVideo(F)
+        v.close;
+    end
 end
+%Used in tests where we need to check what percent of the material melts in
+%a given heating simulation. Checks over all materials at the Tm passed in.
+if melting
+    num = numel(Tempgrid);
+    ratio = sum(sum(sum(melted)))/num;
 
-melted = anyMelting(wholeMatrix(2:end-1,2:end-1,2:end-1), Tm);
-num = numel(Tempgrid);
-ratio = melted/num;
-
-fprintf('Ratio Melted = %d / %d = %g = %g%%\n', melted, num, ratio, ratio*100);
+    fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(sum(melted))), num, ratio, ratio*100);
+end

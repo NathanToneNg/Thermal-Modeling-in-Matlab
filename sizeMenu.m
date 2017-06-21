@@ -1,3 +1,8 @@
+%sizeMenu: Opens a menu where the user can pick the size of the simulation
+%and distance "step" of the grid.
+%
+%Clarifications: Assumed units are in meters, but scaling can be done as
+%   clarified in the README right before Usage.
 function sizeMenu
     global dimensions xdist dd isotherm;
     if isempty(isotherm)
@@ -57,15 +62,6 @@ function sizeMenu
     
     pixelsText = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[110,10,80,150],'String',text);
-    if dimensions == 3
-        graphButton = uicontrol('Style','pushbutton',...
-            'Position',[20,50, 80, 50],'Callback',@graphfunction);
-        if isotherm
-            set(graphButton,'String','Isosurface plot');
-        else
-            set(graphButton,'String','Slice plot');
-        end
-    end
         
     set(f,'Name','Size Settings')
     movegui(f,'center')
@@ -77,26 +73,32 @@ function sizeMenu
     function callbackfn(~,~)
         dd=str2double(get(ddEdit,'String'));
         xdist=str2double(get(xdistEdit,'String'));
-        text = strcat('Number of pixels: ', num2str(floor((xdist / dd))));
-        if dimensions > 1
-            ydist = str2double(get(ydistEdit, 'String'));
-            text = strcat('Number of pixels: ', num2str(floor((xdist / dd))), ' by', num2str(floor((ydist/dd))));
-
+        switch dimensions
+            case 1
+                minSize = xdist;
+            case 2
+                minSize = min(xdist, ydist);
+                ydist = str2double(get(ydistEdit, 'String'));
+            case 3
+                minSize = min([xdist, ydist, zdist]);
+                ydist = str2double(get(ydistEdit, 'String'));
+                zdist = str2double(get(zdistEdit, 'String')); 
         end
-        if dimensions > 2
-            zdist = str2double(get(zdistEdit, 'String'));
-            text = strcat('Number of pixels: ', num2str(floor((xdist / dd))), ' by', ...
-            num2str(floor((ydist/dd))), ' by', num2str(floor(zdist/dd)));
+        if dd > minSize
+            dd = minSize;
+            set(ddEdit,'string',num2str(dd));
+            disp('Distance step must be at least as big as smallest dimension.')
+        end
+        switch dimensions
+            case 1
+                text = strcat('Number of pixels: ', num2str(floor((xdist / dd))));
+            case 2
+                text = strcat('Number of pixels: ', num2str(floor((xdist / dd))), ' by', num2str(floor((ydist/dd))));
+            case 3
+                text = strcat('Number of pixels: ', num2str(floor((xdist / dd))), ' by', ...
+                num2str(floor((ydist/dd))), ' by', num2str(floor(zdist/dd)));
         end
         set(pixelsText, 'String', text);
     end
 
-    function graphfunction(~,~)
-        isotherm = ~isotherm;
-        if isotherm
-            set(graphButton,'String','Isosurface plot');
-        else
-            set(graphButton,'String','Slice plot');
-        end
-    end
 end

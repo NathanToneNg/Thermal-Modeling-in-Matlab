@@ -1,3 +1,38 @@
+% temperatureMenu: Opens a menu where the user can choose how energy is
+% inserted into the system, both iniitially and through reception.
+%
+% Clarifications:
+%   Initial temperature "spread": essentially uniform distribution
+%       If the user desires to start the entire block at a temperature
+%       above room temperature, use the spread option at "frequency" 1.
+%
+%   Energy absorption is how much energy per second in Watts is inserted
+%       into each receptor.
+%   
+%   Time on and off are in seconds, not time steps.
+%   
+%   Time distribution tells the program to cycle the energy input, using a
+%   sine curve unless this is told to be constant.
+%       Constant is the default, constant insertion at the rate provided
+%       
+%       All cycle means that all temperatures cycle together; there is no
+%           variation between which receptor gets how much energy.
+%
+%       Rotation means that there is variation on which receptors get energy, 
+%           distributing higher energy to one side and less energy to the 
+%           other, and switching over time.
+%
+%       Middle means the high peak of the sine curve is the energy rate 
+%           provided.
+%
+%       High means the middle point of the sine curve is the energy rate 
+%           provided.
+%
+%       Note that on a sine based curve, the average rate is multiplied by
+%       sqrt(2) of the energy rate inputted, so high is by 2sqrt(2).
+%
+%   Receptor location options are clarified in material2Menu by the same
+%   options.
 function temperatureMenu
     global roomTemp elevatedTemp elevLocation elevFrequency absorption energyRate ...
     distributionFrequency timeOn timeOff total_time materials cycle cycleIntervals cycleSpeed;

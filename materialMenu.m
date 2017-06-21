@@ -1,3 +1,13 @@
+%materialMenu: Opens a menu where the user may specify necessary constants
+%for thermal calculations.
+%
+% Clarifications:
+%   Conduction Constant is used in Newton's Law of Cooling
+%
+%   Radiation Emissivity is used in the Stefan-Boltzmann Law
+%
+%   All assumed units are seconds, meters, kilograms, Watts, and degrees Celcius
+%       For example, density is expected to be provided in kg/m^3
 function materialMenu
     global Tm specific_heat density thermal_Conductivity constant dt dd emissivity materials convecc;
     if isempty(materials)

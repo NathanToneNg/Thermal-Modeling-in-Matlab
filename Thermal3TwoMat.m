@@ -1,4 +1,4 @@
-%function Thermal3TwoMat
+function Thermal3TwoMat
 %% Initialize globals
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
@@ -7,7 +7,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2;
+    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -27,6 +27,9 @@ if isempty(saveMovie)
 end
 if isempty(melting)
     melting = false;
+end
+if isempty(graph)
+    graph = true;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,6 +82,10 @@ end
 
 %Total number of time steps that are taken.
 iter = total_time/dt;
+if framerate > iter
+    disp('Framerate too high- adjusting to graph only last frame.')
+    framerate = iter;
+end
 if absorption
     iterOn = floor(timeOn / dt) + 1;
     iterOff = floor(timeOff / dt) + 1;
@@ -251,8 +258,6 @@ else
                     end
                 end
             end    
-        
-        
     end
 end
 %Receivers is the iteratable size matrix, bigReceivers holds when we need to
@@ -498,27 +503,27 @@ for j= 2:iter + 1
         rotation(rotation > cycleIntervals) = 1;
     end
     
-    %Will graph/ save total energy/ average temps at correct framerate checking multiplicity.
+    %Will graph/ save total energy/ average temps at correct framerate.
     if mod(j - 1, framerate) == 0 %Could alternatively be mod(j, framerate) == 1
         list(index) = sum(sum(sum(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Total Energy
             ./ constants))) .* dt .* dd;
         tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
-        try
-            if isotherm
-                isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
-                view(3)
-            else
-                figure;
-                slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-                caxis([0 (Tm + 20)])
-                colorbar('horiz')
-                %alpha(0.7);
-                
+        if graph
+            try
+                if isotherm
+                    isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+                    view(3)
+                else
+                    figure;
+                    slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+                    caxis([0 (Tm + 20)])
+                    colorbar('horiz')                
+                end
+                drawnow
+                F(index) = getframe(gcf);
+            catch
+                disp('Cannot graph');
             end
-            drawnow
-            F(index) = getframe(gcf);
-        catch
-            disp('Cannot graph');
         end
         index = index + 1;
         if melting
@@ -533,39 +538,42 @@ finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
 
 %Will wait for user to give word, and will then close all windows, play the
 %movie, and then show just the last screen.
-pause
-close all;
-fig = figure;
-movie(fig,F,1);
-close all;
+if graph
+    pause
+    close all;
+    fig = figure;
+    movie(fig,F,1);
+    close all;
 
-try
-    if isotherm
-        isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
-        view(3);
-        hold on;
-        s = slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-        alpha(s, 0.3);
-    else
-        slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
-        caxis([0 (Tm + 20)])
-        colorbar('horiz')
+    try
+        if isotherm
+            isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
+            view(3);
+            hold on;
+            s = slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+            alpha(s, 0.3);
+        else
+            slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
+            caxis([0 (Tm + 20)])
+            colorbar('horiz')
+        end
+    catch
+        disp('Cannot graph');
     end
-catch
-    disp('Cannot graph');
+    if saveMovie
+        v = VideoWriter('recentTestMovie');
+        v.open;
+        v.writeVideo(F)
+        v.close;
+    end
 end
-if saveMovie
-    v = VideoWriter('recentTestMovie');
-    v.open;
-    v.writeVideo(F)
-    v.close;
-end
-
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
-num = numel(Tempgrid);
-ratio = sum(sum(sum(melted)))/num;
+if melting
+    num = numel(Tempgrid);
+    ratio = sum(sum(sum(melted)))/num;
 
-fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(sum(melted))), num, ratio, ratio*100);
+    fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(sum(melted))), num, ratio, ratio*100);
+end
 
-%end
+end

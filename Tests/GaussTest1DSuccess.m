@@ -111,3 +111,4 @@ theoreticalC = sqrt(4 .* D .* (5:5:100)');
 fprintf('Inaccuracy from gaussian model is %d after %d seconds with %d distance increment.\n',...
     (theoreticalC(20) - f.c1) / theoreticalC(20), total_time, dd);
 
+phi100 = f.a1 * sqrt(4 * pi * D * total_time)

@@ -48,17 +48,16 @@
 # 8: Energy Insertion:
 	* Initial temperature has a spread option, which is just uniform distribution. 
 		* If the entire block should be started at a higher temperature, simply use the “spread” option and give Frequency as 1.
-	* Energy absorption is how much energy in Watts per meter^n is inputted.
+	* Energy absorption is how much energy per second in Watts is inputted into each receptor.
 	* Time on and off are in seconds, not steps.
-	* Time distribution allows the program to cycle the energy input, using a sine curve unless this is Constant.
+	* Time distribution tells the program to cycle the energy input, using a sine curve unless this is Constant.
 		* Constant is the default, a constant rate at the input.
 		* All cycle means that all temperatures cycle together, there is no variation between which receptor gets how much energy
 		* Rotation means that there is variation on which receptors get energy, distributing higher energy to one side and less energy to the other, and switching over time.
 		* Middle means the high peak of the sine curve is the energy rate provided
 		* High means the middle point of the sine curve is the energy rate provided.
 	* Note that on a sine based curve this means that the average input is multiplied by sqrt(2) of the energy rate inputted, and high means multiplied by 2sqrt(2)
-
-
+o
 
 # 9: Repick #Materials / Dimensions 
 	* Allows the user to repick the number of materials or dimensions without resetting all other settings.

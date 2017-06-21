@@ -1,3 +1,25 @@
+%energyMenu: Opens a menu where the user can choose how energy is
+%dissipated, through conduction, convection, and/or radiation.
+%
+% Energy Dissipation: 
+%   Conduction on the Edges is usually turned off, except for in test 
+%       cases and when the situation should be considered as 
+%       connecting to a ?grounded? material at the room temperature.
+%
+%   Convection/Radiation off unseen directions are used in the 1D 
+%   and 2D cases:
+%       1D: This acts as if the setting given is a rectangular prism 
+%           material of thickness given by dd (almost infinitely thin),
+%           where the surroundings are all air and thus convection/
+%           radiation occurs off all pixels in addition to sides
+%
+%       2D: This acts as if the setting given is a flat material of 
+%           thickness given by dd (almost infinitely thin), where the 
+%           3rd dimension (top and bottom) are air above and below, 
+%           and thus convection/radiation occurs off all pixels in 
+%           addition to sides.
+%
+%   The same process is for both 1D and 2D, but twice as impactful for 1D.
 function energyMenu
     global dimensions borders convection radiation extraConduction extraConvection extraRadiation;
     if isempty(borders)

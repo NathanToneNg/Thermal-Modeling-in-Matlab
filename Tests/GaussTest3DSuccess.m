@@ -100,7 +100,7 @@ zdist = 0.1;
 x = [dd/2:dd:xdist]';
 
 D = thermal_Conductivity / specific_heat / density;
-f = fit(x,finalTemps(:,21,21),'gauss1');
+f = fit(x,finalTemps(:,20,20),'gauss1');
 
 theoreticalC = sqrt(4 .* D .* (5:5:100)');
 
@@ -111,3 +111,4 @@ fprintf('Inaccuracy from gaussian model is %d after %d seconds with %d distance 
     (theoreticalC(20) - f.c1) / theoreticalC(20), total_time, dd);
 
 
+phi100 = f.a1 * (4 * pi * D * total_time)^(3/2)

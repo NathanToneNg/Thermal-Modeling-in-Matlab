@@ -1,11 +1,9 @@
 function chooseSettings2
-global dimensions;
-global dt dd thermal_Conductivity thermal_Conductivity2 interfaceK specific_heat specific_heat2 density density2;
+global dt dd thermal_Conductivity thermal_Conductivity2 interfaceK specific_heat ...
+    specific_heat2 density density2;
 
 f = figure('Visible', 'off','color','black','Position',...
 [360, 500, 400,400]);
-
-
 
 % Create a button group
 grouph = uibuttongroup('Parent',f,'Units','Normalized',...
@@ -54,17 +52,17 @@ checkButton = uicontrol('Style','pushbutton',...
     'Position',[250, 0, 120, 40], 'String', ...
     'Re-check parameters', 'Callback',@recheck);
 
-        if (1/7) <= dt * thermal_Conductivity / (dd * dd * specific_heat * density)
-            set(warningText1,'Visible','on');
-        else
-            set(warningText1,'Visible','off');
-        end
-        if (1/7) <= dt * thermal_Conductivity2 / (dd * dd * specific_heat2 * density2) || ...
-           (1/7) <= dt * interfaceK / (dd * dd * specific_heat2 * density2)            
-            set(warningText2,'Visible','on');
-        else
-            set(warningText2,'Visible','off');
-        end
+if (1/7) <= dt * thermal_Conductivity / (dd * dd * specific_heat * density)
+    set(warningText1,'Visible','on');
+else
+    set(warningText1,'Visible','off');
+end
+if (1/7) <= dt * thermal_Conductivity2 / (dd * dd * specific_heat2 * density2) || ...
+   (1/7) <= dt * interfaceK / (dd * dd * specific_heat2 * density2)            
+    set(warningText2,'Visible','on');
+else
+    set(warningText2,'Visible','off');
+end
         
         
 

@@ -1,6 +1,8 @@
-%Returns how many pixels in matrix were above the melting point. If a
+%anyMelting: Returns how many pixels in matrix were above the melting point. If a
 %logical array is passed in, will only check the 1s of the logical in the
-%matrix. 
+%matrix. This is a simple version? anyMeltingIter is a more complex version
+%for two materials checking whether both are melting, and closer to
+%compatible with multi-material case
 function [count] = anyMelting(matrix, Tm, logic)
     switch nargin
         case 3

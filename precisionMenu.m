@@ -1,3 +1,9 @@
+%precisionMenu: Opens a menu where the user can specify how many digits the
+%calculations should be carried out to.
+%
+%Clarifications: Precision digits determine how many digits calculations 
+%   should be carried out to.
+
 function precisionMenu
     global precision;
 
@@ -20,5 +26,10 @@ function precisionMenu
         % callbackfn is called by the 'Callback' property
         % in either the second edit box or the pushbutton
         precision=str2double(get(precisionEdit,'String'));
+        if precision < 2 || precision > (2^29)
+            precision = 10;
+            set(precisionEdit,'string','10');
+            disp('Precision must be a positive integer larger than 1 and smaller than 2^29 + 1.');
+        end
     end
 end
