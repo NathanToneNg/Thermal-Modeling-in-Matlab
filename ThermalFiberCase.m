@@ -44,6 +44,9 @@ end
 %Index for frames in the movie
 index = 1;
 
+xdist = 0.2;
+ydist = 0.2;
+zdist = 0.1;
 %Number of pixels across the grid
 xintervals = floor(xdist / dd);
 yintervals = floor(ydist / dd);
@@ -92,12 +95,12 @@ materialMatrix([midx + 1, midx - 1], 1:yintervals, 6) = 3;
 
 %Second fiber
 materialMatrix(1:xintervals, midy-1:midy+1,10:18) = 1;
-materialMatrix(1:xintervals, [midy - 2, midy + 2], 11:17) = 1;
-materialMatrix(1:xintervals, [midy - 3, midy + 3], 12:16) = 1;
-materialMatrix(1:xintervals, [midy - 4, midy + 4], 13:15) = 1;
+materialMatrix(1:xintervals, [midy - 2, midy + 2], 10:16) = 1;
+materialMatrix(1:xintervals, [midy - 3, midy + 3], 11:15) = 1;
+materialMatrix(1:xintervals, [midy - 4, midy + 4], 12:14) = 1;
 
 materialMatrix(1:xintervals, midy, 13:15) = 3;
-materialMatrix(1:xintervals, [midy + 1, midy - 1], 14) = 3;
+materialMatrix(1:xintervals, [midy + 1, midy - 1], 13) = 3;
 boundsSum = (materialMatrix(1:end-2,2:end-1,2:end-1) + ...
     materialMatrix(3:end,2:end-1,2:end-1) + materialMatrix(2:end-1,1:end-2,2:end-1) + ...
     materialMatrix(2:end-1,3:end,2:end-1) + materialMatrix(2:end-1,2:end-1,1:end-2) + ...
@@ -155,10 +158,6 @@ kArray(7) = thermal_Conductivity2;
 kArray(9) = interfaceK13;
 kArray(11) = interfaceK23;
 kArray(15) = thermal_Conductivity3;
-k = kArray(materialMatrix(:,:,:) + 1);
-
-
-k = k .* 10;
 
 
 %Total number of time steps that are taken.
@@ -187,17 +186,18 @@ end
 %%%
 
 second = logical(materialMatrix(:,:,:) == 7);
-bigSecond = zeros(xintervals + 2, yintervals + 2,zintervals + 2);
-bigSecond = logical(bigSecond);
+bigSecond = false(xintervals + 2, yintervals + 2,zintervals + 2);
 bigSecond(2:end-1, 2:end-1,2:end-1) = second;
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 k(second) = thermal_Conductivity2;
 
 receivers = second;
-bigReceivers = zeros(xintervals + 2, yintervals + 2,zintervals + 2);
-bigReceivers = logical(bigReceivers);
+bigReceivers = false(xintervals + 2, yintervals + 2,zintervals + 2);
 bigReceivers(2:end-1,2:end-1,2:end-1) = receivers;
 
+notAirMini = (materialMatrix ~= 0);
+notAir = false(xintervals + 2, yintervals + 2, zintervals + 2);
+notAir(2:end-1,2:end-1,2:end-1) = notAirMini;
 
 %% Create cycle if relevant
 %Cycle setup. In try catch so older tests still work
@@ -231,125 +231,24 @@ for i = 1:xintervals
     for j = 1:yintervals
         for l = 1:zintervals
             if i ~= 1
-                switch materialMatrix(i,j,l) + materialMatrix(i-1,j,l)
-                    
-                    case 2
-                        leftK(i,j,l) = thermal_Conductivity; %PE with PE
-                    case 4
-                        leftK(i,j,l) = -1; %PP with PE
-                    case 6
-                        leftK(i,j,l) = thermal_Conductivity3; %PP with PP
-                    case 8
-                        leftK(i,j,l) = interfaceK; %PE with Receptor
-                    case 10
-                        leftK(i,j,l) = -1; %PP with receptor
-                    case 14
-                        leftK(i,j,l) = thermal_Conductivity2; %Receptor with Receptor
-%                     otherwise
-%                         leftK(i,j,l) = 0;
-% Default is leave it at 0
-                    
-                end
+                leftK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i-1,j,l)+1);
+%           else
+%               leftK(i,j,l) = 0;
             end
             if i ~= xintervals
-                switch materialMatrix(i,j,l) + materialMatrix(i+1,j,l)
-                    
-                    case 2
-                        rightK(i,j,l) = thermal_Conductivity; %PE with PE
-                    case 4
-                        rightK(i,j,l) = -1; %PP with PE
-                    case 6
-                        rightK(i,j,l) = thermal_Conductivity3; %PP with PP
-                    case 8
-                        rightK(i,j,l) = interfaceK; %PE with Receptor
-                    case 10
-                        rightK(i,j,l) = -1; %PP with receptor
-                    case 14
-                        rightK(i,j,l) = thermal_Conductivity2; %Receptor with Receptor
-%                     otherwise
-%                         rightK(i,j,l) = 0;
-                    
-                end
+                rightK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i+1,j,l) + 1);
             end
             if j ~= 1
-                switch materialMatrix(i,j,l) + materialMatrix(i,j-1,l)
-                    
-                    case 2
-                        upK(i,j,l) = thermal_Conductivity; %PE with PE
-                    case 4
-                        upK(i,j,l) = -1; %PP with PE
-                    case 6
-                        upK(i,j,l) = thermal_Conductivity3; %PP with PP
-                    case 8
-                        upK(i,j,l) = interfaceK; %PE with Receptor
-                    case 10
-                        upK(i,j,l) = -1; %PP with receptor
-                    case 14
-                        upK(i,j,l) = thermal_Conductivity2; %Receptor with Receptor
-%                     otherwise
-%                         upK(i,j,l) = 0;
-                    
-                end
+                upK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j-1,l) + 1);
             end
             if j ~= yintervals
-                switch materialMatrix(i,j,l) + materialMatrix(i,j+1,l)
-                    
-                    case 2
-                        downK(i,j,l) = thermal_Conductivity; %PE with PE
-                    case 4
-                        downK(i,j,l) = -1; %PP with PE
-                    case 6
-                        downK(i,j,l) = thermal_Conductivity3; %PP with PP
-                    case 8
-                        downK(i,j,l) = interfaceK; %PE with Receptor
-                    case 10
-                        downK(i,j,l) = -1; %PP with receptor
-                    case 14
-                        downK(i,j,l) = thermal_Conductivity2; %Receptor with Receptor
-%                     otherwise
-%                         downK(i,j,l) = 0;
-                    
-                end
+                downK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j+1,l) + 1);
             end
             if l ~= 1
-                switch materialMatrix(i,j,l) + materialMatrix(i,j,l-1)
-                    
-                    case 2
-                        inK(i,j,l) = thermal_Conductivity; %PE with PE
-                    case 4
-                        inK(i,j,l) = -1; %PP with PE
-                    case 6
-                        inK(i,j,l) = thermal_Conductivity3; %PP with PP
-                    case 8
-                        inK(i,j,l) = interfaceK; %PE with Receptor
-                    case 10
-                        inK(i,j,l) = -1; %PP with receptor
-                    case 14
-                        inK(i,j,l) = thermal_Conductivity2; %Receptor with Receptor
-%                     otherwise
-%                         inK(i,j,l) = 0;
-                    
-                end
+                inK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j,l-1) + 1);
             end
             if l ~= zintervals
-                switch materialMatrix(i,j,l) + materialMatrix(i,j,l+1)
-                    
-                    case 2
-                        outK(i,j,l) = thermal_Conductivity; %PE with PE
-                    case 4
-                        outK(i,j,l) = -1; %PP with PE
-                    case 6
-                        outK(i,j,l) = thermal_Conductivity3; %PP with PP
-                    case 8
-                        outK(i,j,l) = interfaceK; %PE with Receptor
-                    case 10
-                        outK(i,j,l) = -1; %PP with receptor
-                    case 14
-                        outK(i,j,l) = thermal_Conductivity2; %Receptor with Receptor
-%                     otherwise
-%                         outK(i,j,l) = 0;
-                    
-                end
+                outK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j,l+1) + 1);
             end
         end
     end
@@ -374,7 +273,7 @@ melted = false(xintervals,yintervals, zintervals);
 if radiation || convection
     area = (upK == 0) + (downK == 0) + (leftK == 0) + (rightK == 0);
     pBoundaries = (area ~= 0);
-    boundaries = falses(xintervals, yintervals, zintervals));
+    boundaries = false(xintervals + 2, yintervals + 2, zintervals + 2);
     boundaries(2:end-1,2:end-1,2:end-1) = pBoundaries;
 end
 
@@ -443,9 +342,9 @@ for j= 2:iter + 1
     
     %Will graph/ save total energy/ average temps at correct framerate.
     if mod(j - 1, framerate) == 0
-        list(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Energy
-            ./ constants .* dt .* dd)));
-        tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
+        list(index) = mean(mean(mean(wholeMatrix(notAir) ... %Energy
+            ./ constants(notAirMini) .* dt .* dd)));
+        tempsList(index) = mean(mean(mean(wholeMatrix(notAir))));
         if graph
             try
                 if isotherm

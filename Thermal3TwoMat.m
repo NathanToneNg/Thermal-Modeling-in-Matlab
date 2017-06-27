@@ -7,7 +7,8 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph;
+    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
+    bottomLoss;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -30,6 +31,9 @@ if isempty(melting)
 end
 if isempty(graph)
     graph = true;
+end
+if isempty(bottomLoss)
+    bottomLoss = true;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -409,7 +413,7 @@ melted = false(xintervals,yintervals, zintervals);
 %area, and corners triple. Not meant to be accurate with single dimension
 %sizes in this form.
 if radiation || convection
-    boundaries = zeros(xintervals + 2, yintervals + 2, zintervals + 2,'logical');
+    boundaries = false(xintervals + 2, yintervals + 2, zintervals + 2);
     corners = boundaries;
     corners([2,end-1],[2,end-1],[2,end-1]) = true;
     edges = boundaries;
@@ -427,6 +431,9 @@ if radiation || convection
     area(pEdges) = 2;
     area(pCorners) = 3;
     area = area + (xintervals == 1) + (yintervals == 1) + (zintervals == 1);
+    if ~bottomLoss
+        area(:,:,1) = area(:,:,1) - 1;
+    end
 end
 
 %Ratios and room temperature constants set ahead of time for less
@@ -440,6 +447,7 @@ if convection
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
 end
+
 
 %%%
 

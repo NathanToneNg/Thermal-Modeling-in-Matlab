@@ -7,8 +7,8 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     specific_heat density Tm thermal_Conductivity roomTemp elevatedTemp elevLocation ...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2 graph;
+    frequency2 extraConduction cycle cycleIntervals ...
+    cycleSpeed convecc saveMovie melting Tm2 graph thin;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -28,6 +28,12 @@ if isempty(melting)
 end
 if isempty(graph)
     graph = true;
+end
+if isempty(thin)
+    global extraConvection extraRadiation
+    thin = extraConvection || extraRadiation;
+    clear global extraConvection
+    clear global extraRadiation
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -292,7 +298,7 @@ end
 
 %If extra loss is turned on, that means we are treating it as
 %thin, where heat loss is off all area.
-if radiation && extraRadiation
+if radiation && thin
     area = 5;
 else
     area = 1;
@@ -305,14 +311,14 @@ if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(parameterBounds) .* area .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
-    if extraRadiation
+    if thin
         rMidConst = sigma .* emissivity .* constants(2:end-1) .* 4 .* dd;
         rMidAir = rMidConst .* (roomTemp + 273.15)^4;
     end
 end
 
-if convection && extraConvection
-    area = 5;
+if convection && thin
+    area = 4 + bottomLoss;
 else
     area = 1;
 end
@@ -321,7 +327,7 @@ area = area + (xintervals == 1);
 if convection
     convRatio = convecc .* constants(parameterBounds) .* area .* dd;
     convAir = convRatio .* roomTemp;
-    if extraConvection
+    if thin
         convMidRatio = convecc .* constants(2:end-1) .* 4 .* dd;
         convMidAir = convMidRatio .* roomTemp;
     end
@@ -359,7 +365,7 @@ for j= 2:iter + 1
     if radiation
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
-        if extraRadiation
+        if thin
             wholeMatrix(3:end-2) = wholeMatrix(3:end-2) - ...
                 (rMidConst .* ((old(3:end-2) + 273.15).^4)) + rMidAir;
         end
@@ -369,7 +375,7 @@ for j= 2:iter + 1
     if convection
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             ((old(boundaries) .* convRatio) - convAir);
-        if extraConvection
+        if thin
             wholeMatrix(3:end-2) = wholeMatrix(3:end-2) - ...
                 ((old(3:end-2) .*convMidRatio) - convMidAir);
         end

@@ -7,8 +7,8 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 extraConduction extraConvection extraRadiation cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2 graph;
+    frequency2 extraConduction cycle cycleIntervals ...
+    cycleSpeed convecc saveMovie melting Tm2 graph thin;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -28,6 +28,12 @@ if isempty(melting)
 end
 if isempty(graph)
     graph = true;
+end
+if isempty(thin)
+    global extraConvection extraRadiation
+    thin = extraConvection || extraRadiation;
+    clear global extraConvection
+    clear global extraRadiation
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -372,13 +378,13 @@ end
 %Ratios and room temperature constants set ahead of time for less
 %calculation between timesteps.
 if radiation
-    if extraRadiation
+    if thin
         area = area + 2;
     end
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     rAir = rConst .* (roomTemp + 273.15)^4;
-    if extraRadiation
+    if thin
         area = area - 2;
         midAreaR = 2 + (xintervals == 1) + (yintervals == 1);
         rMidConst = sigma .* emissivity .* constants(2:end-1,2:end-1) .* midAreaR .* dd;
@@ -387,12 +393,12 @@ if radiation
 end
 
 if convection
-    if extraConvection
-        area = area + 2;
+    if thin
+        area = area + bottomLess;
     end
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     convAir = convRatio .* roomTemp;
-    if extraConvection
+    if thin
         midAreaC = 2 + (xintervals == 1) + (yintervals == 1);
         convMidRatio = convecc .* constants(2:end-1,2:end-1) .* midAreaC .* dd;
         convMidAir = convMidRatio .* roomTemp;
@@ -439,7 +445,7 @@ for j= 2:iter + 1
     if(radiation)        
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
-        if extraRadiation
+        if thin
             wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
                 (rMidConst .* ((old(3:end-2,3:end-2) + 273.15).^4)) + rMidAir;
         end
@@ -448,7 +454,7 @@ for j= 2:iter + 1
     if(convection)
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             ((old(boundaries) .* convRatio) - convAir);
-        if convection && extraConvection
+        if convection && thin
             wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
                 ((old(3:end-2,3:end-2) .*convMidRatio) - convMidAir);
         end
