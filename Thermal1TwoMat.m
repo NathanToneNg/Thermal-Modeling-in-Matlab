@@ -8,7 +8,7 @@ global precision xdist dd total_time dt framerate borders convection radiation .
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2 graph thin;
+    cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -34,6 +34,9 @@ if isempty(thin)
     thin = extraConvection || extraRadiation;
     clear global extraConvection
     clear global extraRadiation
+end
+if isempty(initialGrid)
+    initialGrid = false;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -69,6 +72,10 @@ switch elevLocation
     case 3
         %Uniform distribution
         Tempgrid(1:elevFrequency:end) = elevatedTemp;
+end
+if initialGrid
+    global initialFrame
+    initialFrame = Tempgrid;
 end
 
 %Total number of time steps that are taken.

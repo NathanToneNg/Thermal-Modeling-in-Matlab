@@ -11,7 +11,7 @@
 %       MATLAB Command Window to bring the movie to the workspace, and use 
 %       movie(recentTestMovie) to play it.
 function graphingMenu
-    global dimensions isotherm saveMovie melting graph
+    global dimensions isotherm saveMovie melting graph initialGrid
     if isempty(dimensions)
         dimensions = 3;
     end
@@ -26,6 +26,9 @@ function graphingMenu
     end
     if isempty(graph)
         graph = true;
+    end
+    if isempty(initialGrid)
+        initialGrid = false;
     end
     
     f = figure('Visible', 'off','color','white','Position',[360,500,320,300]);
@@ -49,7 +52,10 @@ function graphingMenu
         'Position',[0, 30, 120, 80], 'String', 'Keep track of melting?');
     meltingButton = uicontrol('Style','pushbutton','Position',[20, 50, 80, 40],...
         'Callback',@callbackfn);
-    
+    initialText = uicontrol('Style','text','BackgroundColor','white',...
+        'Position',[120, 30, 120, 80], 'String', 'Keep track of melting?');
+    initialButton = uicontrol('Style','pushbutton','Position',[140, 50, 80, 40],...
+        'Callback',@callbackfn);
     
     if dimensions == 3 && graph
         set(isothermText,'visible','on');
@@ -79,6 +85,11 @@ function graphingMenu
         set(graphButton,'String','Off');
         set(movieText,'Visible','Off');
         set(movieButton,'Visible','Off');
+    end
+    if initialGrid
+        set(initialButton,'string','On');
+    else
+        set(initialButton,'string','Off');
     end
     
     set(f,'Name','Graphing Options')
@@ -128,6 +139,14 @@ function graphingMenu
                     set(isothermText,'Visible','off');
                     set(isothermButton,'Visible','off');
                 end
+            case initialButton
+                initialGrid = ~initialGrid;
+                if initialGrid
+                    set(initialButton,'string','On');
+                else
+                    set(initialButton,'string','Off');
+                end
+                
         end
         
     end

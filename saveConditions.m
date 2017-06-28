@@ -46,6 +46,20 @@ for i = 1:length(globalVars)
             fprintf(file, '%s = %s;\n', varname, mat2str(var));
             fprintf(file, '%s = str2num(%s);\n',varname,varname);
         end
+    elseif strcmp(varname,'initialFrame')
+        global initialGrid
+        if ~isempty(initialGrid) && initialGrid
+            strmatrix = mat2str(var);
+            data = whos('strmatrix');
+            if data.bytes > limit
+                matrixname = strcat(filename, varname);
+                save(matrixname,varname);
+                fprintf(file, 'load %s\n', matrixname);
+            else
+                fprintf(file, '%s = %s;\n', varname, mat2str(var));
+                fprintf(file, '%s = str2num(%s);\n',varname,varname);
+            end
+        end
     else
         fprintf(file, '%s = %s;\n', varname, var);
     end

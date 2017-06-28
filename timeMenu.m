@@ -62,5 +62,10 @@ function timeMenu
         framerate = str2double(get(framerateEdit,'String'));
         text = strcat('Total time steps: ', num2str(total_time/dt));
         set(intervalsShow, 'String', text);
+        if dt > total_time
+            dt = total_time;
+            set(dtEdit,'string',num2str(dt));
+            disp('Must have at least one time step occurring.');
+        end
     end
 end

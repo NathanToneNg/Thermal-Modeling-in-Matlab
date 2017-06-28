@@ -8,7 +8,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss;
+    bottomLoss initialGrid;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -34,6 +34,9 @@ if isempty(graph)
 end
 if isempty(bottomLoss)
     bottomLoss = true;
+end
+if isempty(initialGrid)
+    initialGrid = false;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,6 +85,10 @@ switch elevLocation
         zfreq = ceil(elevFrequency/(xfreq * yfreq));
         
         Tempgrid(1:xfreq:end,1:yfreq:end,1:zfreq:end) = elevatedTemp;
+end
+if initialGrid
+    global initialFrame
+    initialFrame = Tempgrid;
 end
 
 %Total number of time steps that are taken.

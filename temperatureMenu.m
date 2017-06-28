@@ -101,7 +101,7 @@ function temperatureMenu
     'Callback',@callbackfn);
 
     elevFreqText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[260,410,80,80],'String','Frequency of Elevated Temperature');
+    'Position',[260,410,80,80],'String','Density of Elevated Temperature');
     elevFreqEdit = uicontrol('Style','edit','Position',[280,400,40,40],...
     'String',num2str(elevFrequency),...
     'Callback',@callbackfn);
@@ -176,7 +176,7 @@ function temperatureMenu
                 set(elevFreqEdit,'Visible','off');
                 set(elevFreqText,'Visible','off');
             case 3
-                set(elevTempBar,'String','Spread');
+                set(elevTempBar,'String','Uniform Distribution');
                 set(elevTempAmountEdit,'Visible','on');
                 set(elevTempAmountText,'Visible','on');
                 set(elevFreqEdit,'Visible','on');
@@ -381,7 +381,7 @@ function temperatureMenu
             case 2
                 set(elevTempBar,'String','Middle Block');
             case 3
-                set(elevTempBar,'String','Spread');
+                set(elevTempBar,'String','Uniform Distribution');
                 set(elevFreqEdit,'Visible','on');
                 set(elevFreqText,'Visible','on');
             case 4
