@@ -6,11 +6,16 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph;
+    frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
+    bottomLoss initialGrid topCheck depth;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
 global list tempsList materialMatrix finalTemps; %Results
+if topCheck
+    clear global topTemps
+    global topTemps
+end
 
 if isempty(cycle)
     cycle = 1;
@@ -190,6 +195,9 @@ bigSecond = false(xintervals + 2, yintervals + 2,zintervals + 2);
 bigSecond(2:end-1, 2:end-1,2:end-1) = second;
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 k(second) = thermal_Conductivity2;
+Tms = ones(xintervals, yintervals, zintervals) .* Tm;
+Tms(second) = Tm2;
+
 
 receivers = second;
 bigReceivers = false(xintervals + 2, yintervals + 2,zintervals + 2);
@@ -258,6 +266,10 @@ end
 %The initial temperature grid is assigned.
 wholeMatrix = zeros(xintervals + 2, yintervals + 2, zintervals + 2) + roomTemp;
 wholeMatrix(2:end-1, 2:end-1, 2:end-1) = Tempgrid;
+if initialGrid
+    global initialFrame
+    initialFrame = Tempgrid;
+end
 
 %%% movie stuff
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
@@ -275,6 +287,9 @@ if radiation || convection
     pBoundaries = (area ~= 0);
     boundaries = false(xintervals + 2, yintervals + 2, zintervals + 2);
     boundaries(2:end-1,2:end-1,2:end-1) = pBoundaries;
+    if ~bottomLoss
+        area(:,:,1) = area(:,:,1) - (area(:,:,1) > 0);
+    end
 end
 
 %Ratios and room temperature constants set ahead of time for less
@@ -345,6 +360,9 @@ for j= 2:iter + 1
         list(index) = mean(mean(mean(wholeMatrix(notAir) ... %Energy
             ./ constants(notAirMini) .* dt .* dd)));
         tempsList(index) = mean(mean(mean(wholeMatrix(notAir))));
+        if ~isempty(topCheck) && topCheck
+            topTemps(index) = getTop(wholeMatrix(2:end-1,2:end-1,2:end-1),depth);
+        end
         if graph
             try
                 if isotherm

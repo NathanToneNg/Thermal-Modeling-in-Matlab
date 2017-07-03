@@ -9,7 +9,12 @@
 %   in a string is above the internal limit. Currently limit is 200000
 %   bytes as a string, but that can be modified within the function. 
 
-function saveConditions(filename)
+function saveConditions(filename, optionalText)
+
+if nargin > 2
+    error('Incorrect usage. Use as saveConditions(filename, optionalText), arguments optional.');
+end
+
 if exist('filename','var')
     file = fopen(filename, 'w+');
 else
@@ -20,6 +25,10 @@ end
 %This limit is how big a matrix may be before putting it into a separate
 %variable file. 
 limit = 200000;
+
+if nargin == 2
+    fprintf(file, '%%%s\n\n', optionalText);
+end
 
 %Retrieve all global variables and print them into the file
 globalVars = who('global');
@@ -39,8 +48,8 @@ for i = 1:length(globalVars)
         strmatrix = mat2str(var);
         data = whos('strmatrix');
         if data.bytes > limit
-            matrixname = strcat(varname, filename);
-            matrixname = genvarname(matrixname); %So that it can correct for the .m or other characters
+            matrixname = strcat(filename, varname);
+            matrixname = replace(matrixname,'.m','');
             save(matrixname,varname);
             fprintf(file, 'load %s\n', matrixname);
         else
@@ -53,8 +62,8 @@ for i = 1:length(globalVars)
             strmatrix = mat2str(var);
             data = whos('strmatrix');
             if data.bytes > limit
-                matrixname = strcat(varname, filename);
-                matrixname = genvarname(matrixname);
+                matrixname = strcat(filename, varname);
+                matrixname = replace(matrixname,'.','dot');
                 save(matrixname,varname);
                 fprintf(file, 'load %s\n', matrixname);
             else
@@ -62,6 +71,8 @@ for i = 1:length(globalVars)
                 fprintf(file, '%s = str2num(%s);\n',varname,varname);
             end
         end
+    elseif ischar(eval(varname))
+        fprintf(file, '%s = ''%s'';\n', varname, var);
     else
         fprintf(file, '%s = %s;\n', varname, var);
     end
