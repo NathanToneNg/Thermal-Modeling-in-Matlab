@@ -3,6 +3,11 @@
 %   that can be run as a matlab script to put all global variables onto the
 %   workspace and global field.
 %
+% A second argument (must be a string) is optional and adds a comment with
+%   the given string at the beginning of the file.
+%
+% Form: saveConditions filename 'string comment here, no % necessary.'
+%
 % Note that this will overwrite previous scripts if the name is the same.
 %
 % Will put the bigger matrices into a separate saved variable if the size
