@@ -6,6 +6,8 @@ global absorption
 absorption = 6;
 global borders
 borders = 0;
+global bottomLoss
+bottomLoss = 1;
 global constant
 constant = 5.5921e-05;
 global convecc
@@ -54,6 +56,10 @@ global framerate
 framerate = 2000;
 global frequency2
 frequency2 = 12;
+global graph
+graph = 1;
+global initialGrid
+initialGrid = 0;
 global interfaceK
 interfaceK = 0.2;
 global isotherm
@@ -65,12 +71,16 @@ global materialMatrix
 load materialMatrixGaussTest3DSuccess0x2Em
 global materials
 materials = 1;
+global melting
+melting = 0;
 global precision
 precision = 10;
 global radiation
 radiation = 0;
 global roomTemp
 roomTemp = 0;
+global saveMovie
+saveMovie = 0;
 global self_set
 self_set = 0;
 global specific_heat
@@ -84,6 +94,8 @@ global thermal_Conductivity
 thermal_Conductivity = 0.51;
 global thermal_Conductivity2
 thermal_Conductivity2 = 0.33;
+global thin
+thin = 0;
 global timeOff
 timeOff = 500;
 global timeOn

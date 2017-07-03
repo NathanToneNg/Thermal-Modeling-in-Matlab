@@ -8,12 +8,15 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss initialGrid;
+    bottomLoss initialGrid topCheck depth;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
 global list tempsList materialMatrix finalTemps; %Results
-
+if topCheck
+    clear global topTemps
+    global topTemps
+end
 if isempty(cycle)
     cycle = 1;
 end
@@ -449,6 +452,7 @@ if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     rAir = rConst .* (roomTemp + 273.15).^4;
+    
 end
 if convection
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
@@ -523,6 +527,9 @@ for j= 2:iter + 1
         list(index) = sum(sum(sum(wholeMatrix(2:end-1,2:end-1,2:end-1) ... %Total Energy
             ./ constants))) .* dt .* dd;
         tempsList(index) = mean(mean(mean(wholeMatrix(2:end-1,2:end-1,2:end-1))));
+        if ~isempty(topCheck) && topCheck
+            topTemps(index) = getTop(wholeMatrix(2:end-1,2:end-1,2:end-1),depth);
+        end
         if graph
             try
                 if isotherm

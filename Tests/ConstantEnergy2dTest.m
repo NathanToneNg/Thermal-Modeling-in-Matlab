@@ -6,6 +6,8 @@ global absorption
 absorption = 6;
 global borders
 borders = 1;
+global bottomLoss
+bottomLoss = 1;
 global constant
 constant = 0.00036184;
 global convecc
@@ -55,6 +57,10 @@ global framerate
 framerate = 500;
 global frequency2
 frequency2 = 12;
+global graph
+graph = 1;
+global initialGrid
+initialGrid = 0;
 global interfaceK
 interfaceK = 0.2;
 global isotherm
@@ -67,12 +73,16 @@ materialMatrix = ['1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 materialMatrix = str2num(materialMatrix);
 global materials
 materials = 3;
+global melting
+melting = 0;
 global precision
 precision = 10;
 global radiation
 radiation = 0;
 global roomTemp
 roomTemp = 0;
+global saveMovie
+saveMovie = 0;
 global specific_heat
 specific_heat = 1900;
 global specific_heat2
@@ -84,6 +94,8 @@ global thermal_Conductivity
 thermal_Conductivity = 0.33;
 global thermal_Conductivity2
 thermal_Conductivity2 = 0.4;
+global thin
+thin = 0;
 global timeOff
 timeOff = 500;
 global timeOn
@@ -97,5 +109,4 @@ ydist = 0.2;
 global zdist
 zdist = 0.2;
 
-diffAmount = (list(2:end) - list(1:end-1))./list(1:end-1)
-
+list(2:end) - list(1:end-1)

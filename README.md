@@ -20,6 +20,10 @@ This program was created for the purpose of modeling microwave heating by recept
 	* For example, if we run the program taking in 5 W in a 0.2 by 0.2 by 0.2 area and 500 seconds, the same process will occur if 0.05 W are inserted in a 2 by 2 by 2 millimeter volume in 50 milliseconds.
 
 
+* Additionally, if convection or radiation are in play, the convection or radiation constants must decrease by an order of magnitude for each degree of magnitude distance in incremented.
+
+
+
 
 ## Theory
 

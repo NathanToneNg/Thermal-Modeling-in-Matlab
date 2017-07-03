@@ -41,7 +41,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%rng('default'); %This can be used to make the randomized distributions
+rng('default'); %This can be used to make the randomized distributions
 %consistent for repeatability
 
 %Precision marks how many digits out calculations are carried to. The

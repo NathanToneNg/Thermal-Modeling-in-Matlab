@@ -10,7 +10,7 @@ function overallGUI
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     materials thermal_Conductivity2 interfaceK density2 specific_heat2 distribution frequency2 ...
     extraConduction cycle cycleIntervals cycleSpeed ...
-    saveMovie isotherm convecc melting Tm2 graph thin bottomLoss initialGrid;
+    saveMovie isotherm convecc melting Tm2 graph thin bottomLoss initialGrid topCheck depth;
 
     
     %%%%Defaults
@@ -59,6 +59,8 @@ function overallGUI
     graph = true;
     bottomLoss = true;
     initialGrid = false;
+    topCheck = false;
+    depth = 0.015;
     %%%%%%%%%%%%
     
     

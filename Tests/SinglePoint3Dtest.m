@@ -6,6 +6,8 @@ global absorption
 absorption = 6;
 global borders
 borders = 0;
+global bottomLoss
+bottomLoss = 1;
 global constant
 constant = 0.00038172;
 global convecc
@@ -55,6 +57,10 @@ global framerate
 framerate = 500;
 global frequency2
 frequency2 = 12;
+global graph
+graph = 0;
+global initialGrid
+initialGrid = 0;
 global interfaceK
 interfaceK = 0.2;
 global isotherm
@@ -67,12 +73,16 @@ materialMatrix = '1';
 materialMatrix = str2num(materialMatrix);
 global materials
 materials = 1;
+global melting
+melting = 0;
 global precision
 precision = 10;
 global radiation
 radiation = 0;
 global roomTemp
 roomTemp = 0;
+global saveMovie
+saveMovie = 0;
 global self_set
 self_set = 0;
 global specific_heat
@@ -86,6 +96,8 @@ global thermal_Conductivity
 thermal_Conductivity = 0.33;
 global thermal_Conductivity2
 thermal_Conductivity2 = 0.33;
+global thin
+thin = 0;
 global timeOff
 timeOff = 500;
 global timeOn
@@ -103,4 +115,5 @@ x = 25:25:500;
 analyticalTemps = 250.*(exp(-6.*x.*thermal_Conductivity./specific_heat./density./dd./dd))
 differences = (abs((tempsList - analyticalTemps) ./ analyticalTemps))
 percentOffest = mean(differences(1:10))
+
 

@@ -10,7 +10,7 @@
 %   bytes as a string, but that can be modified within the function. 
 
 function saveConditions(filename)
-if exist('name','var')
+if exist('filename','var')
     file = fopen(filename, 'w+');
 else
     file = fopen('MostRecentTest.m','w+');
@@ -35,11 +35,12 @@ for i = 1:length(globalVars)
     %Print matrices as well, or just create a matrix to load if it is too
     %big in string form.
     if strcmp(varname, 'list') || strcmp(varname, 'tempsList') || strcmp(varname, ...
-            'materialMatrix') || strcmp(varname, 'finalTemps')
+            'materialMatrix') || strcmp(varname, 'finalTemps') || strcmp(varname, 'topTemps')
         strmatrix = mat2str(var);
         data = whos('strmatrix');
         if data.bytes > limit
-            matrixname = strcat(filename, varname);
+            matrixname = strcat(varname, filename);
+            matrixname = genvarname(matrixname); %So that it can correct for the .m or other characters
             save(matrixname,varname);
             fprintf(file, 'load %s\n', matrixname);
         else
@@ -52,7 +53,8 @@ for i = 1:length(globalVars)
             strmatrix = mat2str(var);
             data = whos('strmatrix');
             if data.bytes > limit
-                matrixname = strcat(filename, varname);
+                matrixname = strcat(varname, filename);
+                matrixname = genvarname(matrixname);
                 save(matrixname,varname);
                 fprintf(file, 'load %s\n', matrixname);
             else
