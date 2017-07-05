@@ -1,4 +1,4 @@
-function Thermal3TwoMat
+function Thermal3HeatingAir
 %% Initialize globals
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
@@ -8,7 +8,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss initialGrid topCheck depth;
+    bottomLoss initialGrid topCheck depth roomTempFunc heating;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -114,6 +114,12 @@ end
 
 %This should be either a function of j from 2 to iter + 1, or array of size
 %iter
+
+%times = dt:dt:total_time;
+%func(times) = func(j * dt)
+%roomTempFunc = @(x) 16 + (x/100);
+
+%roomTempFunc = str2func(str);
 
 roomTempArray = ones(iter, 1) .* roomTemp;
     %This is just a sample for if it is constant. 
@@ -465,13 +471,10 @@ end
 %calculation between timesteps.
 if radiation
     sigma = 5.67 * 10^-8;
-    rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
-    rAir = rConst .* (roomTemp + 273.15).^4;
-    
+    rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;    
 end
 if convection
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
-    convAir = convRatio .* roomTemp;
 end
 
 
@@ -518,14 +521,19 @@ for j= 2:iter + 1
             .*constants .* outK;
     %Changes based on radiation
     if radiation
+        %wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+        %    (rConst .* (((old(boundaries) + 273.15).^4) - ...
+        %    (roomTempArray(j * dt) + 273.15).^4));
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* (((old(boundaries) + 273.15).^4) - ...
-            (roomTempArray(j) + 273.15).^4));
+            (roomTempFunc(j * dt) + 273.15).^4));
     end
     %Changes based on convection
     if convection
+        %wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+        %    ((old(boundaries) - roomTempArray(j * dt)) .* convRatio);
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            ((old(boundaries) - roomTempArray(j)) .* convRatio);
+            ((old(boundaries) - roomTempFunc(j * dt)) .* convRatio);
     end
     %Increments by energy (turned into temp) if between the correct time
     %interval

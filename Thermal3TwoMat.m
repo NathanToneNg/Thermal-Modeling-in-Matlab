@@ -8,7 +8,7 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss initialGrid topCheck depth;
+    bottomLoss initialGrid topCheck depth heating roomTempFunc;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -41,10 +41,13 @@ end
 if isempty(initialGrid)
     initialGrid = false;
 end
+if isempty(heating)
+    heating = false;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%rng('default'); %This can be used to make the randomized distributions
+rng('default'); %This can be used to make the randomized distributions
 %consistent for repeatability
 try
     digits(precision);
@@ -71,7 +74,11 @@ zslice = (ceil((zintervals-1)/2) * dd);
 
 %% Create initial temperatures
 %This creates a temporary grid of which pixels start at higher temperature
-Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTemp;
+if heating
+    Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTempFunc(0);
+else
+    Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTemp;
+end
 switch elevLocation 
     case 1
         %Center ixel
@@ -451,12 +458,15 @@ end
 if radiation
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
-    rAir = rConst .* (roomTemp + 273.15).^4;
-    
+    if ~heating
+        rAir = rConst .* (roomTemp + 273.15).^4;
+    end
 end
 if convection
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
-    convAir = convRatio .* roomTemp;
+    if ~heating
+        convAir = convRatio .* roomTemp;
+    end
 end
 
 
@@ -503,13 +513,24 @@ for j= 2:iter + 1
             .*constants .* outK;
     %Changes based on radiation
     if radiation
-        wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+        if heating
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+                (rConst .* (((old(boundaries) + 273.15).^4) - ...
+                (roomTempFunc(j * dt) + 273.15).^4));
+        else
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
             (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
+        end
     end
     %Changes based on convection
     if convection
-        wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            ((old(boundaries) .* convRatio) - convAir);
+        if heating
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+                ((old(boundaries) - roomTempFunc(j * dt)) .* convRatio);
+        else
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+                ((old(boundaries) .* convRatio) - convAir);
+        end
     end
     %Increments by energy (turned into temp) if between the correct time
     %interval

@@ -8,7 +8,7 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid;
+    cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -38,6 +38,9 @@ end
 if isempty(initialGrid)
     initialGrid = false;
 end
+if isempty(heating)
+    heating = false;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -64,7 +67,11 @@ midy = ceil(yintervals/2);
 
 %% Create Initial temperatures 
 %This creates a temporary grid of which pixels start at higher temperature
-Tempgrid = zeros(xintervals, yintervals) + roomTemp;
+if heating
+    Tempgrid = zeros(xintervals, yintervals) + roomTempFunc(0);
+else
+    Tempgrid = zeros(xintervals, yintervals) + roomTemp;
+end
 switch elevLocation 
     case 1
         %Center pixel
@@ -390,7 +397,9 @@ if radiation
     end
     sigma = 5.67 * 10^-8;
     rConst = sigma .* emissivity .* constants(pBoundaries) .* area(pBoundaries) .* dd;
-    rAir = rConst .* (roomTemp + 273.15)^4;
+    if ~heating
+        rAir = rConst .* (roomTemp + 273.15)^4;
+    end
     if thin
         area = area - 2;
         midAreaR = 2 + (xintervals == 1) + (yintervals == 1);
@@ -404,7 +413,9 @@ if convection
         area = area + bottomLess;
     end
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
-    convAir = convRatio .* roomTemp;
+    if ~heating
+        convAir = convRatio .* roomTemp;
+    end
     if thin
         midAreaC = 2 + (xintervals == 1) + (yintervals == 1);
         convMidRatio = convecc .* constants(2:end-1,2:end-1) .* midAreaC .* dd;
@@ -449,21 +460,41 @@ for j= 2:iter + 1
             2.* (old(2:end-1,2:end-1)-roomTemp) .* constants .* k;
     end
     %Changes based on radiation
-    if(radiation)        
-        wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
-        if thin
-            wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
-                (rMidConst .* ((old(3:end-2,3:end-2) + 273.15).^4)) + rMidAir;
+    if radiation
+        if heating
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+                (rConst .* (((old(boundaries) + 273.15).^4) - ...
+                (roomTempFunc(j * dt) + 273.15).^4));
+            if thin
+                wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+                (rConst .* (((old(3:end-2,3:end-2) + 273.15).^4) - ...
+                (roomTempFunc(j * dt) + 273.15).^4));
+            end
+        else
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+                (rConst .* ((old(boundaries) + 273.15).^4)) + rAir;
+            if thin
+                wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+                    (rMidConst .* ((old(3:end-2,3:end-2) + 273.15).^4)) + rMidAir;
+            end
         end
     end
     %Changes based on convection
-    if(convection)
-        wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
-            ((old(boundaries) .* convRatio) - convAir);
-        if convection && thin
-            wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
-                ((old(3:end-2,3:end-2) .*convMidRatio) - convMidAir);
+    if convection
+        if heating
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+                ((old(boundaries) - roomTempFunc(j * dt)) .* convRatio);
+            if thin
+                wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+                ((old(3:end-2,3:end-2) - roomTempFunc(j * dt)) .* convRatio);
+            end
+        else
+            wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
+                ((old(boundaries) .* convRatio) - convAir);
+            if thin
+                wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
+                    ((old(3:end-2,3:end-2) .*convMidRatio) - convMidAir);
+            end
         end
     end
     

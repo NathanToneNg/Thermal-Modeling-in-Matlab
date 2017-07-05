@@ -1,6 +1,8 @@
 %chooseSettings: Goes to the correct chooseSettings script based on how 
 %many materials there are. 
 %
+%All variables must have been initialized before running this.
+%
 %Clarifications: 
 %   re-check parameters tells whether the program has a chance
 %       of becoming unstable with the given material parameters and step sizes.

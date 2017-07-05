@@ -34,16 +34,13 @@
 %   Receptor location options are clarified in material2Menu by the same
 %   options.
 function temperatureMenu
-    global roomTemp elevatedTemp elevLocation elevFrequency absorption energyRate ...
+    global elevatedTemp elevLocation elevFrequency absorption energyRate ...
     distributionFrequency timeOn timeOff total_time materials cycle cycleIntervals cycleSpeed;
     if isempty(materials)
         materials = 3;
     end
     if materials == 3
         absorption = 7;
-    end
-    if isempty(roomTemp)
-        roomTemp = 0;
     end
     if isempty(elevatedTemp)
         elevatedTemp = 250;
@@ -83,26 +80,23 @@ function temperatureMenu
     f = figure('Visible', 'off','color','white','Position',...
     [360,500,360,500]);
     
-    roomTempText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[0,400,80,80],'String','Initial Room Temperature');
-    roomTempBar = uicontrol('Style','edit','Position',[20,400,40,40],...
-    'String',num2str(roomTemp),'Callback',@callbackfn);
+
 
     elevTempText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[90,440,100,40],'String','Initial Higher Temperature');
-    elevTempBar = uicontrol('Style','pushbutton','Position',[90,400,100,40],...
+    'Position',[20,440,100,40],'String','Initial Higher Temperature');
+    elevTempBar = uicontrol('Style','pushbutton','Position',[20,400,100,40],...
     'String','Middle: Single Point',...
     'Callback',@highTempOpts);
     
     elevTempAmountText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[190,410,80,80],'String','What is the Elevated Temperature');
-    elevTempAmountEdit = uicontrol('Style','edit','Position',[210,400,40,40],...
+    'Position',[140,410,80,80],'String','What is the Elevated Temperature');
+    elevTempAmountEdit = uicontrol('Style','edit','Position',[160,400,40,40],...
     'String',num2str(elevatedTemp),...
     'Callback',@callbackfn);
 
     elevFreqText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[260,410,80,80],'String','Density of Elevated Temperature');
-    elevFreqEdit = uicontrol('Style','edit','Position',[280,400,40,40],...
+    'Position',[240,410,80,80],'String','Density of Elevated Temperature');
+    elevFreqEdit = uicontrol('Style','edit','Position',[260,400,40,40],...
     'String',num2str(elevFrequency),...
     'Callback',@callbackfn);
 
@@ -313,7 +307,6 @@ function temperatureMenu
     function callbackfn(~,~)
         % callbackfn is called by the 'Callback' property
         % in either the second edit box or the pushbutton
-        roomTemp=str2double(get(roomTempBar,'String'));
         elevatedTemp=str2double(get(elevTempAmountEdit,'String'));
         elevFrequency = str2double(get(elevFreqEdit,'String'));
         energyRate = str2double(get(energyRateEdit,'String'));
