@@ -2,7 +2,15 @@
 % inserted into the system, both iniitially and through reception.
 %
 % Clarifications:
+%   The option for constant time allows the user run the program slightly faster 
+%   than otherwise, assuming the room temperature remains at an approximately 
+%   constant temperature.
 %
+%   The room temperature function should be written in the form of an
+%   anonymous function in matlab. For example, 10 + 3x^2 should be written as
+%   '@(x)10 + 3*(x^2)'
+%
+
 function ambientMenu
     global heating roomTemp roomTempFunc;
     if isempty(heating)
@@ -14,7 +22,6 @@ function ambientMenu
     if isempty(roomTempFunc)
         roomTempFunc = @(x)0;
     end
-
 
     
     f = figure('Visible', 'off','color','white','Position',...

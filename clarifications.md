@@ -57,7 +57,7 @@
 		* Middle means the high peak of the sine curve is the energy rate provided
 		* High means the middle point of the sine curve is the energy rate provided.
 	* Note that on a sine based curve this means that the average input is multiplied by sqrt(2) of the energy rate inputted, and high means multiplied by 2sqrt(2)
-o
+
 
 # 9: Repick #Materials / Dimensions 
 	* Allows the user to repick the number of materials or dimensions without resetting all other settings.
@@ -65,3 +65,8 @@ o
 # 10: Graphing Settings:
 	* Isosurface option applies for 3D case only: Will plot Isosurfaces for every 10th percentile
 	* Saving the movie will have the program save the movie as recentTestMovie.avi in your MATLAB folder. Drag this into the MATLAB Command Window to bring the movie to the workspace, and use * movie(recentTestMovie) * to play it.
+
+# 11: Room Temperature Settings:
+	* The option for constant time allows the user run the program slightly faster than otherwise, assuming the room temperature remains at an approximately constant temperature. 
+	* The room temperature function should be written in the form of an anonymous function in matlab. For example, f(x) = 10 + 3x^2 should be written as ‘@(x)10 + 3*(x^2)’
+
