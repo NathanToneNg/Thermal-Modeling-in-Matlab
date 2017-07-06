@@ -130,9 +130,6 @@ function material2Menu
     end
     set(f,'Name','Materials Variables')
     movegui(f,'center')
-    hbutton = uicontrol('Style','pushbutton',...
-        'String','Set values',...
-        'Position',[180,30,100,50], 'Callback',@callbackfn);
     set(f,'Visible','on')
     
         

@@ -47,9 +47,6 @@ function ambientMenu
 
     set(f,'Name','Ambient Temperature Menu')
     movegui(f,'center')
-    hbutton = uicontrol('Style','pushbutton',...
-        'String','Set values',...
-        'Position',[107.5,50,100,50], 'Callback',@callbackfn);
     set(f,'Visible','on')
     
 
@@ -85,9 +82,10 @@ function ambientMenu
                 set(roomFuncText,'Visible','Off');
                 set(roomFuncEdit,'Visible','Off');
             end
+        else
+            roomTemp=str2double(get(roomTempEdit,'String'));
+            roomTempFunc = str2func(get(roomFuncEdit,'String'));
         end
-        roomTemp=str2double(get(roomTempEdit,'String'));
-        roomTempFunc = str2func(get(roomFuncEdit,'String'));
         
     end
     

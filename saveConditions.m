@@ -69,7 +69,7 @@ for i = 1:length(globalVars)
         end
     elseif ischar(eval(varname))
         fprintf(file, '%s = ''%s'';\n', varname, var);
-    else
+    elseif ~strcmp(varname, 'finalTemps') && ~strcmp(varname, 'topTemps')
         fprintf(file, '%s = %s;\n', varname, var);
     end
     

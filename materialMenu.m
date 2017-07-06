@@ -73,8 +73,6 @@ function materialMenu
 
     set(f,'Name','Materials Variables')
     movegui(f,'center')
-    hbutton = uicontrol('Style','pushbutton','String','Set values',...
-        'Position',[107.5,50,100,50], 'Callback',@callbackfn);
     set(f,'Visible','on')
     
     set(cText, 'Visible', 'on');

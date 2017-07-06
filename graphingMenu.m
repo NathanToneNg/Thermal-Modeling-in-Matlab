@@ -11,11 +11,7 @@
 %       MATLAB Command Window to bring the movie to the workspace, and use 
 %       movie(recentTestMovie) to play it.
 function graphingMenu
-    global dimensions isotherm saveMovie melting graph initialGrid ...
-        topCheck depth finalGrid precision
-    if isempty(precision)
-        precision = 10;
-    end
+    global dimensions isotherm saveMovie graph initialGrid finalGrid
     if isempty(dimensions)
         dimensions = 3;
     end
@@ -25,20 +21,11 @@ function graphingMenu
     if isempty(saveMovie)
         saveMovie = false;
     end
-    if isempty(melting)
-        melting = false;
-    end
     if isempty(graph)
         graph = true;
     end
     if isempty(initialGrid)
         initialGrid = false;
-    end
-    if isempty(topCheck)
-        topCheck = false;
-    end
-    if isempty(depth)
-        depth = 0.015;
     end
     if isempty(finalGrid)
         finalGrid = false;
@@ -61,39 +48,17 @@ function graphingMenu
     movieButton = uicontrol('Style','pushbutton','Position',[20, 130, 80, 40],...
         'Callback',@callbackfn);
     
-    meltingText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[0, 30, 120, 80], 'String', 'Keep track of melting?');
-    meltingButton = uicontrol('Style','pushbutton','Position',[20, 50, 80, 40],...
-        'Callback',@callbackfn);
-    
     initialText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[120, 110, 120, 80], 'String', 'Record initial temps grid?');
-    initialButton = uicontrol('Style','pushbutton','Position',[140, 130, 80, 40],...
+        'Position',[240, 190, 120, 80], 'String', 'Record initial temps grid?');
+    initialButton = uicontrol('Style','pushbutton','Position',[260, 210, 80, 40],...
         'Callback',@callbackfn);
     
     finalText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[120, 30, 120, 80], 'String', 'Record final temps grid?');
-    finalButton = uicontrol('Style','pushbutton','Position',[140, 50, 80, 40],...
+        'Position',[240, 110, 120, 80], 'String', 'Record final temps grid?');
+    finalButton = uicontrol('Style','pushbutton','Position',[260, 130, 80, 40],...
         'Callback',@callbackfn);
-    
-    topText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[240, 190, 120, 80], 'String', 'Track top temperatures?');
-    topButton = uicontrol('Style','pushbutton','Position',[260, 210, 80, 40],...
-        'Callback',@callbackfn);
-    
-    depthText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[240, 110, 120, 80], 'String', 'Depth');
-    depthEdit = uicontrol('Style','edit','Position',[260, 130, 80, 40],...
-        'String',num2str(depth),'Callback',@callbackfn);
-    
-    precisionText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[240, 30, 120, 80], 'String', 'Precision');
-    precisionEdit = uicontrol('Style','edit','Position',[260, 50, 80, 40],...
-        'String',num2str(precision),'Callback',@callbackfn);
-    
+        
     if dimensions == 3
-        set(topText,'visible','on');
-        set(topButton,'visible','on');
         if graph
             set(isothermText,'visible','on');
             set(isothermButton,'visible','on');
@@ -104,8 +69,6 @@ function graphingMenu
     else
         set(isothermText,'Visible','off');
         set(isothermButton,'Visible','off');
-        set(topText,'visible','off');
-        set(topButton,'visible','off');
     end
     if isotherm
         set(isothermButton,'string','Isosurface plot');
@@ -116,11 +79,6 @@ function graphingMenu
         set(movieButton,'string','On');
     else
         set(movieButton,'string','Off');
-    end
-    if melting
-        set(meltingButton,'string','On');
-    else
-        set(meltingButton,'string','Off');
     end
     if graph
         set(graphButton,'String','On');
@@ -139,16 +97,7 @@ function graphingMenu
     else
         set(finalButton,'string','Off');
     end
-    if topCheck && dimensions == 3
-        set(topButton,'string','On');
-        set(depthText,'Visible','On');
-        set(depthEdit,'Visible','On');
-    else
-        set(topButton,'string','Off');
-        set(depthText,'Visible','Off');
-        set(depthEdit,'Visible','Off');
-    end
-    set(f,'Name','Miscellaneous Options')
+    set(f,'Name','Graphing Options')
     movegui(f,'center')
 
     set(f,'Visible','on')
@@ -170,13 +119,6 @@ function graphingMenu
                     set(movieButton,'string','On');
                 else
                     set(movieButton,'string','Off');
-                end
-            case meltingButton
-                melting = ~melting;
-                if melting
-                    set(meltingButton,'string','On');
-                else
-                    set(meltingButton,'string','Off');
                 end
             case graphButton
                 graph = ~graph;
@@ -209,23 +151,7 @@ function graphingMenu
                 else
                     set(finalButton,'String','Off');
                 end
-            case topButton
-                topCheck = ~topCheck;
-                if topCheck
-                    set(topButton,'string','On');
-                    set(depthText,'Visible','On');
-                    set(depthEdit,'Visible','On');
-                else
-                    set(topButton,'string','Off');
-                    set(depthText,'Visible','Off');
-                    set(depthEdit,'Visible','Off');
-                end
-            case depthEdit
-                depth = str2double(get(depthEdit,'string'));
-            case precisionEdit
-                precision = str2double(get(precisionEdit,'string'));
         end
-        
     end
 
 end

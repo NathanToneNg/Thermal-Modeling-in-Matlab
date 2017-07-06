@@ -3,12 +3,13 @@ function Thermal2TwoMat
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
 %necessary.
-global precision xdist ydist dd total_time dt framerate borders convection radiation ...
+global precision xdist ydist dd total_time dt framerate convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
-    frequency2 extraConduction cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc finalGrid;
+    frequency2 cycle cycleIntervals ...
+    cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc ...
+    finalGrid consistent;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -43,9 +44,9 @@ if isempty(heating)
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-rng('default'); %This can be used to make the randomized distributions
-%consistent for repeatability
+if ~isempty(consistent) && consistent
+    rng('default'); %This can be used to make the randomized distributions consistent
+end
 
 %Precision marks how many digits out calculations are carried to. The
 %normal precision is 32, but using lower numbers saves time.
@@ -441,7 +442,7 @@ for j= 2:iter + 1
     %If borders are on, we want no conduction off edges so we make the
     %edges the same temperature so there is no difference and so no
     %change
-    if(borders)
+    if(true)
         old(1,:) = old(2,:);
         old(end,:) = old(end-1,:);
         old(:,1) = old(:,2);
@@ -455,10 +456,6 @@ for j= 2:iter + 1
         (old(2:end-1,3:end)-old(2:end-1,2:end-1)).*constants .* downK + ...
         (old(1:end-2,2:end-1)-old(2:end-1,2:end-1)).*constants .* leftK + ...
         (old(3:end,2:end-1) - old(2:end-1,2:end-1)).*constants .* rightK;
-    if ~borders && extraConduction
-        wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) - ...
-            2.* (old(2:end-1,2:end-1)-roomTemp) .* constants .* k;
-    end
     %Changes based on radiation
     if radiation
         if heating

@@ -3,12 +3,12 @@ function Thermal3TwoMat
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
 %necessary.
-global precision xdist ydist zdist dd total_time dt framerate borders convection radiation ...
+global precision xdist ydist zdist dd total_time dt framerate convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid;
+    bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid consistent;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -47,8 +47,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-rng('default'); %This can be used to make the randomized distributions
-%consistent for repeatability
+if ~isempty(consistent) && consistent
+    rng('default'); %This can be used to make the randomized distributions consistent
+end
+
 try
     digits(precision);
 catch
@@ -119,12 +121,17 @@ materialMatrix = int8(ones(xintervals, yintervals,zintervals));
 
 %Holds the thermal conductivities at each pixel in each direction.
 k = ones(xintervals, yintervals,zintervals) * thermal_Conductivity;
-leftK = ones(xintervals, yintervals,zintervals);
-rightK = ones(xintervals, yintervals,zintervals);
-upK = ones(xintervals, yintervals,zintervals);
-downK = ones(xintervals, yintervals,zintervals);
-inK = ones(xintervals, yintervals,zintervals);
-outK = ones(xintervals, yintervals,zintervals);
+leftK = zeros(xintervals, yintervals,zintervals);
+rightK = zeros(xintervals, yintervals,zintervals);
+upK = zeros(xintervals, yintervals,zintervals);
+downK = zeros(xintervals, yintervals,zintervals);
+inK = zeros(xintervals, yintervals,zintervals);
+outK = zeros(xintervals, yintervals,zintervals);
+kArray = zeros(7,1);
+kArray(3) = thermal_Conductivity; %Mat 1 with Mat 1
+kArray(5) = interfaceK; %Mat 1 with Mat 2
+kArray(7) = thermal_Conductivity2; %Mat 2 with Mat 2
+
 
 %% Create materials grid
 %Declare where the second material is based on parameter "distribution" and
@@ -205,7 +212,7 @@ end
 
 %essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
-materialMatrix(second) = 2;
+materialMatrix(second) = 3;
 k(second) = thermal_Conductivity2;
 Tms = ones(xintervals, yintervals, zintervals) .* Tm;
 Tms(second) = Tm2;
@@ -320,99 +327,30 @@ end
 for i = 1:xintervals
     for j = 1:yintervals
         for l = 1:zintervals
-            if i == 1
-                if(materialMatrix(i,j,l) == 1)
-                    leftK(i,j,l) = thermal_Conductivity;
-                else
-                    leftK(i,j,l) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j,l) == 1 && materialMatrix(i-1,j,l) == 1)
-                    leftK(i,j,l) = thermal_Conductivity;
-                elseif materialMatrix(i,j,l) == 2 && materialMatrix(i-1,j,l) == 2
-                    leftK(i,j,l) = thermal_Conductivity2;
-                else
-                    leftK(i,j,l) = interfaceK;
-                end
+            if i ~= 1
+                leftK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i-1,j,l)+1);
+%           else
+%               leftK(i,j,l) = 0;
             end
-            if i == xintervals
-                if(materialMatrix(i,j,l) == 1)
-                    rightK(i,j,l) = thermal_Conductivity;
-                else
-                    rightK(i,j,l) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j,l) == 1 && materialMatrix(i+1,j,l) == 1)    
-                    rightK(i,j,l) = thermal_Conductivity;
-                elseif materialMatrix(i,j,l) == 2 && materialMatrix(i+1,j,l) == 2
-                    rightK(i,j,l) = thermal_Conductivity2;
-                else
-                    rightK(i,j,l) = interfaceK;
-                end
+            if i ~= xintervals
+                rightK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i+1,j,l) + 1);
             end
-            if j == 1
-                if(materialMatrix(i,j,l) == 1)
-                    upK(i,j,l) = thermal_Conductivity;
-                else
-                    upK(i,j,l) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j,l) == 1 && materialMatrix(i,j-1,l) == 1)    
-                    upK(i,j,l) = thermal_Conductivity;
-                elseif materialMatrix(i,j,l) == 2 && materialMatrix(i,j-1,l) == 2
-                    upK(i,j,l) = thermal_Conductivity2;
-                else
-                    upK(i,j,l) = interfaceK;
-                end
+            if j ~= 1
+                upK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j-1,l) + 1);
             end
-            if j == yintervals
-                if(materialMatrix(i,j,l) == 1)
-                    downK(i,j,l) = thermal_Conductivity;
-                else
-                    downK(i,j,l) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j,l) == 1 && materialMatrix(i,j+1,l) == 1)    
-                    downK(i,j,l) = thermal_Conductivity;
-                elseif materialMatrix(i,j,l) == 2 && materialMatrix(i,j+1,l) == 2
-                    downK(i,j,l) = thermal_Conductivity2;
-                else
-                    downK(i,j,l) = interfaceK;
-                end
+            if j ~= yintervals
+                downK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j+1,l) + 1);
             end
-            if l == 1
-                if(materialMatrix(i,j,l) == 1)
-                    inK(i,j,l) = thermal_Conductivity;
-                else
-                    inK(i,j,l) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j,l) == 1 && materialMatrix(i,j,l-1) == 1)    
-                    inK(i,j,l) = thermal_Conductivity;
-                elseif materialMatrix(i,j,l) == 2 && materialMatrix(i,j,l-1) == 2
-                    inK(i,j,l) = thermal_Conductivity2;
-                else
-                    inK(i,j,l) = interfaceK;
-                end
+            if l ~= 1
+                inK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j,l-1) + 1);
             end
-            if l == zintervals
-                if(materialMatrix(i,j,l) == 1)
-                    outK(i,j,l) = thermal_Conductivity;
-                else
-                    outK(i,j,l) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j,l) == 1 && materialMatrix(i,j,l+1) == 1)    
-                    outK(i,j,l) = thermal_Conductivity;
-                elseif materialMatrix(i,j,l) == 2 && materialMatrix(i,j,l+1) == 2
-                    outK(i,j,l) = thermal_Conductivity2;
-                else
-                    outK(i,j,l) = interfaceK;
-                end
+            if l ~= zintervals
+                outK(i,j,l) = kArray(materialMatrix(i,j,l) + materialMatrix(i,j,l+1) + 1);
             end
         end
     end
 end
+
 
 %The initial temperature grid is assigned.
 wholeMatrix = zeros(xintervals + 2, yintervals + 2, zintervals + 2) + roomTemp;
@@ -429,27 +367,14 @@ melted = false(xintervals,yintervals, zintervals);
 %Creates logicals that assign where the borders are. Edges have twice the
 %area, and corners triple. Not meant to be accurate with single dimension
 %sizes in this form.
+
 if radiation || convection
+    area = (upK == 0) + (inK == 0) + (downK == 0) + (outK == 0) + (leftK == 0) + (rightK == 0);
+    pBoundaries = (area ~= 0);
     boundaries = false(xintervals + 2, yintervals + 2, zintervals + 2);
-    corners = boundaries;
-    corners([2,end-1],[2,end-1],[2,end-1]) = true;
-    edges = boundaries;
-    edges(2:end-1,[2,end-1],[2,end-1]) = true;
-    edges([2,end-1],[2,end-1],2:end-1) = true;
-    edges([2,end-1],2:end-1,[2,end-1]) = true;
-    boundaries(2:end-1,2:end-1,[2,end-1]) = true;
-    boundaries(2:end-1,[2,end-1],2:end-1) = true;
-    boundaries([2,end-1],2:end-1,2:end-1) = true;
-    area = zeros(xintervals, yintervals, zintervals);
-    pBoundaries = boundaries(2:end-1,2:end-1,2:end-1);
-    pEdges = edges(2:end-1,2:end-1,2:end-1);
-    pCorners = corners(2:end-1,2:end-1,2:end-1);
-    area(pBoundaries) = 1;
-    area(pEdges) = 2;
-    area(pCorners) = 3;
-    area = area + (xintervals == 1) + (yintervals == 1) + (zintervals == 1);
+    boundaries(2:end-1,2:end-1,2:end-1) = pBoundaries;
     if ~bottomLoss
-        area(:,:,1) = area(:,:,1) - 1;
+        area(:,:,1) = area(:,:,1) - (area(:,:,1) > 0);
     end
 end
 
@@ -484,17 +409,6 @@ for j= 2:iter + 1
     %Keep an older version so we aren't counting changes in the same time
     old = wholeMatrix(:,:,:);
     
-    %If borders are on, we want no conduction off edges so we make the
-    %edges the same temperature so there is no difference and so no
-    %change
-    if borders
-        old(1,:,:) = old(2,:,:);
-        old(end,:,:) = old(end-1, :, :);
-        old(:,1,:) = old(:,2,:);
-        old(:,end,:) = old(:, end-1, :);
-        old(:,:,1) = old(:,:,2);
-        old(:,:,end) = old(:,:,end-1);
-    end
     %Use constants, thermal conductivity, and difference in temperatures
     %between pixels on the grid to calculate conductive transfer
     wholeMatrix(2:end-1, 2:end-1,2:end-1) = wholeMatrix(2:end-1, 2:end-1,2:end-1) + ...

@@ -35,7 +35,7 @@
 %   options.
 function temperatureMenu
     global elevatedTemp elevLocation elevFrequency absorption energyRate ...
-    distributionFrequency timeOn timeOff total_time materials cycle cycleIntervals cycleSpeed;
+    distributionFrequency materials cycle cycleIntervals cycleSpeed;
     if isempty(materials)
         materials = 3;
     end
@@ -60,12 +60,6 @@ function temperatureMenu
     if isempty(distributionFrequency)
         distributionFrequency = 12;
     end
-    if isempty(timeOn)
-        timeOn = 0;
-    end
-    if isempty(timeOff)
-        timeOff = total_time;
-    end
     if isempty(cycle)
         cycle = 1;
     end
@@ -78,59 +72,47 @@ function temperatureMenu
 
     
     f = figure('Visible', 'off','color','white','Position',...
-    [360,500,360,500]);
+    [360,500,360,400]);
     
 
 
     elevTempText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[20,440,100,40],'String','Initial Higher Temperature');
-    elevTempBar = uicontrol('Style','pushbutton','Position',[20,400,100,40],...
+    'Position',[20,340,100,40],'String','Initial Higher Temperature');
+    elevTempBar = uicontrol('Style','pushbutton','Position',[20,300,100,40],...
     'String','Middle: Single Point',...
     'Callback',@highTempOpts);
     
     elevTempAmountText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[140,410,80,80],'String','What is the Elevated Temperature');
-    elevTempAmountEdit = uicontrol('Style','edit','Position',[160,400,40,40],...
+    'Position',[140,310,80,80],'String','What is the Elevated Temperature');
+    elevTempAmountEdit = uicontrol('Style','edit','Position',[160,300,40,40],...
     'String',num2str(elevatedTemp),...
     'Callback',@callbackfn);
 
     elevFreqText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[240,410,80,80],'String','Density of Elevated Temperature');
-    elevFreqEdit = uicontrol('Style','edit','Position',[260,400,40,40],...
+    'Position',[240,310,80,80],'String','Density of Elevated Temperature');
+    elevFreqEdit = uicontrol('Style','edit','Position',[260,300,40,40],...
     'String',num2str(elevFrequency),...
     'Callback',@callbackfn);
 
     energyRateText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[140,300,100,80],'String','Energy Absorption Rate (Power/ Watts)');
-    energyRateEdit = uicontrol('Style','edit','Position',[160,300,40,40],...
+    'Position',[140,200,100,80],'String','Energy Absorption Rate (Power/ Watts)');
+    energyRateEdit = uicontrol('Style','edit','Position',[160,200,40,40],...
     'String',num2str(energyRate),...
     'Callback',@callbackfn);
 
     receptorDensityText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[240,300,80,80],'String','Density of Energy Receptors');
-    receptorDensityEdit = uicontrol('Style','edit','Position',[260,300,40,40],...
+    'Position',[240,200,80,80],'String','Density of Energy Receptors');
+    receptorDensityEdit = uicontrol('Style','edit','Position',[260,200,40,40],...
     'String',num2str(distributionFrequency),...
     'Callback',@callbackfn);
     if materials == 3
         set(receptorDensityEdit,'Visible','off');
         set(receptorDensityText,'Visible','off');
     end
-
-    absorptionOnText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[150,200,80,80], 'String','Time Absorption On');
-    absorptionOnBar = uicontrol('Style','edit','Position',[160,200,40,40],...
-    'String',num2str(timeOn),...
-    'Callback',@callbackfn);
-
-    absorptionOffText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[240,200,80,80], 'String','Time Absorption Off');
-    absorptionOffBar = uicontrol('Style','edit','Position',[260,200,40,40],...
-    'String',num2str(timeOff),...
-    'Callback',@callbackfn);
     
     receiverButtonText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[10,300,120,80],'String','Energy Receivers Present'); 
-    receiverButton = uicontrol('Style','pushbutton','Position',[10,310,120,40],...
+    'Position',[10,200,120,80],'String','Energy Receivers Present'); 
+    receiverButton = uicontrol('Style','pushbutton','Position',[10,210,120,40],...
     'String','Off','Callback',@button2call);
 
     cycleText = uicontrol('Style','text','BackgroundColor','white',...
@@ -150,9 +132,6 @@ function temperatureMenu
 
     set(f,'Name','Temperature Menu')
     movegui(f,'center')
-    hbutton = uicontrol('Style','pushbutton',...
-        'String','Set values',...
-        'Position',[107.5,50,100,50], 'Callback',@callbackfn);
     set(f,'Visible','on')
     
 
@@ -186,15 +165,10 @@ function temperatureMenu
             case 1
                 set(receiverButton, 'String','Middle: Single Point');
                 set(energyRateEdit,'Visible','on');
-                set(hsttext4,'Visible','on');
                 if materials ~= 3
                     set(receptorDensityEdit,'Visible','off');
                     set(receptorDensityText,'Visible','off');
                 end
-                set(absorptionOnBar,'Visible','on');
-                set(absorptionOnText,'Visible','on');
-                set(absorptionOffBar,'Visible','on');
-                set(absorptionOffText,'Visible','on');
             case 2
                 set(receiverButton, 'String','Middle Block');
                 set(energyRateEdit,'Visible','on');
@@ -203,10 +177,6 @@ function temperatureMenu
                     set(receptorDensityEdit,'Visible','off');
                     set(receptorDensityText,'Visible','off');
                 end
-                set(absorptionOnBar,'Visible','on');
-                set(absorptionOnText,'Visible','on');
-                set(absorptionOffBar,'Visible','on');
-                set(absorptionOffText,'Visible','on');
             case 3
                 set(receiverButton, 'String','Uniform Distribution');
                 if materials ~= 3
@@ -215,10 +185,6 @@ function temperatureMenu
                 end
                 set(energyRateEdit,'Visible','on');
                 set(energyRateText,'Visible','on');
-                set(absorptionOnBar,'Visible','on');
-                set(absorptionOnText,'Visible','on');
-                set(absorptionOffBar,'Visible','on');
-                set(absorptionOffText,'Visible','on');
             case 4
                 set(receiverButton, 'String','Random Distribution');
                 if materials ~= 3
@@ -227,10 +193,6 @@ function temperatureMenu
                 end
                 set(energyRateEdit,'Visible','on');
                 set(energyRateText,'Visible','on');
-                set(absorptionOnBar,'Visible','on');
-                set(absorptionOnText,'Visible','on');
-                set(absorptionOffBar,'Visible','on');
-                set(absorptionOffText,'Visible','on');
             case 5
                 set(receiverButton, 'String','Random Spheres');
                 if materials ~= 3
@@ -239,10 +201,6 @@ function temperatureMenu
                 end
                 set(energyRateEdit,'Visible','on');
                 set(energyRateText,'Visible','on');
-                set(absorptionOnBar,'Visible','on');
-                set(absorptionOnText,'Visible','on');
-                set(absorptionOffBar,'Visible','on');
-                set(absorptionOffText,'Visible','on');
             case 6
                 set(receiverButton, 'String','Off');
                 set(energyRateEdit,'Visible','off');
@@ -251,10 +209,6 @@ function temperatureMenu
                     set(receptorDensityEdit,'Visible','off');
                     set(receptorDensityText,'Visible','off');
                 end
-                set(absorptionOnBar,'Visible','off');
-                set(absorptionOnText,'Visible','off');
-                set(absorptionOffBar,'Visible','off');
-                set(absorptionOffText,'Visible','off');
         case 7
                 if materials == 3
                     set(receiverButton, 'String', 'Located at 2nd Material');
@@ -262,12 +216,7 @@ function temperatureMenu
                     set(receptorDensityText,'Visible','on');
                 end
                 set(energyRateEdit,'Visible','on');
-                set(energyRateText,'Visible','on');
-                set(absorptionOnBar,'Visible','on');
-                set(absorptionOnText,'Visible','on');
-                set(absorptionOffBar,'Visible','on');
-                set(absorptionOffText,'Visible','on');
-            
+                set(energyRateText,'Visible','on');       
     end
     
     switch cycle
@@ -311,8 +260,6 @@ function temperatureMenu
         elevFrequency = str2double(get(elevFreqEdit,'String'));
         energyRate = str2double(get(energyRateEdit,'String'));
         distributionFrequency = str2double(get(receptorDensityEdit,'String'));
-        timeOn = str2double(get(absorptionOnBar,'String'));
-        timeOff = str2double(get(absorptionOffBar,'String'));
         cycleIntervals = str2double(get(cycleIntervalsEdit,'String'));
         cycleSpeed = str2double(get(cycleSpeedEdit,'String'));
     end
@@ -329,10 +276,6 @@ function temperatureMenu
                     set(receiverButton, 'String','Middle: Single Point');
                     set(energyRateEdit,'Visible','on');
                     set(energyRateText,'Visible','on');
-                    set(absorptionOnBar,'Visible','on');
-                    set(absorptionOnText,'Visible','on');
-                    set(absorptionOffBar,'Visible','on');
-                    set(absorptionOffText,'Visible','on');
                 case 2
                     set(receiverButton, 'String','Middle Block');
                 case 3
@@ -353,10 +296,6 @@ function temperatureMenu
                         set(receptorDensityEdit,'Visible','off');
                         set(receptorDensityText,'Visible','off');
                     end
-                    set(absorptionOnBar,'Visible','off');
-                    set(absorptionOnText,'Visible','off');
-                    set(absorptionOffBar,'Visible','off');
-                    set(absorptionOffText,'Visible','off');
             end
         end
     end

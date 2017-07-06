@@ -143,12 +143,12 @@ interfaceK23 = 60;
 
 
 
-leftK = ones(xintervals, yintervals,zintervals);
-rightK = ones(xintervals, yintervals,zintervals);
-upK = ones(xintervals, yintervals,zintervals);
-downK = ones(xintervals, yintervals,zintervals);
-inK = ones(xintervals, yintervals,zintervals);
-outK = ones(xintervals, yintervals,zintervals);
+leftK = zeros(xintervals, yintervals,zintervals);
+rightK = zeros(xintervals, yintervals,zintervals);
+upK = zeros(xintervals, yintervals,zintervals);
+downK = zeros(xintervals, yintervals,zintervals);
+inK = zeros(xintervals, yintervals,zintervals);
+outK = zeros(xintervals, yintervals,zintervals);
 
 
 constantArray = zeros(8,1);
