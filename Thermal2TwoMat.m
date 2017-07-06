@@ -8,11 +8,11 @@ global precision xdist ydist dd total_time dt framerate borders convection radia
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 extraConduction cycle cycleIntervals ...
-    cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc;
+    cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc finalGrid;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
-global list tempsList materialMatrix finalTemps; %Results
+global list tempsList materialMatrix; %Results
 
 if isempty(cycle)
     cycle = 1;
@@ -536,7 +536,11 @@ end
 
 %% Save final settings and play movie/display final frame
 %Save final data frame in finalTemps
-finalTemps = wholeMatrix(2:end-1,2:end-1);
+if ~isempty(finalGrid) && finalGrid
+    clear global finalTemps
+    global finalTemps
+    finalTemps = wholeMatrix(2:end-1,2:end-1);
+end
 
 %Will wait for user to give word, and will then close all windows, play the
 %movie, and then show just the last screen.

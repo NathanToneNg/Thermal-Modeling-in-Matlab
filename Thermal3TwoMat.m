@@ -8,11 +8,11 @@ global precision xdist ydist zdist dd total_time dt framerate borders convection
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss initialGrid topCheck depth heating roomTempFunc;
+    bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
-global list tempsList materialMatrix finalTemps; %Results
+global list tempsList materialMatrix; %Results
 if topCheck
     clear global topTemps
     global topTemps
@@ -560,7 +560,7 @@ for j= 2:iter + 1
                     figure;
                     slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
                     caxis([0 (Tm + 20)])
-                    colorbar('horiz')                
+                    colorbar('horiz')
                 end
                 drawnow
                 F(index) = getframe(gcf);
@@ -577,8 +577,11 @@ end
 
 %% Save final settings and play movie/display final frame
 %Save final data frame in finalTemps
-finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
-
+if ~isempty(finalGrid) && finalGrid
+    clear global finalTemps
+    global finalTemps
+    finalTemps = wholeMatrix(2:end-1,2:end-1,2:end-1);
+end
 %Will wait for user to give word, and will then close all windows, play the
 %movie, and then show just the last screen.
 if graph
@@ -595,6 +598,8 @@ if graph
             hold on;
             s = slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
             alpha(s, 0.3);
+            caxis([0 (Tm + 20)])
+            colorbar('horiz')
         else
             slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
             caxis([0 (Tm + 20)])

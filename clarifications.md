@@ -9,21 +9,26 @@
 
 
 
-# 3: Precision Menu: 
-	* Precision digits determine how many digits calculations should be carried out to
 
-
-
-# 4: Size & Time Settings:
+# 3: Size & Time Settings:
 	* Assumed units are in meters and seconds, but scaling can be done as clarified in the README right below Usage.
 	* Graphing Framerate tells the program how often (in terms of time steps) the program should take a snapshot graph and calculate the average temperature and energy.
 
 
 
-# 5: Material Constants:
+# 4: Material Constants:
 	* Conduction Constant is h_c in Newton’s Law of Cooling, and Radiation Emissivity Constant is ε in the Stefan-Boltzmann Law
 	* All assumed units are meters, seconds, kilograms, Watts, and ºC.
 	* Thermal Conductivity between the two materials is in the second material box, and is the thermal conductivity on the interface between the two materials, which is usually between the two individual thermal conductivities.
+
+
+
+# 5: Energy Dissipation: 
+	* Conduction on the Edges is usually turned off, except for in test cases and when the situation should be considered as connecting to a “grounded” material at the room temperature.
+	* Convection/Radiation off unseen directions are used in the 1D and 2D cases:
+		* 1D: This acts as if the setting given is a rectangular prism material of thickness given by dd (almost infinitely thin), where the surroundings are all air and thus convection/radiation occurs off all pixels in addition to sides
+		* 2D: This acts as if the setting given is a flat material of thickness given by dd (almost infinitely thin), where the 3rd dimension (top and bottom) are air above and below, and thus convection/radiation occurs off all pixels in addition to sides.
+	* The same process is for both 1D and 2D, but twice as impactful for 1D.
 
 
 
@@ -36,12 +41,9 @@
 
 
 
-# 7: Energy Dissipation: 
-	* Conduction on the Edges is usually turned off, except for in test cases and when the situation should be considered as connecting to a “grounded” material at the room temperature.
-	* Convection/Radiation off unseen directions are used in the 1D and 2D cases:
-		* 1D: This acts as if the setting given is a rectangular prism material of thickness given by dd (almost infinitely thin), where the surroundings are all air and thus convection/radiation occurs off all pixels in addition to sides
-		* 2D: This acts as if the setting given is a flat material of thickness given by dd (almost infinitely thin), where the 3rd dimension (top and bottom) are air above and below, and thus convection/radiation occurs off all pixels in addition to sides.
-	* The same process is for both 1D and 2D, but twice as impactful for 1D.
+# 7: Room Temperature Settings:
+	* The option for constant time allows the user run the program slightly faster than otherwise, assuming the room temperature remains at an approximately constant temperature. 
+	* The room temperature function should be written in the form of an anonymous function in matlab. For example, f(x) = 10 + 3x^2 should be written as ‘@(x)10 + 3*(x^2)’
 
 
 
@@ -59,14 +61,17 @@
 	* Note that on a sine based curve this means that the average input is multiplied by sqrt(2) of the energy rate inputted, and high means multiplied by 2sqrt(2)
 
 
-# 9: Repick #Materials / Dimensions 
-	* Allows the user to repick the number of materials or dimensions without resetting all other settings.
 
-# 10: Graphing Settings:
+# 9: Misc./Graphing Settings:
 	* Isosurface option applies for 3D case only: Will plot Isosurfaces for every 10th percentile
 	* Saving the movie will have the program save the movie as recentTestMovie.avi in your MATLAB folder. Drag this into the MATLAB Command Window to bring the movie to the workspace, and use * movie(recentTestMovie) * to play it.
+	* Precision digits determine how many digits calculations should be carried out to
+	* Tracking top temperatures will leave the global topTemps as an array with the average top (top z values) of a matrix down to the provided depth.
 
-# 11: Room Temperature Settings:
-	* The option for constant time allows the user run the program slightly faster than otherwise, assuming the room temperature remains at an approximately constant temperature. 
-	* The room temperature function should be written in the form of an anonymous function in matlab. For example, f(x) = 10 + 3x^2 should be written as ‘@(x)10 + 3*(x^2)’
+
+
+# 10: Repick #Materials / Dimensions 
+	* Allows the user to repick the number of materials or dimensions without resetting all other settings.
+
+
 

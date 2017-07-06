@@ -15,7 +15,7 @@
 %   bytes as a string, but that can be modified within the function. 
 
 function saveConditions(filename, optionalText)
-
+global initialGrid finalGrid
 if nargin > 2
     error('Incorrect usage. Use as saveConditions(filename, optionalText), arguments optional.');
 end
@@ -41,7 +41,9 @@ for i = 1:length(globalVars)
     varname = globalVars{i};
     eval(sprintf('global %s', varname));
     var = eval(varname);
-    if ~isnan(var)
+    if isa(var,'function_handle')
+        var = func2str(var);
+    elseif ~isnan(var)
         var = num2str(var);
     end
     fprintf(file, 'global %s\n', varname);
@@ -49,7 +51,11 @@ for i = 1:length(globalVars)
     %Print matrices as well, or just create a matrix to load if it is too
     %big in string form.
     if strcmp(varname, 'list') || strcmp(varname, 'tempsList') || strcmp(varname, ...
-            'materialMatrix') || strcmp(varname, 'finalTemps') || strcmp(varname, 'topTemps')
+            'materialMatrix') || (strcmp(varname,'initialFrame') && ...
+            ~isempty(initialGrid) && initialGrid) || ...
+            (strcmp(varname, 'finalTemps') && ~isempty(finalGrid) && finalGrid) ...
+             || (strcmp(varname, 'topTemps') && ~isempty(topCheck) && topCheck)
+         
         strmatrix = mat2str(var);
         data = whos('strmatrix');
         if data.bytes > limit
@@ -60,21 +66,6 @@ for i = 1:length(globalVars)
         else
             fprintf(file, '%s = %s;\n', varname, mat2str(var));
             fprintf(file, '%s = str2num(%s);\n',varname,varname);
-        end
-    elseif strcmp(varname,'initialFrame')
-        global initialGrid
-        if ~isempty(initialGrid) && initialGrid
-            strmatrix = mat2str(var);
-            data = whos('strmatrix');
-            if data.bytes > limit
-                matrixname = strcat(filename, varname);
-                matrixname = replace(matrixname,'.','dot');
-                save(matrixname,varname);
-                fprintf(file, 'load %s\n', matrixname);
-            else
-                fprintf(file, '%s = %s;\n', varname, mat2str(var));
-                fprintf(file, '%s = str2num(%s);\n',varname,varname);
-            end
         end
     elseif ischar(eval(varname))
         fprintf(file, '%s = ''%s'';\n', varname, var);

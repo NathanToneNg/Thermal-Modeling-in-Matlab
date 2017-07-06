@@ -30,7 +30,7 @@ function repickDimensions
                 set(materialsEdit,'String', '1 Matrix, 1 Receiver');
     end
     
-    set(f,'Name','Repick Important Settings:')
+    set(f,'Name','Choose Important Settings:')
     movegui(f,'center')
     hbutton = uicontrol('Style','pushbutton',...
         'String','Continue',...

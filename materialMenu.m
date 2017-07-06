@@ -9,21 +9,15 @@
 %   All assumed units are seconds, meters, kilograms, Watts, and degrees Celcius
 %       For example, density is expected to be provided in kg/m^3
 function materialMenu
-    global Tm specific_heat density thermal_Conductivity constant dt dd emissivity materials convecc;
+    global Tm specific_heat density thermal_Conductivity constant dt dd materials;
     if isempty(materials)
         materials = 1;
-    end
-    if isempty(emissivity)
-        emissivity = 0.1;
     end
     if isempty(dt)
         dt = 0.05;
     end
     if isempty(dd)
         dd = 0.005;
-    end
-    if isempty(convecc)
-        convecc = 20;
     end
 
     % guiMultiplierIf has 2 edit boxes for numbers and
@@ -77,16 +71,6 @@ function materialMenu
         'Callback',@callbackfn);
     
 
-    emissivityText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[210,100,100,80],'String','Radiation Emissivity Constant');
-    emissivityEdit = uicontrol('Style','edit','Position',[240,110,40,40],...
-        'String',num2str(emissivity));
-    
-    convecText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[10,100,100,80],'String','Convection Constant');
-    convecEdit = uicontrol('Style','edit','Position',[40,110,40,40],...
-        'String',num2str(convecc));
-
     set(f,'Name','Materials Variables')
     movegui(f,'center')
     hbutton = uicontrol('Style','pushbutton','String','Set values',...
@@ -108,9 +92,7 @@ function materialMenu
         specific_heat=str2double(get(cEdit,'String'));
         density = str2double(get(pEdit,'String'));
         thermal_Conductivity = str2double(get(kEdit,'String'));
-        emissivity = str2double(get(emissivityEdit,'String'));
         constant = thermal_Conductivity * dt / (density * specific_heat * dd * dd);
-        convecc = str2double(get(convecEdit,'String'));
         set(constShow, 'String', num2str(constant));
     end
     

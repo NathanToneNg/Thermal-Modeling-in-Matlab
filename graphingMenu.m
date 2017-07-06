@@ -11,7 +11,11 @@
 %       MATLAB Command Window to bring the movie to the workspace, and use 
 %       movie(recentTestMovie) to play it.
 function graphingMenu
-    global dimensions isotherm saveMovie melting graph initialGrid topCheck depth
+    global dimensions isotherm saveMovie melting graph initialGrid ...
+        topCheck depth finalGrid precision
+    if isempty(precision)
+        precision = 10;
+    end
     if isempty(dimensions)
         dimensions = 3;
     end
@@ -36,6 +40,9 @@ function graphingMenu
     if isempty(depth)
         depth = 0.015;
     end
+    if isempty(finalGrid)
+        finalGrid = false;
+    end
     
     f = figure('Visible', 'off','color','white','Position',[360,500,400,300]);
     
@@ -58,25 +65,42 @@ function graphingMenu
         'Position',[0, 30, 120, 80], 'String', 'Keep track of melting?');
     meltingButton = uicontrol('Style','pushbutton','Position',[20, 50, 80, 40],...
         'Callback',@callbackfn);
+    
     initialText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[120, 30, 120, 80], 'String', 'Record initial temps grid?');
-    initialButton = uicontrol('Style','pushbutton','Position',[140, 50, 80, 40],...
+        'Position',[120, 110, 120, 80], 'String', 'Record initial temps grid?');
+    initialButton = uicontrol('Style','pushbutton','Position',[140, 130, 80, 40],...
         'Callback',@callbackfn);
+    
+    finalText = uicontrol('Style','text','BackgroundColor','white',...
+        'Position',[120, 30, 120, 80], 'String', 'Record final temps grid?');
+    finalButton = uicontrol('Style','pushbutton','Position',[140, 50, 80, 40],...
+        'Callback',@callbackfn);
+    
     topText = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[240, 190, 120, 80], 'String', 'Track top temperatures?');
     topButton = uicontrol('Style','pushbutton','Position',[260, 210, 80, 40],...
         'Callback',@callbackfn);
+    
     depthText = uicontrol('Style','text','BackgroundColor','white',...
         'Position',[240, 110, 120, 80], 'String', 'Depth');
     depthEdit = uicontrol('Style','edit','Position',[260, 130, 80, 40],...
         'String',num2str(depth),'Callback',@callbackfn);
     
+    precisionText = uicontrol('Style','text','BackgroundColor','white',...
+        'Position',[240, 30, 120, 80], 'String', 'Precision');
+    precisionEdit = uicontrol('Style','edit','Position',[260, 50, 80, 40],...
+        'String',num2str(precision),'Callback',@callbackfn);
     
-    if dimensions == 3 && graph
-        set(isothermText,'visible','on');
-        set(isothermButton,'visible','on');
+    if dimensions == 3
         set(topText,'visible','on');
         set(topButton,'visible','on');
+        if graph
+            set(isothermText,'visible','on');
+            set(isothermButton,'visible','on');
+        else
+            set(isothermText,'visible','off');
+            set(isothermButton,'visible','off');
+        end
     else
         set(isothermText,'Visible','off');
         set(isothermButton,'Visible','off');
@@ -110,6 +134,11 @@ function graphingMenu
     else
         set(initialButton,'string','Off');
     end
+    if finalGrid
+        set(finalButton,'string','On');
+    else
+        set(finalButton,'string','Off');
+    end
     if topCheck && dimensions == 3
         set(topButton,'string','On');
         set(depthText,'Visible','On');
@@ -119,7 +148,7 @@ function graphingMenu
         set(depthText,'Visible','Off');
         set(depthEdit,'Visible','Off');
     end
-    set(f,'Name','Graphing Options')
+    set(f,'Name','Miscellaneous Options')
     movegui(f,'center')
 
     set(f,'Visible','on')
@@ -173,6 +202,13 @@ function graphingMenu
                 else
                     set(initialButton,'string','Off');
                 end
+            case finalButton
+                finalGrid = ~finalGrid;
+                if finalGrid
+                    set(finalButton,'String','On');
+                else
+                    set(finalButton,'String','Off');
+                end
             case topButton
                 topCheck = ~topCheck;
                 if topCheck
@@ -186,6 +222,8 @@ function graphingMenu
                 end
             case depthEdit
                 depth = str2double(get(depthEdit,'string'));
+            case precisionEdit
+                precision = str2double(get(precisionEdit,'string'));
         end
         
     end

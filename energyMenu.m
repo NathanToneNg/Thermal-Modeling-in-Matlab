@@ -21,10 +21,7 @@
 %
 %   The same process is for both 1D and 2D, but twice as impactful for 1D.
 function energyMenu
-    global dimensions borders convection radiation extraConduction thin bottomLoss;
-    if isempty(borders)
-        borders = true;
-    end
+    global dimensions convection radiation thin bottomLoss emissivity convecc;
     if isempty(convection)
         convection = false;
     end
@@ -34,54 +31,54 @@ function energyMenu
     if isempty(dimensions)
         dimensions = 3;
     end
-    if isempty(extraConduction)
-        extraConduction = false;
-    end
     if isempty(thin)
         thin = false;
     end
     if isempty(bottomLoss)
         bottomLoss = (dimensions == 3);
     end
+    if isempty(emissivity)
+        emissivity = 0.1;
+    end
+    if isempty(convecc)
+        convecc = 20;
+    end
     
     f = figure('Visible', 'off','color','white','Position',[360,500,320,300]);
     
     
-    bordersText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[0,190,150,80],'String','No conduction off edges');
-    bordersButton = uicontrol('Style','pushbutton','Position',[20,210,80,40],...
-    'String','Currently on','Callback',@callbackfn);
 
     convectionText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[20,110,80,80],'String','Convection');
-    convectionButton = uicontrol('Style','pushbutton','Position',[20,130,80,40],...
+    'Position',[0,190,120,80],'String','Convection');
+    convectionButton = uicontrol('Style','pushbutton','Position',[20,210,80,40],...
     'String','Currently off','Callback',@callbackfn);
     
     radiationText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[20,30,80,80],'String','Radiation');
-    radiationButton = uicontrol('Style','pushbutton','Position',[20,50,80,40],...
+    'Position',[170,190,120,80],'String','Radiation');
+    radiationButton = uicontrol('Style','pushbutton','Position',[190,210,80,40],...
     'String','Currently off','Callback',@callbackfn);
     
+    conveccText = uicontrol('Style','text','BackgroundColor','white',...
+    'Position',[0,120,120,80],'String','Convection Constant');
+    conveccEdit = uicontrol('Style','edit','Position',[20,140,80,40],...
+    'String',num2str(convecc),'Callback',@editCall);
 
-    conductionOff = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[170,200,120,80],'String','Conduction off unseen dimensions');
-    conductionOffB = uicontrol('Style','pushbutton','Position',[190,210,80,40],...
-    'String','Currently off','Callback',@callbackfn);
-    if extraConduction
-        set(conductionOffB,'String','Currently on');
-    end
+    emissivityText = uicontrol('Style','text','BackgroundColor','white',...
+    'Position',[170,120,120,80],'String','Radiation');
+    emissivityEdit = uicontrol('Style','edit','Position',[190,140,80,40],...
+    'String',num2str(emissivity),'Callback',@editCall);
 
     thinText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[170,120,120,80],'String','Dissipation off unseen dimensions');
-    thinButton = uicontrol('Style','pushbutton','Position',[190,130,80,40],...
+    'Position',[170,50,120,80],'String','Dissipation off unseen dimensions');
+    thinButton = uicontrol('Style','pushbutton','Position',[190,50,80,40],...
     'String','Currently off','Callback',@callbackfn);
     if thin
         set(thinButton,'String','Currently on');
     end
     
     bottomText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[170,30,120,80],'String','Dissipation off Bottom?');
-    bottomButton = uicontrol('Style','pushbutton','Position',[190,50,80,40],...
+    'Position',[0,50,120,80],'String','Convection off Bottom?');
+    bottomButton = uicontrol('Style','pushbutton','Position',[20,50,80,40],...
     'String','Currently off','Callback',@callbackfn);
     if bottomLoss
         set(bottomButton,'String','Currently on');
@@ -90,8 +87,6 @@ function energyMenu
     
     
     if dimensions > 2
-        set(conductionOff,'Visible','off');
-        set(conductionOffB,'Visible','off');
         set(thinText,'Visible','off');
         set(thinButton,'Visible','off');
     end
@@ -101,19 +96,6 @@ function energyMenu
 
     set(f,'Visible','on')
     
-    if borders
-        set(bordersButton,'String','Currently on');
-        if dimensions < 3
-            set(conductionOff,'Visible','off');
-            set(conductionOffB,'Visible','off');
-        end
-    else
-        set(bordersButton,'String','Currently off');
-        if dimensions < 3
-            set(conductionOff,'Visible','on');
-            set(conductionOffB,'Visible','on');
-        end
-    end
     if convection
         set(convectionButton,'String','Currently on');
         if dimensions < 3
@@ -151,41 +133,27 @@ function energyMenu
     
     function callbackfn(hObject,~)
         switch hObject
-            case bordersButton
-                borders = ~borders;
-                if borders
-                    set(bordersButton,'String','Currently on');
-                    if dimensions < 3
-                        set(conductionOff,'Visible','off');
-                        set(conductionOffB,'Visible','off');
-                    end
-                else
-                    set(bordersButton,'String','Currently off');
-                    if dimensions < 3
-                        set(conductionOff,'Visible','on');
-                        set(conductionOffB,'Visible','on');
-                    end
-                end
             case convectionButton
                 convection = ~convection;
                 if convection
                     set(convectionButton,'String','Currently on');
+                    set(conveccText,'Visible','On');
+                    set(conveccEdit,'Visible','On');
                 else
                     set(convectionButton,'String','Currently off');
+                    set(conveccText,'Visible','Off');
+                    set(conveccEdit,'Visible','Off');
                 end
             case radiationButton
                 radiation = ~radiation;
                 if radiation
                     set(radiationButton,'String','Currently on');
+                    set(emissivityText,'Visible','On');
+                    set(emissivityEdit,'Visible','On');
                 else
                     set(radiationButton,'String','Currently off');
-                end
-            case conductionOffB
-                extraConduction = ~extraConduction;
-                if extraConduction
-                    set(conductionOffB,'String','Currently on');
-                else
-                    set(conductionOffB,'String','Currently off');
+                    set(emissivityText,'Visible','Off');
+                    set(emissivityEdit,'Visible','Off');
                 end
             case thinButton
                 thin = ~thin;
@@ -218,6 +186,11 @@ function energyMenu
             set(bottomText,'Visible','Off');
             set(bottomButton, 'Visible','Off');
         end
+    end
+
+    function editCall(~,~)
+        convecc = str2double(get(conveccEdit,'String'));
+        emissivity = str2double(get(emissivityEdit,'String'));
     end
     
 end
