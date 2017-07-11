@@ -117,10 +117,10 @@ end
 %% Create relevant constants
 %Holds a grid of constants so that less calculations need to be repeated.
 constants = ones(xintervals, yintervals,zintervals) .* dt ./ (specific_heat .* dd .* dd .* density);
+insertion = ones(xintervals, yintervals, zintervals) .* dt ./ specific_heat;
 materialMatrix = int8(ones(xintervals, yintervals,zintervals));
 
 %Holds the thermal conductivities at each pixel in each direction.
-k = ones(xintervals, yintervals,zintervals) * thermal_Conductivity;
 leftK = zeros(xintervals, yintervals,zintervals);
 rightK = zeros(xintervals, yintervals,zintervals);
 upK = zeros(xintervals, yintervals,zintervals);
@@ -212,8 +212,8 @@ end
 
 %essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
+insertion(second) = dt / specific_heat2;
 materialMatrix(second) = 3;
-k(second) = thermal_Conductivity2;
 Tms = ones(xintervals, yintervals, zintervals) .* Tm;
 Tms(second) = Tm2;
 
@@ -407,7 +407,7 @@ for j= 2:iter + 1
         return
     end
     %Keep an older version so we aren't counting changes in the same time
-    old = wholeMatrix(:,:,:);
+    old = wholeMatrix;
     
     %Use constants, thermal conductivity, and difference in temperatures
     %between pixels on the grid to calculate conductive transfer
@@ -449,7 +449,7 @@ for j= 2:iter + 1
     %Increments by energy (turned into temp) if between the correct time
     %interval
     if j >= iterOn && j <= iterOff
-        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) ./ dd .* ratios(rotation)';
+        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* insertion(receivers) .* ratios(rotation)';
     end
     %If cycle/rotations are on, this will change
     if ~isempty(cycle) && cycle ~= 1 && mod(j - 1, cycleRate) == 0
@@ -532,7 +532,7 @@ end
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
 if melting
-    num = numel(Tempgrid);
+    num = xintervals * yintervals * zintervals;
     ratio = sum(sum(sum(melted)))/num;
 
     fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(sum(melted))), num, ratio, ratio*100);

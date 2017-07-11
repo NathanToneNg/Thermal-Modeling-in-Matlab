@@ -64,7 +64,7 @@ function energyMenu
     'String',num2str(convecc),'Callback',@editCall);
 
     emissivityText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[170,120,120,80],'String','Radiation');
+    'Position',[170,120,120,80],'String','Emissivity Constant');
     emissivityEdit = uicontrol('Style','edit','Position',[190,140,80,40],...
     'String',num2str(emissivity),'Callback',@editCall);
 

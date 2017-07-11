@@ -9,7 +9,7 @@ global precision xdist ydist dd total_time dt framerate convection radiation ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals ...
     cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc ...
-    finalGrid consistent;
+    finalGrid consistent bottomLoss;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -106,15 +106,19 @@ end
 %% Create relevant constants
 %Holds a grid of constants so that less calculations need to be repeated.
 constants = ones(xintervals, yintervals) .* dt ./ (specific_heat .* dd .* dd .* density);
+insertion = ones(xintervals, yintervals) .* dt ./ specific_heat;
 materialMatrix = int8(ones(xintervals, yintervals));
 
 
 %Holds the thermal conductivities at each pixel in each direction.
-k = ones(xintervals, yintervals) * thermal_Conductivity;
-leftK = ones(xintervals, yintervals);
-rightK = ones(xintervals, yintervals);
-upK = ones(xintervals, yintervals);
-downK = ones(xintervals, yintervals);
+leftK = zeros(xintervals, yintervals);
+rightK = zeros(xintervals, yintervals);
+upK = zeros(xintervals, yintervals);
+downK = zeros(xintervals, yintervals);
+kArray = zeros(7,1);
+kArray(3) = thermal_Conductivity; %Mat 1 with Mat 1
+kArray(5) = interfaceK; %Mat 1 with Mat 2
+kArray(7) = thermal_Conductivity2; %Mat 2 with Mat 2
 
 %% Create materials grid
 %Declare where the second material is based on parameter "distribution" and
@@ -188,8 +192,8 @@ end
 
 %essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
+insertion(second) = dt / specific_heat2;
 materialMatrix(second) = 2;
-k(second) = thermal_Conductivity2;
 Tms = ones(xintervals, yintervals) .* Tm;
 Tms(second) = Tm2;
 
@@ -296,66 +300,20 @@ end
 %transfers between.
 for i = 1:xintervals
     for j = 1:yintervals
-            if i == 1
-                if(materialMatrix(i,j) == 1)
-                    leftK(i,j) = thermal_Conductivity;
-                else
-                    leftK(i,j) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j) == 1 && materialMatrix(i-1,j) == 1)
-                    leftK(i,j) = thermal_Conductivity;
-                elseif materialMatrix(i,j) == 2 && materialMatrix(i-1,j) == 2
-                    leftK(i,j) = thermal_Conductivity2;
-                else
-                    leftK(i,j) = interfaceK;
-                end
-            end
-            if i == xintervals
-                if(materialMatrix(i,j) == 1)
-                    rightK(i,j) = thermal_Conductivity;
-                else
-                    rightK(i,j) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j) == 1 && materialMatrix(i+1,j) == 1)    
-                    rightK(i,j) = thermal_Conductivity;
-                elseif materialMatrix(i,j) == 2 && materialMatrix(i+1,j) == 2
-                    rightK(i,j) = thermal_Conductivity2;
-                else
-                    rightK(i,j) = interfaceK;
-                end
-            end
-            if j == 1
-                if(materialMatrix(i,j) == 1)
-                    upK(i,j) = thermal_Conductivity;
-                else
-                    upK(i,j) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j) == 1 && materialMatrix(i,j-1) == 1)    
-                    upK(i,j) = thermal_Conductivity;
-                elseif materialMatrix(i,j) == 2 && materialMatrix(i,j-1) == 2
-                    upK(i,j) = thermal_Conductivity2;
-                else
-                    upK(i,j) = interfaceK;
-                end
-            end
-            if j == yintervals
-                if(materialMatrix(i,j) == 1)
-                    downK(i,j) = thermal_Conductivity;
-                else
-                    downK(i,j) = thermal_Conductivity2;
-                end
-            else
-                if(materialMatrix(i,j) == 1 && materialMatrix(i,j+1) == 1)    
-                    downK(i,j) = thermal_Conductivity;
-                elseif materialMatrix(i,j) == 2 && materialMatrix(i,j+1) == 2
-                    downK(i,j) = thermal_Conductivity2;
-                else
-                    downK(i,j) = interfaceK;
-                end
-            end
+        if i ~= 1
+            leftK(i,j) = kArray(materialMatrix(i,j) + materialMatrix(i-1,j)+1);
+%           else
+%               leftK(i,j,l) = 0;
+        end
+        if i ~= xintervals
+            rightK(i,j) = kArray(materialMatrix(i,j) + materialMatrix(i+1,j) + 1);
+        end
+        if j ~= 1
+            upK(i,j) = kArray(materialMatrix(i,j) + materialMatrix(i,j-1) + 1);
+        end
+        if j ~= yintervals
+            downK(i,j) = kArray(materialMatrix(i,j) + materialMatrix(i,j+1) + 1);
+        end
     end
 end
 
@@ -373,18 +331,11 @@ melted = false(xintervals,yintervals);
 %% Create constants for radiation and convection
 %Creates logicals that assign where the borders are. Corners have twice the
 %area. Not meant to be accurate with single dimension sizes in this form.
-if radiation || convection 
-    boundaries = zeros(xintervals + 2, yintervals + 2,'logical');
-    corners = boundaries;
-    boundaries([2,end-1],2:end-1) = true;
-    boundaries(2:end-1,[2,end-1]) = true;
-    corners([2,end-1],[2,end-1]) = true;
-    area = zeros(xintervals, yintervals);
-    pBoundaries = boundaries(2:end-1,2:end-1);
-    pCorners = corners(2:end-1,2:end-1);
-    area(pBoundaries) = 1;
-    area(pCorners) = 2;
-    area = area + (xintervals == 1) + (yintervals == 1);
+if radiation || convection
+    area = (upK == 0) + (downK == 0) + (leftK == 0) + (rightK == 0);
+    pBoundaries = (area ~= 0);
+    boundaries = false(xintervals + 2, yintervals + 2);
+    boundaries(2:end-1,2:end-1) = pBoundaries;
 end
 
 %If extra loss is turned on, that means we are treating it as
@@ -411,7 +362,7 @@ end
 
 if convection
     if thin
-        area = area + bottomLess;
+        area = area + bottomLoss;
     end
     convRatio = convecc .* constants(pBoundaries) .* area(pBoundaries) .* dd;
     if ~heating
@@ -437,17 +388,8 @@ for j= 2:iter + 1
         return
     end
     %Keep an older version so we aren't counting changes in the same time
-    old = wholeMatrix(:,:);
+    old = wholeMatrix;
     
-    %If borders are on, we want no conduction off edges so we make the
-    %edges the same temperature so there is no difference and so no
-    %change
-    if(true)
-        old(1,:) = old(2,:);
-        old(end,:) = old(end-1,:);
-        old(:,1) = old(:,2);
-        old(:,end) = old(:,end-1);
-    end
     %Use constants, thermal conductivity, and difference in temperatures
     %between pixels on the grid to calculate conductive transfer
     wholeMatrix(2:end-1, 2:end-1) = wholeMatrix(2:end-1, 2:end-1) + ...
@@ -464,7 +406,7 @@ for j= 2:iter + 1
                 (roomTempFunc(j * dt) + 273.15).^4));
             if thin
                 wholeMatrix(3:end-2,3:end-2) = wholeMatrix(3:end-2,3:end-2) - ...
-                (rConst .* (((old(3:end-2,3:end-2) + 273.15).^4) - ...
+                (rMidConst .* (((old(3:end-2,3:end-2) + 273.15).^4) - ...
                 (roomTempFunc(j * dt) + 273.15).^4));
             end
         else
@@ -498,7 +440,7 @@ for j= 2:iter + 1
     %Increments by energy (turned into temp) if between the correct time
     %interval
     if j >= iterOn && j <= iterOff
-        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* constants(receivers) ./ dd .* ratios(rotation)';
+        wholeMatrix(bigReceivers) = wholeMatrix(bigReceivers) + energyRate .* insertion(receivers) .* ratios(rotation)';
     end
     %If cycle/rotations are on, this will change
     if ~isempty(cycle) && cycle ~= 1 && mod(j - 1, cycleRate) == 0
@@ -566,7 +508,7 @@ end
 %Used in tests where we need to check what percent of the material melts in
 %a given heating simulation. Checks over all materials at the Tm passed in.
 if melting
-    num = numel(Tempgrid);
+    num = xintervals * yintervals;
     ratio = sum(sum(melted))/num;
 
     fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(melted)), num, ratio, ratio*100);
