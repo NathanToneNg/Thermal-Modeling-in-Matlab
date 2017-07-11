@@ -79,7 +79,7 @@ switch elevLocation
         Tempgrid(mid - ceil(mid/10): mid + ceil(mid/10)) = elevatedTemp;
     case 3
         %Uniform distribution
-        Tempgrid(1:elevFrequency:end) = elevatedTemp;
+        Tempgrid(round(1:elevFrequency:xintervals)) = elevatedTemp;
 end
 if initialGrid
     global initialFrame
@@ -124,7 +124,7 @@ switch distribution
         second(mid - ceil(mid/10): mid + ceil(mid/10)) = true;
     case 3
         %Uniform distribution
-        second(1:ceil(frequency2):xintervals) = true;
+        second(round(1:frequency2:xintervals)) = true;
     case 4
         %Random distribution
         if frequency2 <= 1.1
@@ -192,7 +192,7 @@ else
         case 2
             receivers(mid - ceil(mid/10): mid + ceil(mid/10)) = true;
         case 3
-            receivers(1:ceil(distributionFrequency):end) = true;
+            receivers(round(1:distributionFrequency:xintervals)) = true;
         case 4
             if distributionFrequency <= 1.1
                 receivers(:) = true;

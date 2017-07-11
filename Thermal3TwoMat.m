@@ -92,11 +92,12 @@ switch elevLocation
             midz - ceil(midz/10):midz + ceil(midz/10)) = elevatedTemp;
     case 3
         %Uniform distribution
-        xfreq = ceil(nthroot(elevFrequency,3));
-        yfreq = floor(sqrt(elevFrequency/xfreq));
-        zfreq = ceil(elevFrequency/(xfreq * yfreq));
-        
-        Tempgrid(1:xfreq:end,1:yfreq:end,1:zfreq:end) = elevatedTemp;
+        Tempgrid(round(1:elevFrequency:xintervals * yintervals * zintervals)) = elevatedTemp;
+%         xfreq = ceil(nthroot(elevFrequency,3));
+%         yfreq = floor(sqrt(elevFrequency/xfreq));
+%         zfreq = ceil(elevFrequency/(xfreq * yfreq));
+%         
+%         Tempgrid(1:xfreq:end,1:yfreq:end,1:zfreq:end) = elevatedTemp;
 end
 if initialGrid
     global initialFrame
@@ -147,8 +148,9 @@ switch distribution
                         midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = true;
     case 3
         %Uniform distribution
-        freq = nthroot(frequency2, 3);
-        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = true;
+        second(round(1:frequency2:xintervals * yintervals * zintervals)) = true;
+%         freq = nthroot(frequency2, 3);
+%         second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = true;
     case 4
         %Random distribution
         if frequency2 <= 1.1
@@ -230,8 +232,9 @@ else
             receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ...
                 ceil(midy/10): midy + ceil(midy/10), midz - ceil(midz/10): midz + ceil(midz/10)) = true;
         case 3
-            frequ = nthroot(distributionFrequency,3);
-            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals), ceil(1:frequ:zintervals)) = true;
+            receivers(round(1:distributionFrequency:xintervals * yintervals * zintervals)) = true;
+%             frequ = nthroot(distributionFrequency,3);
+%             receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals), ceil(1:frequ:zintervals)) = true;
         case 4
             if frequency2 <= 1.1
                 receivers(:,:,:) = true;

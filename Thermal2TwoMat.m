@@ -83,9 +83,10 @@ switch elevLocation
             midy - ceil(midy/10):midy + ceil(midy/10)) = elevatedTemp;
     case 3
         %Uniform distribution
-        xfreq = ceil(sqrt(elevFrequency));
-        yfreq = floor(elevFrequency/xfreq);
-        Tempgrid(1:xfreq:end,1:yfreq:end) = elevatedTemp;
+        Tempgrid(round(1:elevFrequency:xintervals * yintervals)) = elevatedTemp;
+%         xfreq = ceil(sqrt(elevFrequency));
+%         yfreq = floor(elevFrequency/xfreq);
+%         Tempgrid(1:xfreq:end,1:yfreq:end) = elevatedTemp;
 end
 if initialGrid
     global initialFrame
@@ -134,8 +135,9 @@ switch distribution
                         midy + ceil(midy/10)) = true;
     case 3
         %Uniform distribution
-        freq = sqrt(frequency2);
-        second(ceil(1:freq:xintervals),ceil(1:freq:yintervals)) = true;
+        second(round(1:frequency2:xintervals * yintervals)) = true;
+%         freq = sqrt(frequency2);
+%         second(ceil(1:freq:xintervals),ceil(1:freq:yintervals)) = true;
     case 4
         %Random distribution
         if frequency2 <= 1.1
@@ -209,8 +211,9 @@ else
         case 2
             receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10)) = true;
         case 3
-            frequ = sqrt(distributionFrequency);
-            receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals)) = true;
+            receivers(round(1:distributionFrequency:xintervals * yintervals)) = true;
+%             frequ = sqrt(distributionFrequency);
+%             receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals)) = true;
         case 4
             if distributionFrequency <= 1.1
                 receivers(:,:) = true;
