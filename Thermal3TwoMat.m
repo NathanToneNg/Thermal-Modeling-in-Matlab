@@ -8,7 +8,7 @@ global precision xdist ydist zdist dd total_time dt framerate convection radiati
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid consistent;
+    bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid consistent histogramPlot;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -43,6 +43,9 @@ if isempty(initialGrid)
 end
 if isempty(heating)
     heating = false;
+end
+if isempty(histogramPlot)
+    histogramPlot = false;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,7 +95,11 @@ switch elevLocation
             midz - ceil(midz/10):midz + ceil(midz/10)) = elevatedTemp;
     case 3
         %Uniform distribution
-        Tempgrid(round(1:elevFrequency:xintervals * yintervals * zintervals)) = elevatedTemp;
+        if elevFrequency <= 1.05
+            Tempgrid(:,:,:) = elevatedTemp;
+        else
+            Tempgrid(round(1:elevFrequency:xintervals * yintervals * zintervals)) = elevatedTemp;
+        end
 %         xfreq = ceil(nthroot(elevFrequency,3));
 %         yfreq = floor(sqrt(elevFrequency/xfreq));
 %         zfreq = ceil(elevFrequency/(xfreq * yfreq));
@@ -148,12 +155,16 @@ switch distribution
                         midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = true;
     case 3
         %Uniform distribution
-        second(round(1:frequency2:xintervals * yintervals * zintervals)) = true;
+        if frequency2 <= 1.05
+            second(:,:,:) = true;
+        else
+            second(round(1:frequency2:xintervals * yintervals * zintervals)) = true;
+        end
 %         freq = nthroot(frequency2, 3);
 %         second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = true;
     case 4
         %Random distribution
-        if frequency2 <= 1.1
+        if frequency2 <= 1.05
             second(:,:,:) = true;
         else
             i = 1;
@@ -170,7 +181,7 @@ switch distribution
         end
      case 5
          %Random spheres
-        if frequency2 <= 1.1
+        if frequency2 <= 1.05
             second(:) = true;
         else
             i = 0;
@@ -232,11 +243,15 @@ else
             receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ...
                 ceil(midy/10): midy + ceil(midy/10), midz - ceil(midz/10): midz + ceil(midz/10)) = true;
         case 3
-            receivers(round(1:distributionFrequency:xintervals * yintervals * zintervals)) = true;
+            if distributionFrequency <= 1.05
+                receivers(:,:,:) = true;
+            else
+                receivers(round(1:distributionFrequency:xintervals * yintervals * zintervals)) = true;
+            end
 %             frequ = nthroot(distributionFrequency,3);
 %             receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals), ceil(1:frequ:zintervals)) = true;
         case 4
-            if frequency2 <= 1.1
+            if distributionFrequency <= 1.05
                 receivers(:,:,:) = true;
             else
                 i = 1;
@@ -251,7 +266,7 @@ else
                 end
             end
          case 5
-            if distributionFrequency <= 1.1
+            if distributionFrequency <= 1.05
                 receivers(:) = true;
             else
                 i = 0;
@@ -405,9 +420,7 @@ end
 % step is considered the initial values, and iter + 1 is the last. 
 for j= 2:iter + 1
     if any(any(any(isnan(wholeMatrix))))
-        text = strcat('Error at iteration ', num2str(j));
-        disp(text);
-        return
+        error('Error at iteration %d', j);
     end
     %Keep an older version so we aren't counting changes in the same time
     old = wholeMatrix;
@@ -470,9 +483,18 @@ for j= 2:iter + 1
         end
         if graph
             try
-                if isotherm
+                if histogramPlot
+                    if j == 2
+                        figure;
+                    end
+                    hold on;
+                    eval(sprintf('h%d = histogram(wholeMatrix(2:end-1,2:end-1,2:end-1));',j));
+                    alpha(0.5);
+                    eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
+                    [sizes, ~] = histcounts(wholeMatrix(2:end-1,2:end-1,2:end-1));
+                    ylim([0 max(sizes)*1.05 ]);
+                elseif isotherm
                     isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
-                    view(3)
                 else
                     figure;
                     slice(X,Y,Z, wholeMatrix(2:end-1,2:end-1,2:end-1), yslice, xslice, zslice);
@@ -509,7 +531,17 @@ if graph
     close all;
 
     try
-        if isotherm
+        if histogramPlot
+            if j == 2
+                figure;
+            end
+            hold on;
+            eval(sprintf('h%d = histogram(wholeMatrix(2:end-1,2:end-1,2:end-1));',j));
+            alpha(0.5);
+            eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
+            [sizes, ~] = histcounts(wholeMatrix(2:end-1,2:end-1,2:end-1));
+            ylim([0 max(sizes)*1.05 ]);
+        elseif isotherm
             isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
             view(3);
             hold on;

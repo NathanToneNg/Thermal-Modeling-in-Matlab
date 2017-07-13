@@ -9,7 +9,7 @@ global precision xdist dd total_time dt framerate convection radiation ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals ...
     cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc ...
-    finalGrid consistent bottomLoss;
+    finalGrid consistent bottomLoss histogramPlot;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -41,6 +41,9 @@ if isempty(initialGrid)
 end
 if isempty(heating)
     heating = false;
+end
+if isempty(histogramPlot)
+    histogramPlot = false;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,7 +82,11 @@ switch elevLocation
         Tempgrid(mid - ceil(mid/10): mid + ceil(mid/10)) = elevatedTemp;
     case 3
         %Uniform distribution
-        Tempgrid(round(1:elevFrequency:xintervals)) = elevatedTemp;
+        if elevFrequency <= 1.05
+            Tempgrid(:) = elevatedTemp;
+        else
+            Tempgrid(round(1:elevFrequency:xintervals)) = elevatedTemp;
+        end
 end
 if initialGrid
     global initialFrame
@@ -100,7 +107,7 @@ end
 %% Create relevant constants
 %Holds a grid of constants so that less calculations need to be repeated.
 constants = ones(xintervals, 1) .* dt ./ (specific_heat .* dd .* dd .* density);
-constants = ones(xintervals, 1) .* dt ./ specific_heat;
+insertion = ones(xintervals, 1) .* dt ./ specific_heat;
 materialMatrix = int8(ones(xintervals, 1));
 
 %Holds the thermal conductivities at each pixel in each direction.
@@ -124,10 +131,14 @@ switch distribution
         second(mid - ceil(mid/10): mid + ceil(mid/10)) = true;
     case 3
         %Uniform distribution
-        second(round(1:frequency2:xintervals)) = true;
+        if frequency2 <= 1.05
+            second(:) = true;
+        else
+            second(round(1:frequency2:xintervals)) = true;
+        end
     case 4
         %Random distribution
-        if frequency2 <= 1.1
+        if frequency2 <= 1.05
             second(:) = true;
         else
             i = 1;
@@ -142,7 +153,7 @@ switch distribution
         end
     case 5
         %Random spheres
-        if frequency2 <= 1.1
+        if frequency2 <= 1.05
             second(:) = true;
         else
             i = 0;
@@ -192,9 +203,13 @@ else
         case 2
             receivers(mid - ceil(mid/10): mid + ceil(mid/10)) = true;
         case 3
-            receivers(round(1:distributionFrequency:xintervals)) = true;
+            if distributionFrequency <= 1.05
+                receivers(:) = true;
+            else
+                receivers(round(1:distributionFrequency:xintervals)) = true;
+            end
         case 4
-            if distributionFrequency <= 1.1
+            if distributionFrequency <= 1.05
                 receivers(:) = true;
             else
                 i = 1;
@@ -207,7 +222,7 @@ else
                 end
             end
         case 5
-            if distributionFrequency <= 1.1
+            if distributionFrequency <= 1.05
                 receivers(:) = true;
             else
                 i = 0;
@@ -348,10 +363,8 @@ end
 % This is where the program iterates through time steps. The first time
 % step is considered the initial values, and iter + 1 is the last. 
 for j= 2:iter + 1
-    if any(isnan(wholeMatrix))
-        text = strcat('Error at iteration ', num2str(j));
-        disp(text);
-        return
+    if any(any(any(isnan(wholeMatrix))))
+        error('Error at iteration %d', j);
     end
     %Keep an older version so we aren't counting changes in the same time
     old = wholeMatrix;
@@ -418,8 +431,20 @@ for j= 2:iter + 1
         list(index) = sum(wholeMatrix(2:end-1)./constants) .* dt .* dd; %Energy per meter squared
         tempsList(index) = mean(wholeMatrix(2:end-1));
         if graph
-            figure;
-            plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
+            if histogramPlot
+                if j == 2
+                    figure;
+                end
+                hold on;
+                eval(sprintf('h%d = histogram(wholeMatrix(2:end-1));',j));
+                alpha(0.5);
+                eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
+                [sizes, ~] = histcounts(wholeMatrix(2:end-1));
+                ylim([0 max(sizes)*1.05 ]);
+            else
+                figure;
+                plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
+            end
             %ylim([0 50]);
             %alpha(0.7);
             drawnow
@@ -454,9 +479,17 @@ if graph
         v.writeVideo(F)
         v.close;
     end
-
-    plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
-    %ylim([0 50]);
+    
+    if histogramPlot
+        eval(sprintf('h%d = histogram(wholeMatrix(2:end-1));',j));
+        alpha(0.5);
+        eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
+        [sizes, ~] = histcounts(wholeMatrix(2:end-1));
+        ylim([0 max(sizes)*1.05 ]);
+    else
+        plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
+        %ylim([0 50]);
+    end
 end
 
 %Used in tests where we need to check what percent of the material melts in

@@ -4,10 +4,9 @@
 %
 % Only works with 3D variables; program assumes that finalTemps, xdist,
 % ydist, zdist, and dd (result temperatures and size settings) are aligned.
-%
 function isosurfacePlot(matrix)
 
-% X,Y,Z iz the meshgrid and V is my function evaluated at each meshpoint
+% X,Y,Z is the meshgrid and V is the list of temperatures
 global finalTemps xdist ydist zdist dd;
 
 if nargin == 0
@@ -41,6 +40,10 @@ for i = 1:10
 end
 alpha(.075); % set the transparency for the isosurfaces
 daspect([1 1 1]); box on; axis tight;
+textboxString1 = sprintf('Max: %9.3f', Vmax);
+textboxString2 = sprintf('Min: %9.3f', Vmin);
+annotation('textbox',[0.05,0.85,0.1,0.1], 'String',{textboxString1, textboxString2});
+view(3)
 hold off;
 
 %To see what the most red is, that is Vmax. Each shade green-er is a tenth

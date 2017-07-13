@@ -8,6 +8,8 @@ global borders
 borders = 1;
 global bottomLoss
 bottomLoss = 1;
+global consistent
+consistent = 0;
 global constant
 constant = 0.00036184;
 global convecc
@@ -26,6 +28,8 @@ global density
 density = 960;
 global density2
 density2 = 1600;
+global depth
+depth = 0.0038;
 global dimensions
 dimensions = 3;
 global distribution
@@ -50,14 +54,18 @@ global extraConvection
 extraConvection = 0;
 global extraRadiation
 extraRadiation = 0;
+global finalGrid
+finalGrid = 1;
 global finalTemps
-load finalTempsConstantEnergy3dTest0x2Em
+load ConstantEnergy3dTestfinalTemps
 global framerate
 framerate = 500;
 global frequency2
 frequency2 = 12;
 global graph
-graph = 0;
+graph = 1;
+global heating
+heating = 0;
 global initialGrid
 initialGrid = 0;
 global interfaceK
@@ -65,10 +73,10 @@ interfaceK = 0.2;
 global isotherm
 isotherm = 0;
 global list
-list = '320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396           320396';
+list = '305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234';
 list = str2num(list);
 global materialMatrix
-load materialMatrixConstantEnergy3dTest0x2Em
+load ConstantEnergy3dTestmaterialMatrix
 global materials
 materials = 3;
 global melting
@@ -79,6 +87,8 @@ global radiation
 radiation = 0;
 global roomTemp
 roomTemp = 0;
+global roomTempFunc
+roomTempFunc = @(x)0;
 global saveMovie
 saveMovie = 0;
 global self_set
@@ -88,7 +98,7 @@ specific_heat = 1900;
 global specific_heat2
 specific_heat2 = 4130;
 global tempsList
-tempsList = '21.8718      21.8695      21.8677      21.8664      21.8654      21.8645      21.8638      21.8633      21.8628      21.8624       21.862      21.8617      21.8615      21.8612       21.861      21.8608      21.8606      21.8604      21.8602        21.86';
+tempsList = '20.8331      20.8311      20.8296      20.8284      20.8274      20.8266      20.8259      20.8253      20.8248      20.8243      20.8239      20.8236      20.8232      20.8229      20.8227      20.8224      20.8222       20.822      20.8218      20.8216';
 tempsList = str2num(tempsList);
 global thermal_Conductivity
 thermal_Conductivity = 0.33;
@@ -100,6 +110,8 @@ global timeOff
 timeOff = 500;
 global timeOn
 timeOn = 0;
+global topCheck
+topCheck = 0;
 global total_time
 total_time = 500;
 global xdist

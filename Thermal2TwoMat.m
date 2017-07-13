@@ -9,7 +9,7 @@ global precision xdist ydist dd total_time dt framerate convection radiation ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals ...
     cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc ...
-    finalGrid consistent bottomLoss;
+    finalGrid consistent bottomLoss histogramPlot;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -41,6 +41,9 @@ if isempty(initialGrid)
 end
 if isempty(heating)
     heating = false;
+end
+if isempty(histogramPlot)
+    histogramPlot = false;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,7 +86,11 @@ switch elevLocation
             midy - ceil(midy/10):midy + ceil(midy/10)) = elevatedTemp;
     case 3
         %Uniform distribution
-        Tempgrid(round(1:elevFrequency:xintervals * yintervals)) = elevatedTemp;
+        if elevFrequency <= 1.05
+            Tempgrid(:,:) = elevatedTemp;
+        else
+            Tempgrid(round(1:elevFrequency:xintervals * yintervals)) = elevatedTemp;
+        end
 %         xfreq = ceil(sqrt(elevFrequency));
 %         yfreq = floor(elevFrequency/xfreq);
 %         Tempgrid(1:xfreq:end,1:yfreq:end) = elevatedTemp;
@@ -135,12 +142,16 @@ switch distribution
                         midy + ceil(midy/10)) = true;
     case 3
         %Uniform distribution
-        second(round(1:frequency2:xintervals * yintervals)) = true;
+        if frequency2 <= 1.05
+            second(:,:) = true;
+        else
+            second(round(1:frequency2:xintervals * yintervals)) = true;
+        end
 %         freq = sqrt(frequency2);
 %         second(ceil(1:freq:xintervals),ceil(1:freq:yintervals)) = true;
     case 4
         %Random distribution
-        if frequency2 <= 1.1
+        if frequency2 <= 1.05
             second(:,:) = true;
         else
             i = 1;
@@ -156,8 +167,8 @@ switch distribution
         end
     case 5
         %Random spheres
-        if frequency2 <= 1.1
-            second(:) = true;
+        if frequency2 <= 1.05
+            second(:,:) = true;
         else
             i = 0;
             num = ceil(xintervals * yintervals/frequency2);
@@ -211,11 +222,15 @@ else
         case 2
             receivers(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): midy + ceil(midy/10)) = true;
         case 3
-            receivers(round(1:distributionFrequency:xintervals * yintervals)) = true;
+            if distributionFrequency <= 1.05
+                receivers(:,:) = true;
+            else
+                receivers(round(1:distributionFrequency:xintervals * yintervals)) = true;
+            end
 %             frequ = sqrt(distributionFrequency);
 %             receivers(ceil(1:frequ:xintervals),ceil(1:frequ:yintervals)) = true;
         case 4
-            if distributionFrequency <= 1.1
+            if distributionFrequency <= 1.05
                 receivers(:,:) = true;
             else
                 i = 1;
@@ -229,7 +244,7 @@ else
                 end
             end
         case 5
-            if distributionFrequency <= 1.1
+            if distributionFrequency <= 1.05
                 receivers(:) = true;
             else
                 i = 0;
@@ -385,10 +400,8 @@ end
 % This is where the program iterates through time steps. The first time
 % step is considered the initial values, and iter + 1 is the last. 
 for j= 2:iter + 1
-    if any(any(isnan(wholeMatrix)))
-        text = strcat('Error at iteration ', num2str(j));
-        disp(text);
-        return
+    if any(any(any(isnan(wholeMatrix))))
+        error('Error at iteration %d', j);
     end
     %Keep an older version so we aren't counting changes in the same time
     old = wholeMatrix;
@@ -458,11 +471,23 @@ for j= 2:iter + 1
         tempsList(index) = mean(mean(wholeMatrix(2:end-1,2:end-1)));
         if graph
             try
-                figure;
-                surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
-                caxis([0 (Tm + 20)])
-                colorbar('horiz')
-                %alpha(0.7);
+                if histogramPlot
+                    if j == 2
+                        figure;
+                    end
+                    hold on;
+                    eval(sprintf('h%d = histogram(wholeMatrix(2:end-1,2:end-1));',j));
+                    alpha(0.5);
+                    eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
+                    [sizes, ~] = histcounts(wholeMatrix(2:end-1,2:end-1));
+                    ylim([0 max(sizes)*1.05 ]);
+                else
+                    figure;
+                    surfc(X,Y,wholeMatrix(2:end-1,2:end-1));
+                    caxis([0 (Tm + 20)])
+                    colorbar('horiz')
+                    %alpha(0.7);
+                end
                 drawnow
                 F(index) = getframe(gcf);
             catch
@@ -489,14 +514,23 @@ end
 if graph
     pause
     close all;
+    fig = figure;
+    movie(fig,F,1)
+    close all;
+    
     try
-        fig = figure;
-        movie(fig,F,1)
-        close all;
+        if histogramPlot
+            eval(sprintf('h%d = histogram(wholeMatrix(2:end-1, 2:end-1));',j));
+            alpha(0.5);
+            eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
+            [sizes, ~] = histcounts(wholeMatrix(2:end-1,2:end-1));
+            ylim([0 max(sizes)*1.05 ]);
+        else
 
-        surf(X,Y,wholeMatrix(2:end-1,2:end-1));
-        caxis([0 (Tm + 20)])
-        colorbar('horiz')
+            surf(X,Y,wholeMatrix(2:end-1,2:end-1));
+            caxis([0 (Tm + 20)])
+            colorbar('horiz')
+        end
     catch
         disp('Cannot graph');
     end

@@ -50,7 +50,7 @@
 # 8: Energy Insertion:
 	* Initial temperature has a spread option, which is just uniform distribution. 
 		* If the entire block should be started at a higher temperature, simply use the “spread” option and give Frequency as 1.
-	* Energy absorption is how much energy per second in Watts is inputted into each receptor.
+	* Energy absorption is how much energy per kg is inputted into each receptor each second (W/kg, or J/(kg * s)).
 	* Time on and off are in seconds, not steps.
 	* Time distribution tells the program to cycle the energy input, using a sine curve unless this is Constant.
 		* Constant is the default, a constant rate at the input.

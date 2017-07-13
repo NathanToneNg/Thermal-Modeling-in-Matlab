@@ -6,13 +6,15 @@
 %
 %   Top is considered the maximum z dimension values in matrix(x, y, z).
 %
-function [averageTemp] = getTop(matrix, depth)
+function [averageTemp] = getTop(matrix, depth_) %Consider changing this so get depth from globals instead of being passed in
     global dimensions xdist ydist zdist dd;
-    
+    if nargin ~= 2
+        global depth;
+        depth_ = depth;
+    end
     if dimensions ~= 3
         error('This function should only work and be needed in three dimensions.');
     end
-    
     xintervals = floor(xdist / dd);
     yintervals = floor(ydist / dd);
     zintervals = floor(zdist / dd);
@@ -21,7 +23,7 @@ function [averageTemp] = getTop(matrix, depth)
         error('Matrix does not match the global parameters');
     end
     
-    topDistance = round(depth / dd);
+    topDistance = round(depth_ / dd);
     lowRange = zintervals - topDistance;
     averageTemp = mean(mean(mean(matrix(:,:,lowRange+1:end))));
 

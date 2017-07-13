@@ -6,8 +6,8 @@
 %       If the user desires to start the entire block at a temperature
 %       above room temperature, use the spread option at "frequency" 1.
 %
-%   Energy absorption is how much energy per second in Watts is inserted
-%       into each receptor.
+%   Energy absorption is how much energy per kg is inputted into each 
+%       receptor each second (W/kg, or J/(kg * s)).
 %   
 %   Time on and off are in seconds, not time steps.
 %   
