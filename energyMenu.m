@@ -98,12 +98,16 @@ function energyMenu
     
     if convection
         set(convectionButton,'String','Currently on');
+        set(conveccText,'Visible','on');
+        set(conveccEdit,'Visible','on');
         if dimensions < 3
             set(thinText,'Visible','on');
             set(thinButton,'Visible','on');
         end
     else
         set(thinButton,'String','Currently off');
+        set(conveccText,'Visible','off');
+        set(conveccEdit,'Visible','off');
         if dimensions < 3
             set(thinText,'Visible','off');
             set(thinButton,'Visible','off');
@@ -111,8 +115,12 @@ function energyMenu
     end
     if radiation
         set(radiationButton,'String','Currently on');
+        set(emissivityText,'visible','on');
+        set(emissivityEdit,'visible','on');
     else
         set(radiationButton,'String','Currently off');
+        set(emissivityText,'visible','off');
+        set(emissivityEdit,'visible','off');
     end
     if dimensions < 3
         if convection || radiation

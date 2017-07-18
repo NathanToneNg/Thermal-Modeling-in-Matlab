@@ -52,6 +52,7 @@ function miscMenu
     consistentButton = uicontrol('Style','pushbutton','Position',[20, 50, 80, 40],...
         'Callback',@callbackfn);
     
+    
     if dimensions == 3
         set(topText,'visible','on');
         set(topButton,'visible','on');

@@ -376,7 +376,10 @@ wholeMatrix(2:end-1, 2:end-1, 2:end-1) = Tempgrid;
 
 %%% movie stuff
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
-[X,Y,Z] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist, dd/2:dd:zdist);
+[X,Y,Z] = meshgrid(dd/2:dd:xdist, dd/2:dd:ydist, dd/2:dd:zdist);
+X = X(1:xintervals, 1:yintervals, 1:zintervals);
+Y = Y(1:xintervals, 1:yintervals, 1:zintervals);
+Z = Z(1:xintervals, 1:yintervals, 1:zintervals);
 
 %Melting Stuff
 melted = false(xintervals,yintervals, zintervals);
@@ -526,8 +529,12 @@ end
 if graph
     pause
     close all;
-    fig = figure;
-    movie(fig,F,1);
+    try
+        fig = figure;
+        movie(fig,F,1);
+    catch
+        disp('Cannot create movie');
+    end
     close all;
 
     try
