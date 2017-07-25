@@ -9,7 +9,7 @@ global precision xdist dd total_time dt framerate convection radiation ...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals ...
     cycleSpeed convecc saveMovie melting Tm2 graph thin initialGrid heating roomTempFunc ...
-    finalGrid consistent bottomLoss histogramPlot;
+    finalGrid consistent bottomLoss gradientPlot;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -42,8 +42,17 @@ end
 if isempty(heating)
     heating = false;
 end
-if isempty(histogramPlot)
-    histogramPlot = false;
+if isempty(gradientPlot)
+    gradientPlot = false;
+end
+global histogramPlot
+if ~isempty(histogramPlot)
+    if histogramPlot
+        gradientPlot = 1;
+    else
+        gradientPlot = 2;
+    end
+    clear global histogramPlot
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -431,7 +440,7 @@ for j= 2:iter + 1
         list(index) = sum(wholeMatrix(2:end-1)./constants) .* dt .* dd; %Energy per meter squared
         tempsList(index) = mean(wholeMatrix(2:end-1));
         if graph
-            if histogramPlot
+            if gradientPlot == 1
                 if j == 2
                     figure;
                 end
@@ -441,6 +450,17 @@ for j= 2:iter + 1
                 eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
                 [sizes, ~] = histcounts(wholeMatrix(2:end-1));
                 ylim([0 max(sizes)*1.05 ]);
+            elseif gradientPlot == 2
+                if j == 2
+                    figure;
+                end
+                hold on;
+                if j ~= iter + 1
+                    color = [(j / (iter + 1)) (1-(j / (iter + 1))) (1 - (j / (iter + 1)))];
+                else
+                    color = [1 0 0];
+                end
+                depthGradientPlot(wholeMatrix(2:end-1,2:end-1,2:end-1), color);
             else
                 figure;
                 plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
@@ -480,12 +500,19 @@ if graph
         v.close;
     end
     
-    if histogramPlot
+    if gradientPlot == 1
         eval(sprintf('h%d = histogram(wholeMatrix(2:end-1));',j));
         alpha(0.5);
         eval(sprintf('h%d.FaceColor = [(j / (iter + 1)) (j / (iter + 1)) (1-(j / (iter + 1)))];',j));
         [sizes, ~] = histcounts(wholeMatrix(2:end-1));
         ylim([0 max(sizes)*1.05 ]);
+    elseif gradientPlot == 2
+            if j == 2
+                figure;
+            end
+            hold on;
+            color = [1 0 0];
+            depthGradientPlot(wholeMatrix(2:end-1,2:end-1,2:end-1), color);
     else
         plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);

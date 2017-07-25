@@ -11,7 +11,7 @@
 %       MATLAB Command Window to bring the movie to the workspace, and use 
 %       movie(recentTestMovie) to play it.
 function graphingMenu
-    global dimensions isotherm saveMovie graph initialGrid finalGrid histogramPlot
+    global dimensions isotherm saveMovie graph initialGrid finalGrid gradientPlot
     if isempty(dimensions)
         dimensions = 3;
     end
@@ -30,8 +30,8 @@ function graphingMenu
     if isempty(finalGrid)
         finalGrid = false;
     end
-    if isempty(histogramPlot)
-        histogramPlot = false;
+    if isempty(gradientPlot)
+        gradientPlot = 0;
     end
     
     f = figure('Visible', 'off','color','white','Position',[360,500,400,300]);
@@ -52,7 +52,7 @@ function graphingMenu
         'Callback',@callbackfn);
     
     histogramText = uicontrol('Style','text','BackgroundColor','white',...
-        'Position',[120,110,120,80],'String','Histogram Plot Instead?');
+        'Position',[120,110,120,90],'String','Gradient Plot/ Histogram Instead?');
     histogramButton = uicontrol('Style','pushbutton','Position',[140,130,80,40],...
         'Callback',@callbackfn);
     
@@ -67,7 +67,7 @@ function graphingMenu
         'Callback',@callbackfn);
         
     if dimensions == 3
-        if graph && ~histogramPlot
+        if graph && ~gradientPlot
             set(isothermText,'visible','on');
             set(isothermButton,'visible','on');
         else
@@ -105,10 +105,13 @@ function graphingMenu
     else
         set(finalButton,'string','Off');
     end
-    if histogramPlot
-        set(histogramButton,'string','On');
-    else
-        set(histogramButton,'string','Off');
+    switch gradientPlot
+        case 0
+            set(histogramButton,'string','Off');
+        case 1
+            set(histogramButton,'string','Histogram');
+        case 2
+            set(histogramButton,'string','Gradient Plot');
     end
     set(f,'Name','Graphing Options')
     movegui(f,'center')
@@ -139,7 +142,7 @@ function graphingMenu
                     set(graphButton,'String','On');
                     set(movieText,'Visible','On');
                     set(movieButton,'Visible','On');
-                    if dimensions == 3 && ~histogramPlot
+                    if dimensions == 3 && ~gradientPlot
                         set(isothermText,'visible','on');
                         set(isothermButton,'visible','on');
                     end
@@ -165,9 +168,16 @@ function graphingMenu
                     set(finalButton,'String','Off');
                 end
             case histogramButton
-                histogramPlot = ~histogramPlot;
-                if histogramPlot
-                    set(histogramButton,'string','On');
+                gradientPlot = gradientPlot + 1;
+                if gradientPlot > 2
+                    gradientPlot = 0;
+                end
+                if gradientPlot
+                    if gradientPlot == 1
+                        set(histogramButton,'string','Histogram');
+                    else
+                        set(histogramButton,'string','Gradient Plot');
+                    end
                     if dimensions == 3 && graph
                         set(isothermText,'visible','off');
                         set(isothermButton,'visible','off');

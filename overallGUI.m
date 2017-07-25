@@ -11,7 +11,7 @@ function overallGUI
     thermal_Conductivity2 interfaceK density2 specific_heat2 distribution frequency2 ...
     extraConduction cycle cycleIntervals cycleSpeed ...
     saveMovie isotherm convecc melting Tm2 graph thin bottomLoss initialGrid topCheck depth ...
-    heating roomTempFunc finalGrid consistent histogramPlot;
+    heating roomTempFunc finalGrid consistent gradientPlot;
 
     
     %%%%Defaults
@@ -66,6 +66,7 @@ function overallGUI
     heating = false;
     roomTempFunc = @(x)0;
     consistent = false;
+    gradientPlot = 0;
     %%%%%%%%%%%%
     
     
