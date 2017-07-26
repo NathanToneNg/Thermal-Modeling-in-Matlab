@@ -1,17 +1,20 @@
 % depthGradientPlot Plots the average temperature of each each layer sphere
 % from the center of the matrix. 
+% Use as depthGradientPlot(matrix, freq, [R G B]) (each optional; must have previous 
+%   to have latter options)
 %
 %
 %
-%
-function depthGradientPlot(matrix, color)
-
-if nargin == 2 && ~all(size(color) == [1 3])
+function depthGradientPlot(matrix, freq_in, color)
+if nargin == 3 && ~all(size(color) == [1 3])
     error('Color input must be in form [0.5 0.9 0], with three elements between 0 and 1.');
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-freq = 8;
+freq = 0.5; % Default
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+if nargin > 1
+    freq = freq_in;
+end
 
 global dd xdist ydist zdist dimensions
 if nargin < 1
@@ -30,6 +33,10 @@ if dimensions > 2
 else
     zintervals = 1;
 end
+
+if numel(matrix) ~= xintervals * yintervals * zintervals
+    error('Incorrect number of elements in matrix compared to global parameters');
+end  
 
 midx = ceil(xintervals/2);
 midy = ceil(yintervals/2);
@@ -50,10 +57,10 @@ for i = 1:xintervals
     end
 end
 averages = sums ./ amount;
-if nargin == 2
-    plot(0:dd/freq:maxSize*dd/freq - dd/freq, averages, 'Color', color);
+if nargin == 3
+    plot(0:dd/freq:maxSize*dd/freq - dd/freq, averages, '-o','Color', color);
 else
-    plot(0:dd/freq:maxSize*dd/freq - dd/freq, averages);
+    plot(0:dd/freq:maxSize*dd/freq - dd/freq, averages, '-o');
 end
 
 end

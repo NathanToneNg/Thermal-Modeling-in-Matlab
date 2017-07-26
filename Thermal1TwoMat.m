@@ -54,6 +54,10 @@ if ~isempty(histogramPlot)
     end
     clear global histogramPlot
 end
+numberEl = 10;
+if recordGradient
+    gradientData = zeros(numberEl, floor(total_time/dt/framerate));
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~isempty(consistent) && consistent
@@ -460,7 +464,7 @@ for j= 2:iter + 1
                 else
                     color = [1 0 0];
                 end
-                depthGradientPlot(wholeMatrix(2:end-1,2:end-1,2:end-1), color);
+                depthGradientPlotBins(wholeMatrix(2:end-1), numberEl, color, index);
             else
                 figure;
                 plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
@@ -512,7 +516,7 @@ if graph
             end
             hold on;
             color = [1 0 0];
-            depthGradientPlot(wholeMatrix(2:end-1,2:end-1,2:end-1), color);
+            depthGradientPlotBins(wholeMatrix(2:end-1), numberEl, color);
     else
         plot(dd/2:dd:xdist, wholeMatrix(2:end-1));
         %ylim([0 50]);

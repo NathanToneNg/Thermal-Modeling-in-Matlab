@@ -8,7 +8,8 @@ global precision xdist ydist zdist dd total_time dt framerate convection radiati
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
-    bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid consistent gradientPlot;
+    bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid consistent ...
+    gradientPlot recordGradient gradientData;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -55,6 +56,10 @@ if ~isempty(histogramPlot)
         gradientPlot = 2;
     end
     clear global histogramPlot
+end
+numberEl = 10;
+if recordGradient
+    gradientData = zeros(numberEl, floor(total_time/dt/framerate));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -515,7 +520,7 @@ for j= 2:iter + 1
                     else
                         color = [1 0 0];
                     end
-                    depthGradientPlot(wholeMatrix(2:end-1,2:end-1,2:end-1), color);
+                    depthGradientPlotBins(wholeMatrix(2:end-1,2:end-1,2:end-1), numberEl, color, index);
                 elseif isotherm
                     isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
                 else
@@ -574,7 +579,7 @@ if graph
             end
             hold on;
             color = [1 0 0];
-            depthGradientPlot(wholeMatrix(2:end-1,2:end-1,2:end-1), color);
+            depthGradientPlotBins(wholeMatrix(2:end-1,2:end-1,2:end-1), numberEl, color);
         elseif isotherm
             isosurfacePlot(wholeMatrix(2:end-1,2:end-1,2:end-1));
             view(3);

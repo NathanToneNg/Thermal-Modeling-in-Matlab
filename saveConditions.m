@@ -15,7 +15,7 @@
 %   bytes as a string, but that can be modified within the function. 
 
 function saveConditions(filename, optionalText)
-global initialGrid finalGrid
+global initialGrid finalGrid recordGradient gradientPlot
 if nargin > 2
     error('Incorrect usage. Use as saveConditions(filename, optionalText), arguments optional.');
 end
@@ -54,7 +54,9 @@ for i = 1:length(globalVars)
             'materialMatrix') || (strcmp(varname,'initialFrame') && ...
             ~isempty(initialGrid) && initialGrid) || ...
             (strcmp(varname, 'finalTemps') && ~isempty(finalGrid) && finalGrid) ...
-             || (strcmp(varname, 'topTemps') && ~isempty(topCheck) && topCheck)
+             || (strcmp(varname, 'topTemps') && ~isempty(topCheck) && topCheck) ...
+             || (strcmp(varname, 'gradientData') && ~isempty(recordGradient) && ...
+             gradientPlot == 2 && recordGradient)
          
         strmatrix = mat2str(var);
         data = whos('strmatrix');
@@ -69,6 +71,9 @@ for i = 1:length(globalVars)
         end
     elseif ischar(eval(varname))
         fprintf(file, '%s = ''%s'';\n', varname, var);
+    elseif strcmp(varname, 'histogramPlot')
+        clear global histogramPlot
+        continue;
     elseif ~strcmp(varname, 'finalTemps') && ~strcmp(varname, 'topTemps')
         fprintf(file, '%s = %s;\n', varname, var);
     end
