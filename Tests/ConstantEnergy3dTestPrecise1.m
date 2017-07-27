@@ -37,7 +37,7 @@ distribution = 2;
 global distributionFrequency
 distributionFrequency = 12;
 global dt
-dt = 0.05;
+dt = 0.005;
 global elevFrequency
 elevFrequency = 12;
 global elevLocation
@@ -57,9 +57,9 @@ extraRadiation = 0;
 global finalGrid
 finalGrid = 1;
 global finalTemps
-load ConstantEnergy3dTestfinalTemps
+load ConstantEnergy3dTestPrecise1finalTemps
 global framerate
-framerate = 500;
+framerate = 5000;
 global frequency2
 frequency2 = 12;
 global gradientData
@@ -81,7 +81,7 @@ global list
 list = '305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234           305234';
 list = str2num(list);
 global materialMatrix
-load ConstantEnergy3dTestmaterialMatrix
+load ConstantEnergy3dTestPrecise1materialMatrix
 global materials
 materials = 3;
 global melting
@@ -130,3 +130,4 @@ global zdist
 zdist = 0.2;
 
 list(2:end) - list(1:end-1)
+

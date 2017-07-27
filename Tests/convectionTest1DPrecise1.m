@@ -5,15 +5,17 @@ Tm2 = 110;
 global absorption
 absorption = 6;
 global borders
-borders = 0;
+borders = 1;
 global bottomLoss
-bottomLoss = 0;
+bottomLoss = 1;
+global consistent
+consistent = 1;
 global constant
 constant = 0.00036184;
 global convecc
-convecc = 1020;
+convecc = 20;
 global convection
-convection = 0;
+convection = 1;
 global cycle
 cycle = 1;
 global cycleIntervals
@@ -21,19 +23,21 @@ cycleIntervals = 20;
 global cycleSpeed
 cycleSpeed = 20;
 global dd
-dd = 0.005;
+dd = 0.0005;
 global density
 density = 960;
 global density2
 density2 = 1600;
+global depth
+depth = 0.0038;
 global dimensions
-dimensions = 2;
+dimensions = 1;
 global distribution
 distribution = 0;
 global distributionFrequency
 distributionFrequency = 12;
 global dt
-dt = 0.05;
+dt = 0.0005;
 global elevFrequency
 elevFrequency = 12;
 global elevLocation
@@ -50,15 +54,22 @@ global extraConvection
 extraConvection = 0;
 global extraRadiation
 extraRadiation = 0;
+global finalGrid
+finalGrid = 0;
 global finalTemps
-finalTemps = '0.0001281';
-finalTemps = str2num(finalTemps);
 global framerate
-framerate = 500;
+framerate = 50000;
 global frequency2
 frequency2 = 12;
+global gradientData
+gradientData = ;
+global gradientPlot
+gradientPlot = 0;
 global graph
 graph = 0;
+global heating
+heating = 0;
+global histogramPlot
 global initialGrid
 initialGrid = 0;
 global interfaceK
@@ -66,7 +77,7 @@ interfaceK = 0.2;
 global isotherm
 isotherm = 0;
 global list
-list = '27.6284      13.3917      6.49106      3.14627      1.52502     0.739191     0.358292     0.173667    0.0841777    0.0408016    0.0197769   0.00958602   0.00464642   0.00225216   0.00109164  0.000529126  0.000256472  0.000124314   6.0256e-05  2.92066e-05';
+list = '0.01904   0.0063601   0.0021245  0.00070967  0.00023705  7.9185e-05  2.6451e-05  8.8355e-06  2.9514e-06  9.8587e-07  3.2932e-07     1.1e-07  3.6746e-08  1.2274e-08  4.1001e-09  1.3696e-09  4.5749e-10  1.5282e-10  5.1047e-11  1.7052e-11';
 list = str2num(list);
 global materialMatrix
 materialMatrix = '1';
@@ -79,8 +90,12 @@ global precision
 precision = 10;
 global radiation
 radiation = 0;
+global recordGradient
+recordGradient = 0;
 global roomTemp
 roomTemp = 0;
+global roomTempFunc
+roomTempFunc = @(x)0;
 global saveMovie
 saveMovie = 0;
 global self_set
@@ -90,7 +105,7 @@ specific_heat = 1900;
 global specific_heat2
 specific_heat2 = 4130;
 global tempsList
-tempsList = '121.177      58.73548      28.46956      13.79943      6.688695      3.242064      1.571455     0.7616969     0.3692007     0.1789545    0.08674072    0.04204393    0.02037903   0.009877882   0.004787889   0.002320729   0.001124876  0.0005452365  0.0002642805  0.0001280989';
+tempsList = '83.5093      27.8952      9.31803      3.11257      1.03971     0.347303     0.116012    0.0387523    0.0129447   0.00432401   0.00144438  0.000482477  0.000161165  5.38351e-05  1.79829e-05  6.00696e-06  2.00655e-06  6.70262e-07  2.23892e-07  7.47883e-08';
 tempsList = str2num(tempsList);
 global thermal_Conductivity
 thermal_Conductivity = 0.33;
@@ -102,17 +117,14 @@ global timeOff
 timeOff = 500;
 global timeOn
 timeOn = 0;
+global topCheck
+topCheck = 0;
+global topTemps
 global total_time
 total_time = 500;
 global xdist
-xdist = 0.005;
+xdist = 0.0005;
 global ydist
-ydist = 0.005;
+ydist = 0.2;
 global zdist
 zdist = 0.2;
-
-x = 25:25:500;
-analyticalTemps = 250.*(exp(-4.*x.*thermal_Conductivity./specific_heat./density./dd./dd))
-differences = (abs((tempsList - analyticalTemps) ./ analyticalTemps)) %Higher at end because of smaller temperatures
-percentOffest = mean(differences)
-

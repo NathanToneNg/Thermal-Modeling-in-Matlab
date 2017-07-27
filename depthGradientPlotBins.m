@@ -3,7 +3,7 @@
 % Use as depthGradientPlot(matrix, bins, [R G B]) (each optional; must have previous 
 %   to have latter options)
 %
-% Meant mainly as what is to be used by the program
+% Meant mainly as what is to be used by the complete program.
 %
 function depthGradientPlotBins(matrix, bins, color, iteration)
 if nargin > 2 && ~all(size(color) == [1 3])
@@ -36,11 +36,9 @@ midx = ceil(xintervals/2);
 midy = ceil(yintervals/2);
 midz = ceil(zintervals/2);
 
-
-%%%%%%%%%%%%%%%%%%%
-numberEl = 10; %Default
-%%%%%%%%%%%%%%%%%%%
-if nargin > 1
+if nargin <= 1
+    numberEl = 10; %Defualt
+else
     numberEl = bins;
 end
 

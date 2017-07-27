@@ -16,6 +16,18 @@
 
 function saveConditions(filename, optionalText)
 global initialGrid finalGrid recordGradient gradientPlot
+if isempty(initialGrid)
+    initialGrid = false;
+end
+if isempty(finalGrid)
+    finalGrid = false;
+end
+if isempty(recordGradient)
+    recordGradient = false;
+end
+if isempty(gradientPlot)
+    gradientPlot = 0;
+end
 if nargin > 2
     error('Incorrect usage. Use as saveConditions(filename, optionalText), arguments optional.');
 end
@@ -39,7 +51,16 @@ end
 globalVars = who('global');
 for i = 1:length(globalVars)
     varname = globalVars{i};
-    eval(sprintf('global %s', varname));
+    if strcmp(varname,'histogramPlot') || ...
+        (strcmp(varname, 'topTemps') && ~topCheck) ...
+        || (strcmp(varname, 'gradientData') && ...
+        (gradientPlot ~= 2 || ~recordGradient)) || ...
+        (strcmp(varname,'initialFrame') && ~initialGrid)
+    
+        continue;
+    else
+        eval(sprintf('global %s', varname));
+    end
     var = eval(varname);
     if isa(var,'function_handle')
         var = func2str(var);
@@ -53,9 +74,9 @@ for i = 1:length(globalVars)
     if strcmp(varname, 'list') || strcmp(varname, 'tempsList') || strcmp(varname, ...
             'materialMatrix') || (strcmp(varname,'initialFrame') && ...
             ~isempty(initialGrid) && initialGrid) || ...
-            (strcmp(varname, 'finalTemps') && ~isempty(finalGrid) && finalGrid) ...
-             || (strcmp(varname, 'topTemps') && ~isempty(topCheck) && topCheck) ...
-             || (strcmp(varname, 'gradientData') && ~isempty(recordGradient) && ...
+            (strcmp(varname, 'finalTemps') &&  finalGrid) ...
+             || (strcmp(varname, 'topTemps') && topCheck) ...
+             || (strcmp(varname, 'gradientData') &&  ...
              gradientPlot == 2 && recordGradient)
          
         strmatrix = mat2str(var);

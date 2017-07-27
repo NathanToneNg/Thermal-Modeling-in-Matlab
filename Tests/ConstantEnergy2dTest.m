@@ -63,6 +63,8 @@ global framerate
 framerate = 500;
 global frequency2
 frequency2 = 12;
+global gradientPlot
+gradientPlot = 0;
 global graph
 graph = 1;
 global heating
@@ -87,12 +89,16 @@ global precision
 precision = 10;
 global radiation
 radiation = 0;
+global recordGradient
+recordGradient = 0;
 global roomTemp
 roomTemp = 0;
 global roomTempFunc
 roomTempFunc = @(x)0;
 global saveMovie
 saveMovie = 0;
+global self_set
+self_set = 0;
 global specific_heat
 specific_heat = 1900;
 global specific_heat2
@@ -122,5 +128,3 @@ global zdist
 zdist = 0.2;
 
 list(2:end) - list(1:end-1)
-
-

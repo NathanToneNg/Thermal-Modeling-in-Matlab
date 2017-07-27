@@ -8,7 +8,7 @@
 %       the program should take a snapshot graph and calculate the average 
 %       temperature and energy.
 function timeMenu
-    global total_time dt framerate graph timeOn timeOff absorption;
+    global total_time dt framerate timeOn timeOff absorption;
 
     f = figure('Visible', 'off','color','white','Position',...
     [360,500,240,300]);
@@ -46,10 +46,6 @@ function timeMenu
     framerateEdit = uicontrol('Style','edit','Position',[180,200,40,40],...
     'String',num2str(framerate),...
     'Callback',@callbackfn);
-    if ~graph
-        set(framerateText,'Visible','Off');
-        set(framerateEdit,'Visible','Off');
-    end
     
     onText = uicontrol('Style','text','BackgroundColor','white',...
     'Position',[0,110,80,80],'String','Time Absorption On');
