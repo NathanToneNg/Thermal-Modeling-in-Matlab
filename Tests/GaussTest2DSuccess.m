@@ -8,6 +8,8 @@ global borders
 borders = 1;
 global bottomLoss
 bottomLoss = 0;
+global consistent
+consistent = 0;
 global constant
 constant = 5.5921e-05;
 global convecc
@@ -26,6 +28,8 @@ global density
 density = 960;
 global density2
 density2 = 1600;
+global depth
+depth = 0.0038;
 global dimensions
 dimensions = 2;
 global distribution
@@ -50,14 +54,20 @@ global extraConvection
 extraConvection = 0;
 global extraRadiation
 extraRadiation = 0;
+global finalGrid
+finalGrid = 1;
 global finalTemps
-load finalTempsGaussTest2DSuccess0x2Em
+load GaussTest2DSuccessfinalTemps
 global framerate
 framerate = 10000;
 global frequency2
 frequency2 = 12;
+global gradientPlot
+gradientPlot = 0;
 global graph
 graph = 1;
+global heating
+heating = 0;
 global initialGrid
 initialGrid = 0;
 global interfaceK
@@ -68,7 +78,7 @@ global list
 list = '0.114       0.114';
 list = str2num(list);
 global materialMatrix
-load materialMatrixGaussTest2DSuccess0x2Em
+load GaussTest2DSuccessmaterialMatrix
 global materials
 materials = 1;
 global melting
@@ -77,8 +87,12 @@ global precision
 precision = 10;
 global radiation
 radiation = 0;
+global recordGradient
+recordGradient = 0;
 global roomTemp
 roomTemp = 0;
+global roomTempFunc
+roomTempFunc = @(x)0;
 global saveMovie
 saveMovie = 0;
 global self_set
@@ -100,6 +114,8 @@ global timeOff
 timeOff = 500;
 global timeOn
 timeOn = 0;
+global topCheck
+topCheck = 0;
 global total_time
 total_time = 100;
 global xdist
@@ -123,4 +139,3 @@ fprintf('Inaccuracy from gaussian model is %d after %d seconds with %d distance 
 
 
 phi100 = f.a1 * 4 * pi * D * total_time
-
