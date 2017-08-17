@@ -42,9 +42,9 @@ function timeMenu
     'String',num2str(dt),'Callback',@callbackfn);
     
     framerateText = uicontrol('Style','text','BackgroundColor','white',...
-    'Position',[160,200,80,80],'String','Graphing framerate');
+    'Position',[160,200,80,80],'String','Graphing Rate (seconds)');
     framerateEdit = uicontrol('Style','edit','Position',[180,200,40,40],...
-    'String',num2str(framerate),...
+    'String',num2str(framerate*dt),...
     'Callback',@callbackfn);
     
     onText = uicontrol('Style','text','BackgroundColor','white',...
@@ -80,7 +80,7 @@ function timeMenu
         % in either the second edit box or the pushbutton
         total_time=str2double(get(totalTimeEdit,'String'));
         dt=str2double(get(dtEdit,'String'));
-        framerate = str2double(get(framerateEdit,'String'));
+        framerate = floor(str2double(get(framerateEdit,'String'))/dt);
         text = strcat('Total time steps: ', num2str(total_time/dt));
         timeOn = str2double(get(onEdit,'String'));
         timeOff = str2double(get(offEdit,'String'));
