@@ -1,7 +1,10 @@
 % depthGradientPlot Plots the average temperature of each each layer sphere
 % from the center of the matrix. 
-% Use as depthGradientPlot(matrix, bins, [R G B]) (each optional; must have previous 
+% Use as depthGradientPlot(matrix, bins, [R G B], iteration) (each optional; must have previous 
 %   to have latter options)
+%
+% Iteration variable used only if recordGradient is on and program is to
+%   store data into gradientData
 %
 % Meant mainly as what is to be used by the complete program.
 %

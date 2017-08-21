@@ -4,9 +4,10 @@
 %Clarifications:
 %   Assumed units are in seconds, but scaling can be done as clarified in
 %       the README below Usage.
-%   Graphing Framerate tells the program how often (in terms of time steps)
+%   Graphing Rate tells the program how often (in seconds)
 %       the program should take a snapshot graph and calculate the average 
-%       temperature and energy.
+%       temperature and energy. The program will round to the most
+%       approximate timestep
 function timeMenu
     global total_time dt framerate timeOn timeOff absorption;
 

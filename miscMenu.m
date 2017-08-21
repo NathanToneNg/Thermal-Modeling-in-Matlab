@@ -3,13 +3,18 @@
 % Modeling Program.
 %
 % Clarifications
-%   Isosurfaces option applies for 3D cases only: Will plot isosurfaces at
-%       every 10th percentile of temperatures.
+%   
+%   Precision digits determine how many digits calculations should be 
+%       carried out to.
 %
-%   Saving the movie will have the program save the movie as 
-%       recentTestMovie.avi in your MATLAB folder. Drag this into the 
-%       MATLAB Command Window to bring the movie to the workspace, and use 
-%       movie(recentTestMovie) to play it.
+%   Tracking top temperatures will leave the global topTemps as an array 
+%       with the average top (top z values) of a matrix down to the 
+%       provided depth.
+%   
+%   Constant RNG makes it so that the program runs "rng('default');" which
+%       causes all random factors to be the same each run. Most useful  for 
+%       reproducibility.
+%
 function miscMenu
     global dimensions melting precision consistent topCheck depth
     if isempty(precision)

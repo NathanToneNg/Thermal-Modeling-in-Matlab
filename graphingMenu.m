@@ -5,6 +5,10 @@
 % Clarifications
 %   Isosurfaces option applies for 3D cases only: Will plot isosurfaces at
 %       every 10th percentile of temperatures.
+%   Histogram option tracks number of temperatures in each range and plots
+%       them. Default is 10 bins.
+%   Gradient option plots average temperatures at radii from center against
+%       the radii in bins. Default is 10 bins.
 %
 %   Saving the movie will have the program save the movie as 
 %       recentTestMovie.avi in your MATLAB folder. Drag this into the 

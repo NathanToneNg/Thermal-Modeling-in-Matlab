@@ -12,7 +12,7 @@
 
 # 3: Size & Time Settings:
 	* Assumed units are in meters and seconds, but scaling can be done as clarified in the README right below Usage.
-	* Graphing Framerate tells the program how often (in terms of time steps) the program should take a snapshot graph and calculate the average temperature and energy.
+	* Graphing Rate tells the program how often (in seconds) the program should take a snapshot graph and calculate the average temperature and energy. It will approximate to the nearest 
 
 
 
@@ -25,10 +25,7 @@
 
 # 5: Energy Dissipation: 
 	* Conduction on the Edges is usually turned off, except for in test cases and when the situation should be considered as connecting to a “grounded” material at the room temperature.
-	* Convection/Radiation off unseen directions are used in the 1D and 2D cases:
-		* 1D: This acts as if the setting given is a rectangular prism material of thickness given by dd (almost infinitely thin), where the surroundings are all air and thus convection/radiation occurs off all pixels in addition to sides
-		* 2D: This acts as if the setting given is a flat material of thickness given by dd (almost infinitely thin), where the 3rd dimension (top and bottom) are air above and below, and thus convection/radiation occurs off all pixels in addition to sides.
-	* The same process is for both 1D and 2D, but twice as impactful for 1D.
+	* Convection on Bottom allows for the user to choose if convection occurs on the bottom. (For example, convection will not occur on the bottom if the material is flat against the surface.
 
 
 
@@ -64,9 +61,12 @@
 
 # 9: Misc./Graphing Settings:
 	* Isosurface option applies for 3D case only: Will plot Isosurfaces for every 10th percentile
+	* Histogram allows you to plot by how many pixels are in each bin of temperatures. The default number of bins is 10.
+	* Gradient allows you to plot average temperature at radius from center against said radius bin. Default number of bins is 10. There is also an option to save the gradient temperatures array for usage after the program finishes.
 	* Saving the movie will have the program save the movie as recentTestMovie.avi in your MATLAB folder. Drag this into the MATLAB Command Window to bring the movie to the workspace, and use * movie(recentTestMovie) * to play it.
 	* Precision digits determine how many digits calculations should be carried out to
 	* Tracking top temperatures will leave the global topTemps as an array with the average top (top z values) of a matrix down to the provided depth.
+	* Constant RNG calls “rng(‘default’);” which causes all random factors to be the same each run. Most useful for reproducibility. 
 
 
 
