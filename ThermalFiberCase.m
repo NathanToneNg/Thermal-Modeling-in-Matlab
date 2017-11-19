@@ -51,7 +51,7 @@ index = 1;
 
 xdist = 0.2;
 ydist = 0.2;
-zdist = 0.1;
+zdist = 0.05;
 %Number of pixels across the grid
 xintervals = floor(xdist / dd);
 yintervals = floor(ydist / dd);

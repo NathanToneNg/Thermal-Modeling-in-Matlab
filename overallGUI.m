@@ -28,7 +28,6 @@ function overallGUI
     density = 960; %kg/m^3
     thermal_Conductivity = 0.51;
     constant = thermal_Conductivity * dt / (density * specific_heat * dd * dd);
-    borders = true;
     emissivity = 0.97;
     roomTemp = 0;
     elevatedTemp = 250;
@@ -45,7 +44,7 @@ function overallGUI
     interfaceK = 60;
     density2 = 3210;
     specific_heat2 = 750;
-    Tm2 = 110;
+    Tm2 = 150;
     distribution = 1;
     frequency2 = 12;
     extraConduction = false;

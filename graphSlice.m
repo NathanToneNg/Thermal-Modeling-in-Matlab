@@ -3,7 +3,7 @@
 %   matrix. The defaults for each variable not provided are finalTemps and
 %   the middle interval of said matrix respectively. 
 %
-%   Program will assume that if only argument is a 1x1x1, it is the
+%   Program will assume that if only argument is a 1x1s, it is the
 %   interval provided.
 %
 function graphSlice(matrix, interval)
@@ -26,7 +26,7 @@ global finalTemps
     if size(matrix,1) < interval || interval < 1
         error('interval not within matrix');
     end
-    surfc(permute(matrix(interval, :,1:20),[2 3 1]));
+    surfc(permute(matrix(interval, :,:),[2 3 1]));
     xlabel('y direction');
     ylabel('z direction (up/down)');
     zlabel('Temperature');

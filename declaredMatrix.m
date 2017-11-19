@@ -1,18 +1,12 @@
-function Thermal3TwoMat
+%Need to declare initialFrame and materialMatrix here or before running.
+%May also need to fix relevant constants if there are more materials
+
+%global initialFrame materialMatrix
+
 %% Initialize globals
 %Globals allow this to carry over from set-up functions. They are used
 %instead of persistent so that they can be used in the command frame if
 %necessary.
-
-if exist('inProgress.mat','file')
-    overwrite = input('A progress file exists. Should we delete it? (0 or 1):');
-    if overwrite
-        delete('inProgress.mat');
-    else
-        disp('Exiting program without deleting file.');
-        return;
-    end
-end
 global precision xdist ydist zdist dd total_time dt framerate convection radiation ...
     specific_heat density Tm roomTemp elevatedTemp elevLocation thermal_Conductivity...
     elevFrequency absorption energyRate distributionFrequency emissivity timeOn timeOff...
@@ -22,8 +16,8 @@ global precision xdist ydist zdist dd total_time dt framerate convection radiati
     gradientPlot recordGradient gradientData;
 clear global list;
 clear global tempsList;
-clear global materialMatrix;
-global list tempsList materialMatrix; %Results
+%clear global materialMatrix;
+global list tempsList %materialMatrix %Results
 if topCheck
     clear global topTemps
     global topTemps
@@ -103,37 +97,37 @@ zslice = (ceil((zintervals-1)/2) * dd);
 
 %% Create initial temperatures
 %This creates a temporary grid of which pixels start at higher temperature
-if heating
-    Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTempFunc(0);
-else
-    Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTemp;
-end
-switch elevLocation 
-    case 1
-        %Center ixel
-        Tempgrid(midx, midy, midz) = elevatedTemp;
-    case 2
-        %Center block, 1/5 in each direction
-        Tempgrid(midx - ceil(midx/10): midx + ceil(midx/10),...
-            midy - ceil(midy/10):midy + ceil(midy/10), ...
-            midz - ceil(midz/10):midz + ceil(midz/10)) = elevatedTemp;
-    case 3
-        %Uniform distribution
-        if elevFrequency <= 1.05
-            Tempgrid(:,:,:) = elevatedTemp;
-        else
-            Tempgrid(round(1:elevFrequency:xintervals * yintervals * zintervals)) = elevatedTemp;
-        end
-%         xfreq = ceil(nthroot(elevFrequency,3));
-%         yfreq = floor(sqrt(elevFrequency/xfreq));
-%         zfreq = ceil(elevFrequency/(xfreq * yfreq));
-%         
-%         Tempgrid(1:xfreq:end,1:yfreq:end,1:zfreq:end) = elevatedTemp;
-end
-if initialGrid
-    global initialFrame
-    initialFrame = Tempgrid;
-end
+% if heating
+%     Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTempFunc(0);
+% else
+%     Tempgrid = zeros(xintervals, yintervals, zintervals) + roomTemp;
+% end
+% switch elevLocation 
+%     case 1
+%         %Center ixel
+%         Tempgrid(midx, midy, midz) = elevatedTemp;
+%     case 2
+%         %Center block, 1/5 in each direction
+%         Tempgrid(midx - ceil(midx/10): midx + ceil(midx/10),...
+%             midy - ceil(midy/10):midy + ceil(midy/10), ...
+%             midz - ceil(midz/10):midz + ceil(midz/10)) = elevatedTemp;
+%     case 3
+%         %Uniform distribution
+%         if elevFrequency <= 1.05
+%             Tempgrid(:,:,:) = elevatedTemp;
+%         else
+%             Tempgrid(round(1:elevFrequency:xintervals * yintervals * zintervals)) = elevatedTemp;
+%         end
+% %         xfreq = ceil(nthroot(elevFrequency,3));
+% %         yfreq = floor(sqrt(elevFrequency/xfreq));
+% %         zfreq = ceil(elevFrequency/(xfreq * yfreq));
+% %         
+% %         Tempgrid(1:xfreq:end,1:yfreq:end,1:zfreq:end) = elevatedTemp;
+% end
+% if initialGrid
+%     global initialFrame
+%     initialFrame = Tempgrid;
+% end
 
 %Total number of time steps that are taken.
 iter = total_time/dt;
@@ -150,7 +144,7 @@ end
 %Holds a grid of constants so that less calculations need to be repeated.
 constants = ones(xintervals, yintervals,zintervals) .* dt ./ (specific_heat .* dd .* dd .* density);
 insertion = ones(xintervals, yintervals, zintervals) .* dt ./ specific_heat;
-materialMatrix = int8(ones(xintervals, yintervals,zintervals));
+%materialMatrix = int8(ones(xintervals, yintervals,zintervals));
 
 %Holds the thermal conductivities at each pixel in each direction.
 leftK = zeros(xintervals, yintervals,zintervals);
@@ -165,92 +159,92 @@ kArray(5) = interfaceK; %Mat 1 with Mat 2
 kArray(7) = thermal_Conductivity2; %Mat 2 with Mat 2
 
 
-%% Create materials grid
-%Declare where the second material is based on parameter "distribution" and
-%the frequencies
-second = false(xintervals,yintervals,zintervals);
-switch distribution
-    case 1
-        %Center pixel
-        second(midx, midy, midz) = true;
-    case 2
-        %Center block (5th of size in each direction)
-        second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
-                        midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = true;
-    case 3
-        %Uniform distribution
-        if frequency2 <= 1.05
-            second(:,:,:) = true;
-        else
-            second(round(1:frequency2:xintervals * yintervals * zintervals)) = true;
-        end
-%         freq = nthroot(frequency2, 3);
-%         second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = true;
-    case 4
-        %Random distribution
-        if frequency2 <= 1.05
-            second(:,:,:) = true;
-        else
-            i = 1;
-            %Fills until the ratio is fulfilled.
-            while i <= ceil(xintervals*yintervals*zintervals/frequency2)
-                potentialRand = randi(xintervals);
-                potentialRand2 = randi(yintervals);
-                potentialRand3 = randi(zintervals);
-                if(~second(potentialRand,potentialRand2,potentialRand3))
-                    second(potentialRand,potentialRand2,potentialRand3) = true;
-                    i = i + 1;
-                end
-            end
-        end
-     case 5
-         %Random spheres
-        if frequency2 <= 1.05
-            second(:) = true;
-        else
-            i = 0;
-            num = ceil(xintervals * yintervals * zintervals/frequency2);
-            %Fills until the ratio is fulfilled
-            while i <= num
-                potentialRand = randi(xintervals);
-                potentialRand2 = randi(yintervals);
-                potentialRand3 = randi(zintervals);
-                %Picks a random radius, and then random center after
-                randRadius = randi(floor(nthroot(num,3)/(4*3.14/3)));
-                if(potentialRand - randRadius < 1)
-                    startx = 1;
-                else
-                    startx = potentialRand - randRadius;
-                end
-                if(potentialRand + randRadius > xintervals)
-                    endingx = xintervals;
-                else
-                    endingx = potentialRand + randRadius;
-                end
-                for j = startx:endingx
-                    for k = potentialRand2 - floor(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
-                            potentialRand2 + floor(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
-                        if k > 0 && k < yintervals
-                            for l = potentialRand3 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2)))) : ...
-                            potentialRand3 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2))))
-                                if l > 0 && l < zintervals
-                                    if(~second(j,k,l))
-                                        second(j,k,l) = true;
-                                        i = i + 1;
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-end
+% %% Create materials grid
+% %Declare where the second material is based on parameter "distribution" and
+% %the frequencies
+% second = false(xintervals,yintervals,zintervals);
+% switch distribution
+%     case 1
+%         %Center pixel
+%         second(midx, midy, midz) = true;
+%     case 2
+%         %Center block (5th of size in each direction)
+%         second(midx - ceil(midx/10): midx + ceil(midx/10), midy - ceil(midy/10): ...
+%                         midy + ceil(midy/10), midz - ceil(midz/10):midz + ceil(midz/10)) = true;
+%     case 3
+%         %Uniform distribution
+%         if frequency2 <= 1.05
+%             second(:,:,:) = true;
+%         else
+%             second(round(1:frequency2:xintervals * yintervals * zintervals)) = true;
+%         end
+% %         freq = nthroot(frequency2, 3);
+% %         second(ceil(1:freq:xintervals),ceil(1:freq:yintervals),ceil(1:freq:zintervals)) = true;
+%     case 4
+%         %Random distribution
+%         if frequency2 <= 1.05
+%             second(:,:,:) = true;
+%         else
+%             i = 1;
+%             %Fills until the ratio is fulfilled.
+%             while i <= ceil(xintervals*yintervals*zintervals/frequency2)
+%                 potentialRand = randi(xintervals);
+%                 potentialRand2 = randi(yintervals);
+%                 potentialRand3 = randi(zintervals);
+%                 if(~second(potentialRand,potentialRand2,potentialRand3))
+%                     second(potentialRand,potentialRand2,potentialRand3) = true;
+%                     i = i + 1;
+%                 end
+%             end
+%         end
+%      case 5
+%          %Random spheres
+%         if frequency2 <= 1.05
+%             second(:) = true;
+%         else
+%             i = 0;
+%             num = ceil(xintervals * yintervals * zintervals/frequency2);
+%             %Fills until the ratio is fulfilled
+%             while i <= num
+%                 potentialRand = randi(xintervals);
+%                 potentialRand2 = randi(yintervals);
+%                 potentialRand3 = randi(zintervals);
+%                 %Picks a random radius, and then random center after
+%                 randRadius = randi(floor(nthroot(num,3)/(4*3.14/3)));
+%                 if(potentialRand - randRadius < 1)
+%                     startx = 1;
+%                 else
+%                     startx = potentialRand - randRadius;
+%                 end
+%                 if(potentialRand + randRadius > xintervals)
+%                     endingx = xintervals;
+%                 else
+%                     endingx = potentialRand + randRadius;
+%                 end
+%                 for j = startx:endingx
+%                     for k = potentialRand2 - floor(sqrt(((randRadius^2) - ((potentialRand - j)^2)))) : ...
+%                             potentialRand2 + floor(sqrt(((randRadius^2) - ((potentialRand - j)^2))))
+%                         if k > 0 && k < yintervals
+%                             for l = potentialRand3 - ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2)))) : ...
+%                             potentialRand3 + ceil(sqrt(((randRadius^2) - ((potentialRand - j)^2) - ((potentialRand2 - k)^2))))
+%                                 if l > 0 && l < zintervals
+%                                     if(~second(j,k,l))
+%                                         second(j,k,l) = true;
+%                                         i = i + 1;
+%                                     end
+%                                 end
+%                             end
+%                         end
+%                     end
+%                 end
+%             end
+%         end
+% end
 
 %essentially gives the heat capacity constant used for most calculations
 constants(second) = dt / (specific_heat2 * dd * dd * density2);
 insertion(second) = dt / specific_heat2;
-materialMatrix(second) = 3;
+%materialMatrix(second) = 3;
 Tms = ones(xintervals, yintervals, zintervals) .* Tm;
 Tms(second) = Tm2;
 
@@ -396,11 +390,11 @@ end
 
 %The initial temperature grid is assigned.
 wholeMatrix = zeros(xintervals + 2, yintervals + 2, zintervals + 2) + roomTemp;
-wholeMatrix(2:end-1, 2:end-1, 2:end-1) = Tempgrid;
+wholeMatrix(2:end-1, 2:end-1, 2:end-1) = initialFrame;
 
 %%% movie stuff
 F(floor((iter)/framerate)) = struct('cdata',[],'colormap',[]);
-[X,Y,Z] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist, dd/2:dd:zdist);
+[X,Y,Z] = meshgrid(dd/2:dd:xdist, dd/2:dd:ydist, dd/2:dd:zdist);
 X = X(1:xintervals, 1:yintervals, 1:zintervals);
 Y = Y(1:xintervals, 1:yintervals, 1:zintervals);
 Z = Z(1:xintervals, 1:yintervals, 1:zintervals);
@@ -542,17 +536,13 @@ for j= 2:iter + 1
                 drawnow
                 F(index) = getframe(gcf);
             catch
-                if j == framerate + 1
-                    disp('Cannot graph');
-                end
+                disp('Cannot graph');
             end
         end
         index = index + 1;
         if melting
             melted = anyMeltingIter(wholeMatrix(2:end-1,2:end-1,2:end-1),melted,Tms);
         end
-        iterPrior = j; %#ok<NASGU>
-        save('inProgress.mat');
     end
 end
 
@@ -572,7 +562,7 @@ if graph
         fig = figure;
         movie(fig,F,1);
     catch
-        %disp('Cannot create movie');
+        disp('Cannot create movie');
     end
     close all;
 
@@ -624,6 +614,4 @@ if melting
     ratio = sum(sum(sum(melted)))/num;
 
     fprintf('Ratio Melted = %d / %d = %g = %g%%\n', sum(sum(sum(melted))), num, ratio, ratio*100);
-end
-
 end

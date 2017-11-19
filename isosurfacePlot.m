@@ -23,7 +23,7 @@ end
 
 
 
-[X,Y,Z] = meshgrid(dd/2:dd:xdist, dd/2:dd:ydist, dd/2:dd:zdist);
+[X,Y,Z] = meshgrid(dd/2:dd:ydist, dd/2:dd:xdist, dd/2:dd:zdist);
 X = X(1:floor(xdist/dd), 1:floor(ydist/dd), 1:floor(zdist/dd));
 Y = Y(1:floor(xdist/dd), 1:floor(ydist/dd), 1:floor(zdist/dd));
 Z = Z(1:floor(xdist/dd), 1:floor(ydist/dd), 1:floor(zdist/dd));
