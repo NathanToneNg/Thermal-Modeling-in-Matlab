@@ -9,7 +9,8 @@
 %   All assumed units are seconds, meters, kilograms, Watts, and degrees Celcius
 %       For example, density is expected to be provided in kg/m^3
 function materialMenu
-    global Tm specific_heat density thermal_Conductivity constant dt dd materials;
+    global Tm specific_heat density thermal_Conductivity constant dt dd materials ...
+        infinitex infinitey infinitez dimensions;
     if isempty(materials)
         materials = 1;
     end
@@ -18,6 +19,15 @@ function materialMenu
     end
     if isempty(dd)
         dd = 0.005;
+    end
+    if isempty(infinitex)
+        infinitex = false;
+    end
+    if isempty(infinitey)
+        infinitey = false;
+    end
+    if isempty(infinitez)
+        infinitez = false;
     end
 
     % guiMultiplierIf has 2 edit boxes for numbers and
@@ -69,7 +79,35 @@ function materialMenu
     constShow = uicontrol('Style','text','Position',[120,110,80,40],...
         'String',num2str(constant),'BackgroundColor','white',...
         'Callback',@callbackfn);
-    
+    if dimensions == 3
+        xinfText = uicontrol('Style','text','BackgroundColor','white',...
+        'Position',[-5, 40, 120, 80], 'String', 'Infinite x-direction?');
+    	xinfButton = uicontrol('Style','pushbutton','Position',[15, 60, 80, 40],...
+        'Callback',@callbackfn);
+        yinfText = uicontrol('Style','text','BackgroundColor','white',...
+        'Position',[100, 40, 120, 80], 'String', 'Infinite y-direction?');
+    	yinfButton = uicontrol('Style','pushbutton','Position',[120, 60, 80, 40],...
+        'Callback',@callbackfn);
+        zinfText = uicontrol('Style','text','BackgroundColor','white',...
+        'Position',[205, 40, 120, 80], 'String', 'Infinite z-direction?');
+    	zinfButton = uicontrol('Style','pushbutton','Position',[225, 60, 80, 40],...
+        'Callback',@callbackfn);
+        if infinitex
+           set(xinfButton, 'string', 'On');
+        else
+            set(xinfButton, 'string', 'Off');
+        end
+        if infinitey
+           set(yinfButton, 'string', 'On');
+        else
+            set(yinfButton, 'string', 'Off');
+        end
+        if infinitez
+           set(zinfButton, 'string', 'On');
+        else
+            set(zinfButton, 'string', 'Off');
+        end
+    end
 
     set(f,'Name','Materials Variables')
     movegui(f,'center')
@@ -83,7 +121,7 @@ function materialMenu
     set(kEdit, 'Visible', 'on');
         
     
-    function callbackfn(~,~)
+    function callbackfn(hObject,~)
         % callbackfn is called by the 'Callback' property
         % in either the second edit box or the pushbutton
         Tm=str2double(get(TmEdit,'String'));
@@ -92,6 +130,30 @@ function materialMenu
         thermal_Conductivity = str2double(get(kEdit,'String'));
         constant = thermal_Conductivity * dt / (density * specific_heat * dd * dd);
         set(constShow, 'String', num2str(constant));
+        if hObject == xinfButton
+            infinitex = ~infinitex;
+            if infinitex
+               set(xinfButton, 'string', 'On');
+            else
+                set(xinfButton, 'string', 'Off');
+            end
+        end
+        if hObject == yinfButton
+            infinitey = ~infinitey;
+            if infinitey
+               set(yinfButton, 'string', 'On');
+            else
+                set(yinfButton, 'string', 'Off');
+            end
+        end
+        if hObject == zinfButton
+            infinitez = ~infinitez;
+            if infinitez
+               set(zinfButton, 'string', 'On');
+            else
+                set(zinfButton, 'string', 'Off');
+            end
+        end
     end
     
 end

@@ -261,7 +261,30 @@ for i = 1:xintervals
         end
     end
 end
-
+if infinitex
+    xboundK = zeros(1,yintervals,zintervals);
+    for j = 1:yintervals
+        for l = 1:zintervals
+            xboundK(1, j, l) = kArray(materialMatrix(1, j, l) + materialMatrix(end, j, l) + 1);
+        end
+    end
+end
+if infinitey
+    yboundK = zeros(xintervals,1,zintervals);
+    for i = 1:xintervals
+        for l = 1:zintervals
+            yboundK(i, 1, l) = kArray(materialMatrix(i, 1, l) + materialMatrix(i, end, l) + 1);
+        end
+    end
+end
+if infinitez
+    zboundK = zeros(xintervals, yintervals, 1);
+    for i = 1:xintervals
+        for j = 1:yintervals
+            zboundK(i, j, 1) = kArray(materialMatrix(i, j, 1) + materialMatrix(i, j, end) + 1);
+        end
+    end
+end
 
 %The initial temperature grid is assigned.
 wholeMatrix = zeros(xintervals + 2, yintervals + 2, zintervals + 2) + roomTemp;
@@ -285,6 +308,18 @@ melted = false(xintervals,yintervals, zintervals);
 if radiation || convection
     area = (upK == 0) + (downK == 0) + (leftK == 0) + (rightK == 0);
     pBoundaries = (area ~= 0);
+    if infinitex
+        pBoundaries(1,:,:) = false;
+        pBoundaries(end,:,:) = false;
+    end
+    if infinitey
+        pBoundaries(:,1,:) = false;
+        pBoundaries(:,end,:) = false;
+    end
+    if infinitez
+        pBoundaries(:,:,1) = false;
+        pBoundaries(:,:,end) = false;
+    end
     boundaries = false(xintervals + 2, yintervals + 2, zintervals + 2);
     boundaries(2:end-1,2:end-1,2:end-1) = pBoundaries;
     if ~bottomLoss
@@ -333,7 +368,24 @@ for j= 2:iter + 1
             .*constants .* inK + ...
         (old(2:end-1,2:end-1,3:end) - old(2:end-1,2:end-1,2:end-1)) ...
             .*constants .* outK;
-
+    if infinitex
+        wholeMatrix(1,2:end-1,2:end-1) = wholeMatrix(1,2:end-1,2:end-1) + ...
+            (old(1, 2:end-1,2:end-1)-old(end,2:end-1,2:end-1)) .* xboundK;
+        wholeMatrix(end,2:end-1,2:end-1) = wholeMatrix(end,2:end-1,2:end-1) + ...
+            (old(end,2:end-1,2:end-1)-old(1,2:end-1,2:end-1)) .* xboundK;
+    end
+    if infinitey
+        wholeMatrix(2:end-1,1,2:end-1) = wholeMatrix(2:end-1,1,2:end-1) + ...
+            (old(2:end-1,1,2:end-1)-old(2:end-1,end,2:end-1)) .* yboundK;
+        wholeMatrix(2:end-1,end,2:end-1) = wholeMatrix(2:end-1,end,2:end-1) + ...
+            (old(2:end-1,end,2:end-1)-old(2:end-1,1,2:end-1)) .* yboundK;
+    end
+    if infinitez
+        wholeMatrix(2:end-1,2:end-1,1) = wholeMatrix(2:end-1,2:end-1,1) + ...
+            (old(2:end-1,2:end-1,1)-old(2:end-1,2:end-1,end)) .* zboundK;
+        wholeMatrix(2:end-1,2:end-1,end) = wholeMatrix(2:end-1,2:end-1,end) + ...
+            (old(2:end-1,2:end-1,end)-old(2:end-1,2:end-1,1)) .* zboundK;
+    end
     
     if radiation      
         wholeMatrix(boundaries) = wholeMatrix(boundaries) - ...
