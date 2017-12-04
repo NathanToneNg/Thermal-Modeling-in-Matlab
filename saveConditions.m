@@ -102,5 +102,13 @@ for i = 1:length(globalVars)
 end
 
 fclose(file);
-
+if exist('inProgress.mat','file')
+    overwrite = input('Do you want to delete the progress file?');
+    if overwrite
+        delete('inProgress.mat');
+    else
+        disp('Exiting program without deleting file.');
+        return;
+    end
+end
 end

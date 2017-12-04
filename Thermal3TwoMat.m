@@ -19,7 +19,7 @@ global precision xdist ydist zdist dd total_time dt framerate convection radiati
     density2 specific_heat2 thermal_Conductivity2 interfaceK materials distribution ...
     frequency2 cycle cycleIntervals cycleSpeed isotherm convecc saveMovie melting Tm2 graph ...
     bottomLoss initialGrid topCheck depth heating roomTempFunc finalGrid consistent ...
-    gradientPlot recordGradient gradientData infinitex infinitey infinitez;
+    gradientPlot recordGradient gradientData infinitex infinitey infinitez ground;
 clear global list;
 clear global tempsList;
 clear global materialMatrix;
@@ -66,6 +66,9 @@ if isempty(infinitey)
 end
 if isempty(infinitez)
     infinitez = false;
+end
+if isempty(ground)
+    ground = false;
 end
 global histogramPlot
 if ~isempty(histogramPlot)
@@ -530,6 +533,10 @@ for j= 2:iter + 1
         wholeMatrix(2:end-1,2:end-1,end) = wholeMatrix(2:end-1,2:end-1,end) + ...
             (old(2:end-1,2:end-1,end)-old(2:end-1,2:end-1,1)) .* zboundK;
     end
+    %if ground
+        %wholeMatrix(2:end-1,2:end-1,1) = wholeMatrix(2:end-1,2:end-1,1) +
+        %...  (old(2:end-1,2:end-1,1) - groundTemp) .* groundConduct;
+    %end
     %Changes based on radiation
     if radiation
         if heating

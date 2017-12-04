@@ -68,6 +68,9 @@ function overallGUI
     consistent = false;
     gradientPlot = 0;
     recordGradient = false;
+    infinitex = false;
+    infinitey = false;
+    infinitez = false;
     %%%%%%%%%%%%
     
     
